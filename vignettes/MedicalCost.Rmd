@@ -1,0 +1,269 @@
+---
+title: "Medical Cost"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MedicalCost}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Introduction
+------------
+
+The purpose of this vignette is to show you how to use **tagi** in an insurance regression problem
+using the Medical Cost dataset and to compare the results to the package **xgboost**.
+If the **xgboost** package is not installed, please install it using the following code: install.packages('xgboost')
+
+
+Package loading:
+
+```{r libLoading, results='hold', message=F, warning=F}
+require(tagi)
+require(xgboost)
+```
+
+Data
+------------
+
+MedicalCost contains 1,338 rows and 10 variables.
+
+```{r, results='hide'}
+data(MedicalCost, package = 'tagi')
+```
+
+Initialization
+------------
+
+First setting a seed to get the same results each time the code is ran. 
+Note that it is not a mandatory step.
+```{r}
+set.seed(100)
+```
+
+Neural Network
+------------
+
+### Specific Initialization
+
+Define the neural network properties, such as the number of epochs, activation function, etc.
+```{r}
+nobs <- nrow(MedicalCost)
+ncvr <- 9
+# Input features
+x <- MedicalCost[,1:ncvr]
+# Output targets
+y <- matrix(MedicalCost[,10], ncol = 1)
+nx <- ncol(x)
+ny <- ncol(y)
+
+NN <- list(
+  "nx" = nx, # Number of input covariates
+  "ny" = ny, # Number of output responses
+  "batchSizeList" = c(1, 1, 1), # Batch size [train, val, test]
+  "nodes" = c(nx, 100, ny), # Number of nodes for each layer
+  "sx" = NULL, # Input standard deviation
+  "sv" = 0.32 * matrix(1L, nrow = 1, ncol = ny), # Observations standard deviation
+  "maxEpoch" = 40, # maximal number of learning epoch
+  "hiddenLayerActivation" = "relu", # Activation function for hidden layer {'tanh','sigm','cdf','relu','softplus'}
+  "outputActivation" = "linear", # Activation function for hidden layer {'linear', 'tanh','sigm','cdf','relu'}
+
+  # Optimize hyperparameters?
+  #"optsv" = 0, # Observation noise sv 1: yes; 0: no
+  #"optNumEpochs" = 0, # Number of epochs 1: yes; 0: no
+  #"numEpochs" = 0, # Number of searching epochs
+  #"numFolds" = 0, # Number of Folds for cross-validation
+  "ratio" = 0.8, # Ratio between training set and validation set
+
+  "numSplits" = 20, # Number of splits
+  "task" = "regression" # Task regression or classification
+)
+```
+
+Next, initialize weights and biases and parameters for the split between training and testing set.
+```{r}
+NN$factor4Bp = 0.01 * matrix(1L, nrow = 1, ncol = length(NN$nodes) - 1) # Factor for initializing bias
+NN$factor4Wp = 0.25 * matrix(c(1/NN$nodes[1],1/NN$nodes[2]), nrow = 1, ncol = 2) # Factor for initializing weights
+
+trainIdx <- NULL
+testIdx <- NULL
+```
+
+### Experiment
+
+Run the neural network model and collect metrics at each epoch.
+```{r}
+out_regression <- regression(NN, x, y, trainIdx, testIdx)
+mp = out_regression[[1]]
+Sp = out_regression[[2]]
+metric = out_regression[[3]]
+time = out_regression[[4]]
+```
+
+Results
+```{r}
+cat(sprintf("Average RMSE: %s +- %s", mean(metric[["RMSElist"]]), sd(metric[["RMSElist"]])))
+```
+
+Extreme Gradient Boosting
+------------
+
+### Specific Initialization
+
+Split the data into input and response variables.
+```{r}
+# Input features
+x <- MedicalCost[,1:9]
+# Output targets
+y <- matrix(MedicalCost[,10], ncol = 1)
+```
+
+Next, set the number of splits and initialize the RMSE list.
+```{r}
+Nsplit = 20
+RMSElist = rep(0, Nsplit)
+```
+
+### Experiments
+
+#### gbtree with nrounds = 40
+
+Run the extreme gradient boosting model with a tree booster and fixed number of boosting iterations (i.e. 40)
+and collect RMSE at each round.
+```{r, results='hide', message=FALSE, warning=FALSE}
+for (s in 1:Nsplit){
+  out_split = split(x, y, 0.8)
+
+  # Preparing matrix
+  dtrain = xgb.DMatrix(data = out_split[[1]], label = out_split[[2]])
+  dtest = xgb.DMatrix(data = out_split[[3]], label = out_split[[4]])
+  
+  # Initial parameters for gbtree
+   params <- list(booster = "gbtree", objective = "reg:squarederror", eval_metric = "rmse", eta=0.3, gamma=0, max_depth=6, min_child_weight=1, subsample=1, colsample_bytree=1)
+  
+  # If nrounds not optimized and use 40 (as for the number of epoch)
+  bst <- xgboost(params = params, data = dtrain, nrounds =  40, verbose=0)
+  
+  pred <- predict(bst, dtest)
+    
+  # Evaluation
+  RMSElist[s] = computeError(out_split[[4]], pred)
+  
+  print("")
+  cat(sprintf("Results for Run # %s, RMSE: %s", s, RMSElist[s]))
+}
+```
+
+Results
+```{r}
+cat(sprintf("Average RMSE: %s +- %s", mean(RMSElist), sd(RMSElist)))
+```
+
+#### gbtree with optimized nrounds
+
+Run the extreme gradient boosting model with a tree booster and optimized number of boosting iterations
+and collect RMSE at each round.
+```{r, results='hide', message=FALSE, warning=FALSE}
+for (s in 1:Nsplit){
+  out_split = split(x, y, 0.8)
+
+  # Preparing matrix
+  dtrain = xgb.DMatrix(data = out_split[[1]], label = out_split[[2]])
+  dtest = xgb.DMatrix(data = out_split[[3]], label = out_split[[4]])
+  
+  # Initial parameters for gbtree
+   params <- list(booster = "gbtree", objective = "reg:squarederror", eval_metric = "rmse", eta=0.3, gamma=0, max_depth=6, min_child_weight=1, subsample=1, colsample_bytree=1)
+  
+  # Calculate the best nround for this model
+  xgbcv <- xgb.cv(params = params, data = dtrain, nrounds = 100, nfold = 5, showsd = T, stratified = T, print_every_n = 10, early_stop._round = 20, maximize = F)
+ 
+  bst <- xgboost(params = params, data = dtrain, nrounds =  which.min(xgbcv$evaluation_log$test_rmse_mean), verbose = 0)
+  
+  pred <- predict(bst, dtest)
+  
+  # Evaluation
+  RMSElist[s] = computeError(out_split[[4]], pred)
+  
+  print("")
+  cat(sprintf("Results for Run # %s, RMSE: %s", s, RMSElist[s]))
+}
+```
+
+Results
+```{r}
+cat(sprintf("Average RMSE: %s +- %s", mean(RMSElist), sd(RMSElist)))
+```
+
+#### gblinear with nrounds = 40
+
+Run the extreme gradient boosting model with a linear booster and fixed number of boosting iterations (i.e. 40)
+and collect RMSE at each round.
+```{r, results='hide', message=FALSE, warning=FALSE}
+for (s in 1:Nsplit){
+  out_split = split(x, y, 0.8)
+
+  # Preparing matrix
+  dtrain = xgb.DMatrix(data = out_split[[1]], label = out_split[[2]])
+  dtest = xgb.DMatrix(data = out_split[[3]], label = out_split[[4]])
+  
+  # Initial parameters for gblinear
+   params <- list(booster = "gblinear", objective = "reg:linear")
+  
+  # If nrounds not optimized and use 40 (as for the number of epoch)
+  bst <- xgboost(params = params, data = dtrain, nrounds =  40, verbose=0)
+  
+  pred <- predict(bst, dtest)
+    
+  # Evaluation
+  RMSElist[s] = computeError(out_split[[4]], pred)
+  
+  print("")
+  cat(sprintf("Results for Run # %s, RMSE: %s", s, RMSElist[s]))
+}
+```
+
+Results
+```{r}
+cat(sprintf("Average RMSE: %s +- %s", mean(RMSElist), sd(RMSElist)))
+```
+
+#### gblinear with optimized nrounds
+
+Run the extreme gradient boosting model with a linear booster and optimized number of boosting iterations
+and collect RMSE at each round.
+```{r, results='hide', message=FALSE, warning=FALSE}
+for (s in 1:Nsplit){
+  out_split = split(x, y, 0.8)
+
+  # Preparing matrix
+  dtrain = xgb.DMatrix(data = out_split[[1]], label = out_split[[2]])
+  dtest = xgb.DMatrix(data = out_split[[3]], label = out_split[[4]])
+  
+  # Initial parameters for gblinear
+   params <- list(booster = "gblinear", objective = "reg:linear")
+  
+  # Calculate the best nround for this model
+  xgbcv <- xgb.cv(params = params, data = dtrain, nrounds = 100, nfold = 5, showsd = T, stratified = T, print_every_n = 10, early_stop._round = 20, maximize = F)
+ 
+  bst <- xgboost(params = params, data = dtrain, nrounds =  which.min(xgbcv$evaluation_log$test_rmse_mean), verbose = 0)
+  
+  pred <- predict(bst, dtest)
+  
+  # Evaluation
+  RMSElist[s] = computeError(out_split[[4]], pred)
+  
+  print("")
+  cat(sprintf("Results for Run # %s, RMSE: %s", s, RMSElist[s]))
+}
+```
+
+Results
+```{r}
+cat(sprintf("Average RMSE: %s +- %s", mean(RMSElist), sd(RMSElist)))
+```

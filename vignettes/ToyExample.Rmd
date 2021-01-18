@@ -1,0 +1,173 @@
+---
+title: "Toy Example"
+author: "Magali-Chen Goulet"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ToyExample}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Introduction
+------------
+
+The purpose of this vignette is to show you how to use **tagi** in the 1D Toy 
+Example from (Hernández-Lobato & Adams, 2015) as it is shown in the original version
+of tagi developped in [matlab](https://github.com/CivML-PolyMtl/TAGI/blob/master/ToyExample/ToyExample_1D.m) (Goulet et al., 2020).
+
+
+Package loading:
+
+```{r libLoading, results='hold', message=F, warning=F}
+require(tagi)
+require(mvtnorm)
+```
+
+Data
+------------
+
+1D regression problem from (Hernández-Lobato & Adams, 2015) is
+$y = x^{3} + \epsilon$ where $\epsilon \sim \mathcal{N}(0,9)$ and $x \in [\,-4,4]\,$. 
+In our datasets, $x$ and $y$ are already normalized.
+
+```{r, results='hide'}
+data(ToyExample.x_val, package = 'tagi')
+data(ToyExample.y_val, package = 'tagi')
+data(ToyExample.x_obs, package = 'tagi')
+data(ToyExample.y_obs, package = 'tagi')
+```
+
+Initialization
+------------
+
+First setting a seed to get the same results each time the code is ran. Note that it is not a mandatory step.
+```{r}
+set.seed(100)
+```
+
+Then, define the neural network properties, such as the number of epochs, activation function, etc.
+```{r}
+nx <- ncol(ToyExample.x_obs)
+ny <- ncol(ToyExample.y_obs)
+
+NN <- list(
+  "nx" = nx, # Number of input covariates
+  "ny" = ny, # Number of output responses
+  "batchSize" = 1, # Batch size
+  "nodes" = c(nx, 100, ny), # Number of nodes for each layer
+  "sx" = NULL, # Input standard deviation
+  "sv" = 3/50,
+  "maxEpoch" = 40, # maximal number of learning epoch
+  "hiddenLayerActivation" = "relu", # Activation function for hidden layer {'tanh','sigm','cdf','relu','softplus'}
+  "outputActivation" = "linear", # Activation function for hidden layer {'linear', 'tanh','sigm','cdf','relu'}
+  "dropWeight" = 1, # Weight percentage being set to 0
+  "trainMode" = 1
+)
+```
+
+Next, initialize weights and biases and parameters for the training set.
+```{r}
+NN$factor4Bp = 0.01 * matrix(1L, nrow = 1, ncol = length(NN$nodes) - 1) # Factor for initializing bias
+NN$factor4Wp = 0.25 * matrix(1L, nrow = 1, ncol = length(NN$nodes) - 1) # Factor for initializing weights
+
+
+# Train network
+# Indices for each parameter group
+NN <- parameters(NN)
+NN <- covariance(NN)
+
+# Initialize weights & bias
+out <- initializeWeightBias(NN)
+mp = out[[1]]
+Sp = out[[2]]
+```
+
+Replicate the neural network for the testing set and initialize its parameters.
+```{r}
+NNtest = NN
+NNtest$batchSize = 1
+NNtest$trainMode = 0
+# Indices for each parameter group
+NNtest <- parameters(NNtest)
+NNtest <- covariance(NNtest)
+```
+
+Experiment
+------------
+
+True distribution
+```{r}
+fun <- function(x){
+  y = (5*x)^3/50
+  return(y)
+}
+n_pred = 100
+x_plot = matrix(seq(-1, 1, len=n_pred), n_pred, 1)
+y_plot = fun(x_plot)
+xp = matrix(seq(-1.2, 1.2, len=n_pred), n_pred, 1)
+yp = fun(xp)
+```
+
+Run the neural network model and collect metrics at each epoch.
+```{r}
+# Initialization
+epoch = -1
+stop = 0
+LL_val = rep(0, NN$maxEpoch)
+LL_obs = rep(0, NN$maxEpoch)
+
+while (stop == 0){
+  epoch = epoch + 1
+  if (epoch > 0){
+    out_network = network(NN, mp, Sp, ToyExample.x_obs, ToyExample.y_obs)
+    mp = out_network[[1]]
+    Sp = out_network[[2]]
+    if (epoch == NN$maxEpoch){
+      stop = 1
+    }
+    out_network = network(NNtest, mp, Sp, ToyExample.x_val, ToyExample.y_val)
+    ynVal = out_network[[3]]
+    SynVal = out_network[[4]]
+    out_network = network(NNtest, mp, Sp, ToyExample.x_obs, ToyExample.y_obs)
+    yntrain = out_network[[3]]
+    Syntrain = out_network[[4]]
+
+    LL_val[epoch] = log(dmvnorm(as.vector(ToyExample.y_val), as.vector(ynVal), diag(as.vector(SynVal))))
+    LL_obs[epoch] = log(dmvnorm(as.vector(ToyExample.y_obs), as.vector(yntrain), diag(as.vector(Syntrain))))
+  }
+  # Testing
+  out_network = network(NNtest, mp, Sp, xp, yp)
+  ynTest = out_network[[3]]
+  SynTest = out_network[[4]]
+}
+```
+
+
+Plots
+------------
+
+Comparison between the true function employed to generate the data with the predictions from the model (i.e. their expected values and with a $\pm3\sigma$ confidence region).
+```{r}
+plot(ToyExample.x_obs*5, ToyExample.y_obs*50, xlim=c(-6,6), ylim=c(-100,100), xlab = "x", ylab = "y", xaxt="n", yaxt="n")
+axis(1, at=c(-5, 0, 5), las=1)
+axis(2, at=c(-50, 0, 50), las=1)
+polygon(5*cbind(t(xp),t(apply(t(xp),1,rev))), 50*cbind(t(ynTest) + 3*sqrt(t(SynTest)), t(apply(t(ynTest) - 3*sqrt(t(SynTest)),1,rev))), col = adjustcolor("red", alpha.f = 0.2), border=NA)
+points(ToyExample.x_val*5, ToyExample.y_val*50, col = "magenta", pch = 5)
+lines(x_plot*5, y_plot*50)
+lines(xp*5, ynTest*50, col ="red")
+```
+
+Graph log-likelihood for each epoch.
+```{r}
+plot(1:NN$maxEpoch, LL_obs, xlab = "Epoch #", ylab = "log-likelihood", yaxt="n", ylim=c(-10,40))
+axis(2, at=seq(-10, 40, by = 10), las=1)
+points(1:NN$maxEpoch, LL_val, col = "magenta", pch = 5)
+```

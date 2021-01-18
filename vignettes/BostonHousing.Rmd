@@ -1,0 +1,116 @@
+---
+title: "Boston Housing"
+author: "Magali-Chen Goulet"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BostonHousing}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Introduction
+------------
+
+The purpose of this vignette is to show you how to use **tagi** in a regression problem
+using the Boston Housing dataset that was also used in the original version
+of tagi developped in [matlab](https://github.com/CivML-PolyMtl/TAGI/tree/master/BostonHousing) (Goulet et al., 2020).
+
+
+Package loading:
+
+```{r libLoading, results='hold', message=F, warning=F}
+require(tagi)
+require(randtoolbox)
+```
+
+Data
+------------
+
+Bh contains 506 rows and 14 variables.
+
+```{r, results='hide'}
+data(BH, package = 'tagi')
+```
+
+Initialization
+------------
+
+First setting a seed to get the same results each time the code is ran. 
+Note that it is not a mandatory step.
+That specific seed replicates the "rand('twister', 12345)" seed used in the 
+original **tagi** version developed in [matlab](https://github.com/CivML-PolyMtl/TAGI/blob/master/BostonHousing/BostonHousing.m).
+However, all the random numbers generated using the package "stats" are not affected
+by the common seed.
+```{r}
+set.generator("MersenneTwister", initialization="init2002", resolution=53, seed=12345)
+```
+
+Then, define the neural network properties, such as the number of epochs, activation function, etc.
+```{r}
+nobs <- nrow(BH)
+ncvr <- 13
+ratio <- 0.9
+# Input features
+x <- BH[,1:ncvr]
+# Output targets
+y <- matrix(BH[,14], ncol = 1)
+nx <- ncol(x)
+ny <- ncol(y)
+
+NN <- list(
+  "nx" = nx, # Number of input covariates
+  "ny" = ny, # Number of output responses
+  "batchSizeList" = c(1, 1, 1), # Batch size [train, val, test]
+  "nodes" = c(nx, 50, ny), # Number of nodes for each layer
+  "sx" = NULL, # Input standard deviation
+  "sv" = 0.32 * matrix(1L, nrow = 1, ncol = ny), # Observations standard deviation
+  "maxEpoch" = 40, # maximal number of learnign epoch
+  "hiddenLayerActivation" = "relu", # Activation function for hidden layer {'tanh','sigm','cdf','relu','softplus'}
+  "outputActivation" = "linear", # Activation function for hidden layer {'linear', 'tanh','sigm','cdf','relu'}
+
+  # Optimize hyperparameters?
+  "optsv" = 0, # Observation noise sv 1: yes; 0: no
+  "optNumEpochs" = 0, # Number of epochs 1: yes; 0: no
+  "numEpochs" = 0, # Number of searching epochs
+  "numFolds" = 5, # Number of Folds for cross-validation
+  "ratio" = 0.8, # Ratio between training set and validation set
+
+  "numSplits" = 20, # Number of splits
+  "task" = "regression" # Task regression or classification
+)
+```
+
+Next, initialize weights and biases and parameters for the split between training and testing set.
+```{r}
+NN$factor4Bp = 0.01 * matrix(1L, nrow = 1, ncol = length(NN$nodes) - 1) # Factor for initializing bias
+NN$factor4Wp = 0.25 * matrix(1L, nrow = 1, ncol = length(NN$nodes) - 1) # Factor for initializing weights
+
+trainIdx <- NULL
+testIdx <- NULL
+```
+
+Experiment
+------------
+
+Run the neural network model and collect metrics at each epoch.
+```{r}
+out_regression <- regression(NN, x, y, trainIdx, testIdx)
+mp = out_regression[[1]]
+Sp = out_regression[[2]]
+metric = out_regression[[3]]
+time = out_regression[[4]]
+```
+
+Results
+```{r}
+cat(sprintf("Average RMSE: %s +- %s", mean(metric[["RMSElist"]]), sd(metric[["RMSElist"]])))
+cat(sprintf("Average LL: %s +- %s", mean(metric[["LLlist"]]), sd(metric[["LLlist"]])))
+```
