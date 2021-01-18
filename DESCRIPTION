@@ -2,14 +2,14 @@ Package: tagi
 Title: Tractable Approximate Gaussian Inference in Neural Networks
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Magli-Chen",
-           family = "Goulet",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+    person("Magali-Chen", "Goulet", role = c("aut", "cre"), email = "magali.goulet@hotmail.com")
+Description: Tractable Approximate Gaussian Inference (TAGI) is a method used in 
+    Bayesian neural networks developped by Goulet et al. (2020). This package is 
+    its R implementation. From TAGI, the package enables inference of the weights 
+    and baises posterior distributions, treats uncertainty in all layers and uses  
+    a single observation at a time for online inference of model parameters. It 
+    supports many activation functions and can solve regression problems.
+License: GPL (>= 3)
 URL: https://github.com/mgoulet847/tagi
 BugReports: https://github.com/mgoulet847/tagi
 Encoding: UTF-8
@@ -18,7 +18,10 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    mvtnorm,
+    randtoolbox,
+    xgboost
 VignetteBuilder: knitr
 Imports: 
     matlab,
