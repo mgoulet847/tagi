@@ -17,7 +17,7 @@ units for the current and previous layers respectively}
 \item{idxFmwab}{Indices for biases of the current layer}
 }
 \value{
-Mean vector of the units for the current layer
+Mean vector of the units for the current layer \eqn{\mu_{Z}}
 }
 \description{
 This function calculate the mean vector of the units \eqn{\mu_{Z}} for a given layer.

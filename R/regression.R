@@ -8,13 +8,13 @@
 #' @param trainIdx Observations IDs that are assigned to the training set
 #' @param testIdx Observations IDs that are assigned to the testing set
 #' @return A list that contains:
-#' @return - mp: List that contains the updated mean vectors of the parameters
-#' for each layer
-#' @return - Sp: List that contains the updated covariance matrices of the
-#' parameters for each layer
-#' @return - metric: List that contains RMSE and LL metrics for each neural
+#' @return - \code{mp}: List that contains the updated mean vectors of the parameters
+#' for each layer \eqn{\mu_{\theta}}
+#' @return - \code{Sp}: List that contains the updated covariance matrices of the
+#' parameters for each layer \eqn{\Sigma_{\theta}}
+#' @return - \code{metric}: List that contains RMSE and LL metrics for each neural
 #' network models created
-#' @return - time: Training time of each neural network models created
+#' @return - \code{time}: Training time of each neural network models created
 #' @export
 regression <- function(NN, x, y, trainIdx, testIdx){
   # Initialization

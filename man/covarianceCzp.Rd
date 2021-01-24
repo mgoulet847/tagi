@@ -7,9 +7,9 @@
 covarianceCzp(ma, Sp, idxFCwwa, idxFCb)
 }
 \arguments{
-\item{ma}{Mean vector of the activation units from previous layer}
+\item{ma}{Mean vector of the activation units from previous layer \eqn{\mu_{A}}}
 
-\item{Sp}{Covariance matrix of the parameters for the current layer}
+\item{Sp}{Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}}
 
 \item{idxFCwwa}{List that contains the indices for weights and for activation
 units for the current and previous layers respectively}
@@ -20,11 +20,11 @@ units for the current and previous layers respectively}
 A list that contains:
 
 \itemize{
-\item Covariance matrix between units and biases for the current layer
+\item Covariance matrix between units and biases for the current layer \eqn{\Sigma_{ZB}}
 }
 
 \itemize{
-\item Covariance matrix between units and weights for the current layer
+\item Covariance matrix between units and weights for the current layer \eqn{\Sigma_{ZW}}
 }
 }
 \description{

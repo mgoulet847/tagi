@@ -7,13 +7,13 @@
 covarianceSa(J, Sz)
 }
 \arguments{
-\item{J}{Jacobian matrix evaluated at \eqn{\mu_{z}}}
+\item{J}{Jacobian matrix evaluated at \eqn{\mu_{Z}}}
 
-\item{Sz}{Covariance matrix of the units for the current layer}
+\item{Sz}{Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}}
 }
 \value{
-The activation units variance vector
+The activation units variance vector \eqn{\Sigma_{A}}
 }
 \description{
-This function uses lineratization to estimate the activation units variance.
+This function uses lineratization to estimate the covariance matrix of activation units \eqn{\Sigma_{A}}.
 }

@@ -14,23 +14,23 @@ activationFunIndex(funName)
 An ID number which corresponds to:
 
 \itemize{
-\item 1 if "tanh"
+\item 1 if \code{funName} is "tanh"
 }
 
 \itemize{
-\item 2 if "sigm"
+\item 2 if \code{funName} is "sigm"
 }
 
 \itemize{
-\item 3 if "cdf"
+\item 3 if \code{funName} is "cdf"
 }
 
 \itemize{
-\item 4 if "relu"
+\item 4 if \code{funName} is "relu"
 }
 
 \itemize{
-\item 5 if "softplus"
+\item 5 if \code{funName} is "softplus"
 }
 }
 \description{

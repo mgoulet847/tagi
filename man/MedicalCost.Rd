@@ -16,7 +16,7 @@ A data frame with 1,338 rows and 10 variables:
 \item{region: southeast}{binary (if the insured lives in that region)}
 \item{region: southwest}{binary (if the insured lives in that region)}
 \item{region: northwest}{binary (if the insured lives in that region)}
-\item{charges}{medical costs, in US dollars)}
+\item{charges}{medical costs, in US dollars}
 }
 }
 \source{
@@ -31,6 +31,7 @@ A dataset containing the medical costs ("charges") and other attributes of
 }
 \details{
 The original dataset contains 7 variables, but one-hot encoding was
-used on the "region" categorical variable.
+used on the "region" categorical variable. It is a dataset that was used in a
+Kaggle competition.
 }
 \keyword{datasets}

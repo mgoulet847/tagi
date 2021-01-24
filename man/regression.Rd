@@ -21,22 +21,22 @@ regression(NN, x, y, trainIdx, testIdx)
 A list that contains:
 
 \itemize{
-\item mp: List that contains the updated mean vectors of the parameters
-for each layer
+\item \code{mp}: List that contains the updated mean vectors of the parameters
+for each layer \eqn{\mu_{\theta}}
 }
 
 \itemize{
-\item Sp: List that contains the updated covariance matrices of the
-parameters for each layer
+\item \code{Sp}: List that contains the updated covariance matrices of the
+parameters for each layer \eqn{\Sigma_{\theta}}
 }
 
 \itemize{
-\item metric: List that contains RMSE and LL metrics for each neural
+\item \code{metric}: List that contains RMSE and LL metrics for each neural
 network models created
 }
 
 \itemize{
-\item time: Training time of each neural network models created
+\item \code{time}: Training time of each neural network models created
 }
 }
 \description{

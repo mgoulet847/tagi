@@ -14,7 +14,7 @@ A data frame with 20 rows and 1 variable \eqn{x}
 ToyExample.x_val
 }
 \description{
-The orignal dataset represents a 1D regression problem from (Hernández-Lobato & Adams, 2015):
+The orignal dataset represents a 1D regression problem from Hernández-Lobato & Adams (2015):
 \eqn{y = x^{3} + \epsilon} where \eqn{\epsilon \sim \mathcal{N}(0,9)} and \eqn{x \in [\,-4,4]\,}. In this dataset, \eqn{x} and \eqn{y} are normalized.
 }
 \details{

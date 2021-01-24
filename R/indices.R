@@ -15,9 +15,9 @@
 #'
 #' @param NN List that contains the structure of the neural network
 #' @return NN with three new elements, each of size (number of layers -1) :
-#' @return - idxb: List of the weight indices for each layer
-#' @return - idxw: List of the bias indices for each layer
-#' @return - idxwb: List of the combined weight and bias indices for each layer
+#' @return - \code{idxb}: List of the weight indices for each layer
+#' @return - \code{idxw}: List of the bias indices for each layer
+#' @return - \code{idxwb}: List of the combined weight and bias indices for each layer
 #' @export
 parameters <- function(NN){
   # Initialization
@@ -50,19 +50,19 @@ parameters <- function(NN){
 #'
 #' @param NN List that contains the structure of the neural network
 #' @return NN with new elements:
-#' @return - idxFmwa: Lists of indices (weights and activation units) for
+#' @return - \code{idxFmwa}: Lists of indices (weights and activation units) for
 #' deterministic matrix F *  \eqn{\mu_{WA}} for each layer
-#' @return - idxFmwab: List of bias indices for deterministic matrix F *  \eqn{\mu_{B}} for
+#' @return - \code{idxFmwab}: List of bias indices for deterministic matrix F *  \eqn{\mu_{B}} for
 #' each layer
-#' @return - idxFCzwa: Lists of indices (weights and activation units) for
+#' @return - \code{idxFCzwa}: Lists of indices (weights and activation units) for
 #' deterministic matrix F *  \eqn{\Sigma_{ZWA}} for each layer
-#' @return - idxSzpUd: List of indices for the parameter update step for each layer
-#' @return - idxSzzUd: List of indices for the hidden state update step for each
+#' @return - \code{idxSzpUd}: List of indices for the parameter update step for each layer
+#' @return - \code{idxSzzUd}: List of indices for the hidden state update step for each
 #' layer
-#' @return - idxFCwwa: Lists of indices (weights and activation units) for deterministic matrix F *  \eqn{\Sigma_{WA\theta}} for
+#' @return - \code{idxFCwwa}: Lists of indices (weights and activation units) for deterministic matrix F *  \eqn{\Sigma_{WA\theta}} for
 #' each layer
-#' @return - idxa: List of indices for activation unit for each layer
-#' @return - idxFCb: List of bias indices for deterministic matrix F *  \eqn{\Sigma_{C}} for
+#' @return - \code{idxa}: List of indices for activation unit for each layer
+#' @return - \code{idxFCb}: List of bias indices for deterministic matrix F *  \eqn{\Sigma_{B}} for
 #' each layer
 #' @export
 covariance <- function(NN){

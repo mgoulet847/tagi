@@ -9,9 +9,9 @@ network(NN, mp, Sp, x, y)
 \arguments{
 \item{NN}{List that contains the structure of the neural network}
 
-\item{mp}{List that contains mean vectors of the parameters for each layer}
+\item{mp}{List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}}
 
-\item{Sp}{List that contains covariance matrices of the
+\item{Sp}{List that contains covariance matrices of the \eqn{\Sigma_{\theta}}
 parameters for each layer}
 
 \item{x}{Set of input data}
@@ -22,21 +22,21 @@ parameters for each layer}
 A list that contains:
 
 \itemize{
-\item mp: List that contains the updated mean vectors of the parameters
-for each layer
+\item \code{mp}: List that contains the updated mean vectors of the parameters
+for each layer \eqn{\mu_{\theta}}
 }
 
 \itemize{
-\item Sp: List that contains the updated covariance matrices of the
-parameters for each layer
+\item \code{Sp}: List that contains the updated covariance matrices of the
+parameters for each layer \eqn{\Sigma_{\theta}}
 }
 
 \itemize{
-\item zn: Predicted responses
+\item \code{zn}: Predicted responses
 }
 
 \itemize{
-\item Szn: Variance vector of predicted responses
+\item \code{Szn}: Variance vector of predicted responses
 }
 }
 \description{

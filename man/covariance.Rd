@@ -13,40 +13,40 @@ covariance(NN)
 NN with new elements:
 
 \itemize{
-\item idxFmwa: Lists of indices (weights and activation units) for
+\item \code{idxFmwa}: Lists of indices (weights and activation units) for
 deterministic matrix F *  \eqn{\mu_{WA}} for each layer
 }
 
 \itemize{
-\item idxFmwab: List of bias indices for deterministic matrix F *  \eqn{\mu_{B}} for
+\item \code{idxFmwab}: List of bias indices for deterministic matrix F *  \eqn{\mu_{B}} for
 each layer
 }
 
 \itemize{
-\item idxFCzwa: Lists of indices (weights and activation units) for
+\item \code{idxFCzwa}: Lists of indices (weights and activation units) for
 deterministic matrix F *  \eqn{\Sigma_{ZWA}} for each layer
 }
 
 \itemize{
-\item idxSzpUd: List of indices for the parameter update step for each layer
+\item \code{idxSzpUd}: List of indices for the parameter update step for each layer
 }
 
 \itemize{
-\item idxSzzUd: List of indices for the hidden state update step for each
+\item \code{idxSzzUd}: List of indices for the hidden state update step for each
 layer
 }
 
 \itemize{
-\item idxFCwwa: Lists of indices (weights and activation units) for deterministic matrix F *  \eqn{\Sigma_{WA\theta}} for
+\item \code{idxFCwwa}: Lists of indices (weights and activation units) for deterministic matrix F *  \eqn{\Sigma_{WA\theta}} for
 each layer
 }
 
 \itemize{
-\item idxa: List of indices for activation unit for each layer
+\item \code{idxa}: List of indices for activation unit for each layer
 }
 
 \itemize{
-\item idxFCb: List of bias indices for deterministic matrix F *  \eqn{\Sigma_{C}} for
+\item \code{idxFCb}: List of bias indices for deterministic matrix F *  \eqn{\Sigma_{B}} for
 each layer
 }
 }

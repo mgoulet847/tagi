@@ -7,19 +7,19 @@
 backwardParameterUpdate(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx)
 }
 \arguments{
-\item{mp}{Mean vector of the parameters for the current layer}
+\item{mp}{Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}}
 
-\item{Sp}{Covariance matrix of the parameters for the current layer}
+\item{Sp}{Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}}
 
-\item{mzF}{Mean vector of the units for the next layer}
+\item{mzF}{Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}}
 
-\item{SzF}{Covariance matrix of the units for the next layer}
+\item{SzF}{Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}}
 
-\item{SzB}{Updated covariance matrix of the units for the next layer}
+\item{SzB}{Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}}
 
-\item{Czp}{Covariance matrix between units and parameters for the current layer}
+\item{Czp}{Covariance matrix between units and parameters for the current layer \eqn{\Sigma_{\theta Z^{+}}}}
 
-\item{mzB}{Updated mean vector of the units for the next layer}
+\item{mzB}{Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}}
 
 \item{idx}{List that contains the indices for the parameter update step of
 the current layer}
@@ -28,15 +28,24 @@ the current layer}
 A list that contains:
 
 \itemize{
-\item Updated mean vector of the parameters for the current layer
+\item Mean vector of the parameters for the current layer given \eqn{y} \eqn{\mu_{\theta|y}}
 }
 
 \itemize{
-\item Updated covariance matrix of the parameters for the current layer
+\item Covariance matrix of the parameters for the current layer given \eqn{y} \eqn{\Sigma_{\theta|y}}
 }
 }
 \description{
 This function updates parameters from responses to input data. It updates
 \eqn{\mu_{\theta|y}} and \eqn{\Sigma_{\theta|y}} from the \eqn{\theta|y}
 distribution for a given layer.
+}
+\details{
+\eqn{f(\boldsymbol{\theta}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{\theta};\boldsymbol{\mu_{\theta|y}},\boldsymbol{\Sigma_{\theta|y}})} where
+
+\eqn{\boldsymbol{\mu_{\theta|y}} =\boldsymbol{\mu_{\theta}} + \boldsymbol{J_{\theta}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
+
+\eqn{\boldsymbol{\Sigma_{\theta|y}} = \boldsymbol{\Sigma_{\theta}} + \boldsymbol{J_{\theta}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{\theta}^{T}}}
+
+\eqn{\boldsymbol{J_{\theta}} = \boldsymbol{\Sigma_{\theta Z^{+}}}\boldsymbol{\Sigma^{-1}_{Z^{+}}}}
 }

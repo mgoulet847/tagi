@@ -14,11 +14,12 @@
 #'   \item{region: southeast}{binary (if the insured lives in that region)}
 #'   \item{region: southwest}{binary (if the insured lives in that region)}
 #'   \item{region: northwest}{binary (if the insured lives in that region)}
-#'   \item{charges}{medical costs, in US dollars)}
+#'   \item{charges}{medical costs, in US dollars}
 #' }
 #'
 #' @details The original dataset contains 7 variables, but one-hot encoding was
-#' used on the "region" categorical variable.
+#' used on the "region" categorical variable. It is a dataset that was used in a
+#' Kaggle competition.
 #' @source \url{https://github.com/stedy/Machine-Learning-with-R-datasets/blob/master/insurance.csv}
 "MedicalCost"
 
@@ -57,7 +58,7 @@
 
 #' Inputs used in validation part for 1D toy problem
 #'
-#' The orignal dataset represents a 1D regression problem from (Hernández-Lobato & Adams, 2015):
+#' The orignal dataset represents a 1D regression problem from Hernández-Lobato & Adams (2015):
 #' \eqn{y = x^{3} + \epsilon} where \eqn{\epsilon \sim \mathcal{N}(0,9)} and \eqn{x \in [\,-4,4]\,}. In this dataset, \eqn{x} and \eqn{y} are normalized.
 #'
 #' @format A data frame with 20 rows and 1 variable \eqn{x}
@@ -73,7 +74,7 @@
 
 #' Inputs used in training part for 1D toy problem
 #'
-#' The orignal dataset represents a 1D regression problem from (Hernández-Lobato & Adams, 2015):
+#' The orignal dataset represents a 1D regression problem from Hernández-Lobato & Adams (2015):
 #' \eqn{y = x^{3} + \epsilon} where \eqn{\epsilon \sim \mathcal{N}(0,9)} and \eqn{x \in [\,-4,4]\,}. In this dataset, \eqn{x} and \eqn{y} are normalized.
 #'
 #' @format A data frame with 20 rows and 1 variable \eqn{x}
@@ -89,7 +90,7 @@
 
 #' Responses used in validation part for 1D toy problem
 #'
-#' The orignal dataset represents a 1D regression problem from (Hernández-Lobato & Adams, 2015):
+#' The orignal dataset represents a 1D regression problem from Hernández-Lobato & Adams (2015):
 #' \eqn{y = x^{3} + \epsilon} where \eqn{\epsilon \sim \mathcal{N}(0,9)} and \eqn{x \in [\,-4,4]\,}. In this dataset, \eqn{x} and \eqn{y} are normalized.
 #'
 #' @format A data frame with 20 rows and 1 variable \eqn{y}
@@ -105,7 +106,7 @@
 
 #' Responses used in training part for 1D toy problem
 #'
-#' The orignal dataset represents a 1D regression problem from (Hernández-Lobato & Adams, 2015):
+#' The orignal dataset represents a 1D regression problem from Hernández-Lobato & Adams (2015):
 #' \eqn{y = x^{3} + \epsilon} where \eqn{\epsilon \sim \mathcal{N}(0,9)} and \eqn{x \in [\,-4,4]\,}. In this dataset, \eqn{x} and \eqn{y} are normalized.
 #'
 #' @format A data frame with 20 rows and 1 variable \eqn{y}

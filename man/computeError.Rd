@@ -2,20 +2,20 @@
 % Please edit documentation in R/mt.R
 \name{computeError}
 \alias{computeError}
-\title{Compute Error}
+\title{Compute error}
 \usage{
 computeError(y, ypred)
 }
 \arguments{
-\item{y}{A vector or a matrix of the real y's}
+\item{y}{A vector or a matrix of the real \eqn{y}'s}
 
-\item{ypred}{A vector or a matrix of the predicted y's form the model}
+\item{ypred}{A vector or a matrix of the predicted \eqn{y}'s from the model}
 }
 \value{
-A number which is the RMSE
+RMSE for the given data
 }
 \description{
 This function calculates the Root Mean Square Error (RMSE). It takes as input
-two vectors (or matrices) with one containing the real y's and the other the
-predicted y's from the model.
+two vectors (or matrices) with one containing the real \eqn{y}'s and the other the
+predicted \eqn{y}'s from the model.
 }

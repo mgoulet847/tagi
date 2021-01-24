@@ -7,11 +7,11 @@
 #' @param funName Type of activation function: "tanh", "sigm", "cdf", "relu" or
 #' "softplus"
 #' @return An ID number which corresponds to:
-#' @return - 1 if "tanh"
-#' @return - 2 if "sigm"
-#' @return - 3 if "cdf"
-#' @return - 4 if "relu"
-#' @return - 5 if "softplus"
+#' @return - 1 if \code{funName} is "tanh"
+#' @return - 2 if \code{funName} is "sigm"
+#' @return - 3 if \code{funName} is "cdf"
+#' @return - 4 if \code{funName} is "relu"
+#' @return - 5 if \code{funName} is "softplus"
 #' @export
 activationFunIndex <- function(funName){
   if (funName == "tanh"){
@@ -31,12 +31,12 @@ activationFunIndex <- function(funName){
 #' Calculate mean of activated units
 #'
 #' This function uses lineratization to estimate the activation units mean vector
-#' and the Jacobian matrix evaluated at mz.
+#' \eqn{\mu_{A}} and the Jacobian matrix evaluated at \eqn{\mu_{Z}}.
 #'
 #' @param z Vector of units for the current layer
-#' @param mz Mean vector of the units for the current layer
+#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
 #' @param funIdx Activation function index defined by \code{\link{activationFunIndex}}
-#' @return A list that contains the activation units mean vector and the Jacobian
+#' @return A list that contains the activation units mean vector \eqn{\mu_{A}} and the Jacobian
 #' matrix evaluated at \eqn{\mu_{Z}}
 #' @export
 meanA <- function(z, mz, funIdx){
@@ -70,11 +70,11 @@ meanA <- function(z, mz, funIdx){
 
 #' Calculate variance of activated units
 #'
-#' This function uses lineratization to estimate the activation units variance.
+#' This function uses lineratization to estimate the covariance matrix of activation units \eqn{\Sigma_{A}}.
 #'
-#' @param J Jacobian matrix evaluated at \eqn{\mu_{z}}
-#' @param Sz Covariance matrix of the units for the current layer
-#' @return The activation units variance vector
+#' @param J Jacobian matrix evaluated at \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @return The activation units variance vector \eqn{\Sigma_{A}}
 #' @export
 covarianceSa <- function(J, Sz){
   Sa = J * Sz * J

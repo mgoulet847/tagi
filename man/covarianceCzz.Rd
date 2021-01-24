@@ -7,17 +7,17 @@
 covarianceCzz(mp, Sz, J, idxCawa)
 }
 \arguments{
-\item{mp}{Mean vector of the parameters for the current layer}
+\item{mp}{Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}}
 
-\item{Sz}{Covariance matrix of the units for the current layer}
+\item{Sz}{Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}}
 
-\item{J}{Jacobian matrix evaluated at \eqn{\mu_{z}}}
+\item{J}{Jacobian matrix evaluated at \eqn{\mu_{Z}}}
 
 \item{idxCawa}{List that contains the indices for weights and for activation
 units for the current and previous layers respectively}
 }
 \value{
-Covariance matrix between units of the previous and current layers
+Covariance matrix between units of the previous and current layers \eqn{\Sigma_{ZZ^{+}}}
 }
 \description{
 This function calculate the covariance matrix between units of the previous

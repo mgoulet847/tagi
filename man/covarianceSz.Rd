@@ -21,7 +21,7 @@ units for the current and previous layers respectively}
 \item{idxFSwaFb}{Indices for biases of the current layer}
 }
 \value{
-Covariance matrix of units for the current layer
+Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 }
 \description{
 This function calculate the covariance matrix of the units \eqn{\Sigma_{Z}} for a given layer.

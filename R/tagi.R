@@ -4,18 +4,18 @@
 #' using TAGI.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param mp List that contains mean vectors of the parameters for each layer
-#' @param Sp List that contains covariance matrices of the
+#' @param mp List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}
+#' @param Sp List that contains covariance matrices of the \eqn{\Sigma_{\theta}}
 #' parameters for each layer
 #' @param x Set of input data
 #' @param y Set of corresponding responses
 #' @return A list that contains:
-#' @return - mp: List that contains the updated mean vectors of the parameters
-#' for each layer
-#' @return - Sp: List that contains the updated covariance matrices of the
-#' parameters for each layer
-#' @return - zn: Predicted responses
-#' @return - Szn: Variance vector of predicted responses
+#' @return - \code{mp}: List that contains the updated mean vectors of the parameters
+#' for each layer \eqn{\mu_{\theta}}
+#' @return - \code{Sp}: List that contains the updated covariance matrices of the
+#' parameters for each layer \eqn{\Sigma_{\theta}}
+#' @return - \code{zn}: Predicted responses
+#' @return - \code{Szn}: Variance vector of predicted responses
 #' @export
 network <- function(NN, mp, Sp, x, y){
   # Initialization
@@ -69,21 +69,21 @@ network <- function(NN, mp, Sp, x, y){
 #' responses.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param mp List that contains mean vectors of the parameters for each layer
+#' @param mp List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}
 #' @param Sp List that contains covariance matrices of the
-#' parameters for each layer
+#' parameters for each layer \eqn{\Sigma_{\theta}}
 #' @param x Set of input data
 #' @return A list that contains:
-#' @return - mz: List that contains the mean vectors of the units
-#' for each layer
-#' @return - Sz: List that contains the covariance matrices of the
-#' units for each layer
-#' @return - Czw: List that contains the covariance matrices between
-#' units and weights for each layer
-#' @return - Czb: List that contains the covariance matrices between
-#' units and biases for each layer
-#' @return - Czz: List that contains the covariance matrices between
-#' previous and current units for each layer
+#' @return - \code{mz}: List that contains the mean vectors of the units
+#' for each layer \eqn{\mu_{Z}}
+#' @return - \code{Sz}: List that contains the covariance matrices of the
+#' units for each layer \eqn{\Sigma_{Z}}
+#' @return - \code{Czw}: List that contains the covariance matrices between
+#' units and weights for each layer \eqn{\Sigma_{ZW}}
+#' @return - \code{Czb}: List that contains the covariance matrices between
+#' units and biases for each layer \eqn{\Sigma_{ZB}}
+#' @return - \code{Czz}: List that contains the covariance matrices between
+#' previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
 #' @export
 feedForward <- function(NN, x, mp, Sp){
 
@@ -152,24 +152,26 @@ feedForward <- function(NN, x, mp, Sp){
 #' This function feeds the neural network backward from responses to input data.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param mp List that contains mean vectors of the parameters for each layer
+#' @param mp List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}
 #' @param Sp List that contains covariance matrices of the
-#' parameters for each layer
+#' parameters for each layer \eqn{\Sigma_{\theta}}
 #' @param mz List that contains the mean vectors of the units
-#' for each layer
+#' for each layer \eqn{\mu_{Z}}
 #' @param Sz List that contains the covariance matrices of the
-#' units for each layer
+#' units for each layer \eqn{\Sigma_{Z}}
 #' @param Czw List that contains the covariance matrices between
-#' units and weights for each layer
+#' units and weights for each layer \eqn{\Sigma_{ZW}}
 #' @param Czb List that contains the covariance matrices between
-#' units and biases for each layer
+#' units and biases for each layer \eqn{\Sigma_{ZB}}
 #' @param Czz List that contains the covariance matrices between units of the
-#' previous and current layers for each layer
+#' previous and current layers for each layer \eqn{\Sigma_{ZZ^{+}}}
+#' @seealso \code{\link{backwardHiddenStateUpdate}},
+#' \code{\link{backwardParameterUpdate}}, \code{\link{forwardHiddenStateUpdate}}
 #' @param y A vector or a matrix of responses
 #' @return A list that contains:
-#' @return - mpUd: List that contains the updated mean vectors of the parameters
+#' @return - List that contains the updated mean vectors of the parameters
 #' for each layer
-#' @return - SpUd: List that contains the updated covariance matrices of the
+#' @return - List that contains the updated covariance matrices of the
 #' parameters for each layer
 #' @export
 feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
@@ -187,9 +189,9 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
   # Update hidden states for the last hidden layer
   R = matrix(sv^2, nrow = NN$batchSize, ncol = 1)
   Szv = Sz[[lHL + 1]] + R
-  out_fowardHiddenStateUpdate = fowardHiddenStateUpdate(mz[[lHL+1]], Sz[[lHL+1]], mz[[lHL+1]], Szv, Sz[[lHL+1]], y)
-  mzUd[[lHL+1]] = out_fowardHiddenStateUpdate[[1]]
-  SzUd[[lHL+1]] = out_fowardHiddenStateUpdate[[2]]
+  out_forwardHiddenStateUpdate = forwardHiddenStateUpdate(mz[[lHL+1]], Sz[[lHL+1]], mz[[lHL+1]], Szv, Sz[[lHL+1]], y)
+  mzUd[[lHL+1]] = out_forwardHiddenStateUpdate[[1]]
+  SzUd[[lHL+1]] = out_forwardHiddenStateUpdate[[2]]
 
   for (k in (numLayers-1):1){
     # Update parameters
@@ -218,7 +220,7 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
 #' @param idxFmwa List that contains the indices for weights and for activation
 #' units for the current and previous layers respectively
 #' @param idxFmwab Indices for biases of the current layer
-#' @return Mean vector of the units for the current layer
+#' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
 #' @export
 meanMz <- function(mp, ma, idxFmwa, idxFmwab){
   # mp is the mean of parameters for the current layer
@@ -256,7 +258,7 @@ meanMz <- function(mp, ma, idxFmwa, idxFmwab){
 #' @param idxFSwaF List that contains the indices for weights and for activation
 #' units for the current and previous layers respectively
 #' @param idxFSwaFb Indices for biases of the current layer
-#' @return Covariance matrix of units for the current layer
+#' @return Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 #' @export
 covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
   # mp is the mean of parameters for the current layer
@@ -296,14 +298,14 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
 #' This function calculate the covariance matrices between units and parameters
 #' \eqn{\Sigma_{ZW}} and \eqn{\Sigma_{ZB}} for a given layer.
 #'
-#' @param ma Mean vector of the activation units from previous layer
-#' @param Sp Covariance matrix of the parameters for the current layer
+#' @param ma Mean vector of the activation units from previous layer \eqn{\mu_{A}}
+#' @param Sp Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}
 #' @param idxFCwwa List that contains the indices for weights and for activation
 #' units for the current and previous layers respectively
 #' @param idxFCb Indices for biases of the current layer
 #' @return A list that contains:
-#' @return - Covariance matrix between units and biases for the current layer
-#' @return - Covariance matrix between units and weights for the current layer
+#' @return - Covariance matrix between units and biases for the current layer \eqn{\Sigma_{ZB}}
+#' @return - Covariance matrix between units and weights for the current layer \eqn{\Sigma_{ZW}}
 #' @export
 covarianceCzp <- function(ma, Sp, idxFCwwa, idxFCb) {
   # ma is the mean of activation unit (a) from previous layer
@@ -330,12 +332,12 @@ covarianceCzp <- function(ma, Sp, idxFCwwa, idxFCb) {
 #' This function calculate the covariance matrix between units of the previous
 #' and current layers \eqn{\Sigma_{ZZ^{+}}} for a given layer.
 #'
-#' @param mp Mean vector of the parameters for the current layer
-#' @param Sz Covariance matrix of the units for the current layer
-#' @param J Jacobian matrix evaluated at \eqn{\mu_{z}}
+#' @param mp Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}
+#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param J Jacobian matrix evaluated at \eqn{\mu_{Z}}
 #' @param idxCawa List that contains the indices for weights and for activation
 #' units for the current and previous layers respectively
-#' @return Covariance matrix between units of the previous and current layers
+#' @return Covariance matrix between units of the previous and current layers \eqn{\Sigma_{ZZ^{+}}}
 #' @export
 covarianceCzz <- function(mp, Sz, J, idxCawa) {
 
@@ -355,18 +357,22 @@ covarianceCzz <- function(mp, Sz, J, idxCawa) {
 #' \eqn{\mu_{\theta|y}} and \eqn{\Sigma_{\theta|y}} from the \eqn{\theta|y}
 #' distribution for a given layer.
 #'
-#' @param mp Mean vector of the parameters for the current layer
-#' @param Sp Covariance matrix of the parameters for the current layer
-#' @param mzF Mean vector of the units for the next layer
-#' @param SzF Covariance matrix of the units for the next layer
-#' @param SzB Updated covariance matrix of the units for the next layer
-#' @param Czp Covariance matrix between units and parameters for the current layer
-#' @param mzB Updated mean vector of the units for the next layer
+#' @param mp Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}
+#' @param Sp Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}
+#' @param mzF Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}
+#' @param SzF Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}
+#' @param SzB Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}
+#' @param Czp Covariance matrix between units and parameters for the current layer \eqn{\Sigma_{\theta Z^{+}}}
+#' @param mzB Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}
 #' @param idx List that contains the indices for the parameter update step of
 #' the current layer
+#' @details \eqn{f(\boldsymbol{\theta}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{\theta};\boldsymbol{\mu_{\theta|y}},\boldsymbol{\Sigma_{\theta|y}})} where
+#' @details \eqn{\boldsymbol{\mu_{\theta|y}} =\boldsymbol{\mu_{\theta}} + \boldsymbol{J_{\theta}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
+#' @details \eqn{\boldsymbol{\Sigma_{\theta|y}} = \boldsymbol{\Sigma_{\theta}} + \boldsymbol{J_{\theta}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{\theta}^{T}}}
+#' @details \eqn{\boldsymbol{J_{\theta}} = \boldsymbol{\Sigma_{\theta Z^{+}}}\boldsymbol{\Sigma^{-1}_{Z^{+}}}}
 #' @return A list that contains:
-#' @return - Updated mean vector of the parameters for the current layer
-#' @return - Updated covariance matrix of the parameters for the current layer
+#' @return - Mean vector of the parameters for the current layer given \eqn{y} \eqn{\mu_{\theta|y}}
+#' @return - Covariance matrix of the parameters for the current layer given \eqn{y} \eqn{\Sigma_{\theta|y}}
 #' @export
 backwardParameterUpdate <- function(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx){
   dz = mzB - mzF
@@ -388,21 +394,25 @@ backwardParameterUpdate <- function(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx){
 #' Backward hidden states update
 #'
 #' This function updates hidden units from responses to input data. It updates
-#' \eqn{\mu_{z|y}} and \eqn{\Sigma_{z|y}} from the \eqn{z|y}
+#' \eqn{\mu_{Z|y}} and \eqn{\Sigma_{Z|y}} from the \eqn{Z|y}
 #' distribution for a given layer.
 #'
-#' @param mz Mean vector of the units for the current layer
-#' @param Sz Covariance matrix of the units for the current layer
-#' @param mzF Mean vector of the units for the next layer
-#' @param SzF Covariance matrix of the units for the next layer
-#' @param SzB Updated covariance matrix of the units for the next layer
-#' @param Czz Covariance matrix between units of the previous and currents layers
-#' @param mzB Updated mean vector of the units for the next layer
+#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param mzF Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}
+#' @param SzF Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}
+#' @param SzB Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}
+#' @param Czz Covariance matrix between units of the previous and currents layers \eqn{\Sigma_{ZZ^{+}}}
+#' @param mzB Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}
 #' @param idx List that contains the indices for the hidden state update step of
 #' the current layer
+#' @details \eqn{f(\boldsymbol{z}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z};\boldsymbol{\mu_{Z|y}},\boldsymbol{\Sigma_{Z|y}})} where
+#' @details \eqn{\boldsymbol{\mu_{Z|y}} = \boldsymbol{\mu_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
+#' @details \eqn{\boldsymbol{\Sigma_{Z|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{Z}^{T}}}
+#' @details \eqn{\boldsymbol{J_{Z}} = \boldsymbol{\Sigma_{Z Z^{+}}}\boldsymbol{\Sigma^{-1}_{Z^{+}}}}
 #' @return A list that contains:
-#' @return - Updated mean vector of the units for the current layer
-#' @return - Updated covariance matrix of the units for the current layer
+#' @return - Mean vector of the units for the current layer given \eqn{y} \eqn{\mu_{Z|y}}
+#' @return - Covariance matrix of the units for the current layer given \eqn{y} \eqn{\Sigma_{Z|y}}
 #' @export
 backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
   dz = mzB - mzF
@@ -424,20 +434,23 @@ backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
 #' Last hidden layer states update
 #'
 #' This function updates last hidden layer units using responses. It updates
-#' \eqn{\mu_{z^{(0)}|y}} and \eqn{\Sigma_{z^{(0)}|y}} from the \eqn{z^{(0)}|y}
+#' \eqn{\mu_{Z^{(0)}|y}} and \eqn{\Sigma_{Z^{(0)}|y}} from the \eqn{Z^{(0)}|y}
 #' distribution.
 #'
-#' @param mz Mean vector of the units for the output layer
-#' @param Sz Covariance matrix of the units for the output layer
-#' @param mzF Mean vector of the units for the output layer
-#' @param SzF Covariance matrix of the units for the output layer
-#' @param Cyz Covariance matrix between last hidden layer units and responses
+#' @param mz Mean vector of the units for the last hidden layer \eqn{\mu_{X^{(0)}}}
+#' @param Sz Covariance matrix of the units for the last hidden layer \eqn{\Sigma_{Z^{(0)}}}
+#' @param mzF Mean vector of the units for the output layer \eqn{\mu_{y}}
+#' @param SzF Covariance matrix of the units for the output layer \eqn{\Sigma_{y}}
+#' @param Cyz Covariance matrix between last hidden layer units and responses \eqn{\Sigma_{YZ^{(0)}}}
 #' @param y Response data
+#' @details \eqn{f(\boldsymbol{z}^{(0)}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z}^{(0)};\boldsymbol{\mu_{Z^{(0)}|y}},\boldsymbol{\Sigma_{Z^{(0)}|y}})} where
+#' @details \eqn{\boldsymbol{\mu_{{Z}^{(0)}|y}} = \boldsymbol{\mu_{Z^{(0)}}} + \boldsymbol{\Sigma_{YZ^{(0)}}^{T}}\boldsymbol{\Sigma^{-1}_{Y}}(\boldsymbol{y} - \boldsymbol{\mu_{Y}})}
+#' @details \eqn{\boldsymbol{\Sigma_{{Z}^{(0)}|y}} = \boldsymbol{\Sigma_{Z^{(0)}}} - \boldsymbol{\Sigma_{YZ^{(0)}}^{T}}\boldsymbol{\Sigma^{-1}_{Y}}\boldsymbol{\Sigma_{YZ^{(0)}}}}
 #' @return A list that contains:
-#' @return - Updated mean vector of the last hidden layer units
-#' @return - Updated covariance matrix of the last hidden layer units
+#' @return - Mean vector of the last hidden layer units given \eqn{y} \eqn{\mu_{Z^{(0)}|y}}
+#' @return - Covariance matrix of the last hidden layer units given \eqn{y} \eqn{\Sigma_{Z^{(0)}|y}}
 #' @export
-fowardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
+forwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
   dz = y - mzF
   SzF = 1 / SzF
   K = Cyz * SzF

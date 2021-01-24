@@ -11,37 +11,37 @@ feedForward(NN, x, mp, Sp)
 
 \item{x}{Set of input data}
 
-\item{mp}{List that contains mean vectors of the parameters for each layer}
+\item{mp}{List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}}
 
 \item{Sp}{List that contains covariance matrices of the
-parameters for each layer}
+parameters for each layer \eqn{\Sigma_{\theta}}}
 }
 \value{
 A list that contains:
 
 \itemize{
-\item mz: List that contains the mean vectors of the units
-for each layer
+\item \code{mz}: List that contains the mean vectors of the units
+for each layer \eqn{\mu_{Z}}
 }
 
 \itemize{
-\item Sz: List that contains the covariance matrices of the
-units for each layer
+\item \code{Sz}: List that contains the covariance matrices of the
+units for each layer \eqn{\Sigma_{Z}}
 }
 
 \itemize{
-\item Czw: List that contains the covariance matrices between
-units and weights for each layer
+\item \code{Czw}: List that contains the covariance matrices between
+units and weights for each layer \eqn{\Sigma_{ZW}}
 }
 
 \itemize{
-\item Czb: List that contains the covariance matrices between
-units and biases for each layer
+\item \code{Czb}: List that contains the covariance matrices between
+units and biases for each layer \eqn{\Sigma_{ZB}}
 }
 
 \itemize{
-\item Czz: List that contains the covariance matrices between
-previous and current units for each layer
+\item \code{Czz}: List that contains the covariance matrices between
+previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
 }
 }
 \description{

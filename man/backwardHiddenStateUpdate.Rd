@@ -7,19 +7,19 @@
 backwardHiddenStateUpdate(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx)
 }
 \arguments{
-\item{mz}{Mean vector of the units for the current layer}
+\item{mz}{Mean vector of the units for the current layer \eqn{\mu_{Z}}}
 
-\item{Sz}{Covariance matrix of the units for the current layer}
+\item{Sz}{Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}}
 
-\item{mzF}{Mean vector of the units for the next layer}
+\item{mzF}{Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}}
 
-\item{SzF}{Covariance matrix of the units for the next layer}
+\item{SzF}{Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}}
 
-\item{SzB}{Updated covariance matrix of the units for the next layer}
+\item{SzB}{Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}}
 
-\item{Czz}{Covariance matrix between units of the previous and currents layers}
+\item{Czz}{Covariance matrix between units of the previous and currents layers \eqn{\Sigma_{ZZ^{+}}}}
 
-\item{mzB}{Updated mean vector of the units for the next layer}
+\item{mzB}{Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}}
 
 \item{idx}{List that contains the indices for the hidden state update step of
 the current layer}
@@ -28,15 +28,24 @@ the current layer}
 A list that contains:
 
 \itemize{
-\item Updated mean vector of the units for the current layer
+\item Mean vector of the units for the current layer given \eqn{y} \eqn{\mu_{Z|y}}
 }
 
 \itemize{
-\item Updated covariance matrix of the units for the current layer
+\item Covariance matrix of the units for the current layer given \eqn{y} \eqn{\Sigma_{Z|y}}
 }
 }
 \description{
 This function updates hidden units from responses to input data. It updates
-\eqn{\mu_{z|y}} and \eqn{\Sigma_{z|y}} from the \eqn{z|y}
+\eqn{\mu_{Z|y}} and \eqn{\Sigma_{Z|y}} from the \eqn{Z|y}
 distribution for a given layer.
+}
+\details{
+\eqn{f(\boldsymbol{z}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z};\boldsymbol{\mu_{Z|y}},\boldsymbol{\Sigma_{Z|y}})} where
+
+\eqn{\boldsymbol{\mu_{Z|y}} = \boldsymbol{\mu_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
+
+\eqn{\boldsymbol{\Sigma_{Z|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{Z}^{T}}}
+
+\eqn{\boldsymbol{J_{Z}} = \boldsymbol{\Sigma_{Z Z^{+}}}\boldsymbol{\Sigma^{-1}_{Z^{+}}}}
 }
