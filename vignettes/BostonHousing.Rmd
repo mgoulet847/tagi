@@ -72,17 +72,10 @@ NN <- list(
   "nodes" = c(nx, 50, ny), # Number of nodes for each layer
   "sx" = NULL, # Input standard deviation
   "sv" = 0.32 * matrix(1L, nrow = 1, ncol = ny), # Observations standard deviation
-  "maxEpoch" = 40, # maximal number of learnign epoch
+  "maxEpoch" = 40, # maximal number of learning epoch
   "hiddenLayerActivation" = "relu", # Activation function for hidden layer {'tanh','sigm','cdf','relu','softplus'}
   "outputActivation" = "linear", # Activation function for hidden layer {'linear', 'tanh','sigm','cdf','relu'}
-
-  # Optimize hyperparameters?
-  "optsv" = 0, # Observation noise sv 1: yes; 0: no
-  "optNumEpochs" = 0, # Number of epochs 1: yes; 0: no
-  "numEpochs" = 0, # Number of searching epochs
-  "numFolds" = 5, # Number of Folds for cross-validation
   "ratio" = 0.8, # Ratio between training set and validation set
-
   "numSplits" = 20, # Number of splits
   "task" = "regression" # Task regression or classification
 )

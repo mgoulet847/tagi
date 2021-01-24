@@ -73,14 +73,7 @@ NN <- list(
   "maxEpoch" = 40, # maximal number of learning epoch
   "hiddenLayerActivation" = "relu", # Activation function for hidden layer {'tanh','sigm','cdf','relu','softplus'}
   "outputActivation" = "linear", # Activation function for hidden layer {'linear', 'tanh','sigm','cdf','relu'}
-
-  # Optimize hyperparameters?
-  #"optsv" = 0, # Observation noise sv 1: yes; 0: no
-  #"optNumEpochs" = 0, # Number of epochs 1: yes; 0: no
-  #"numEpochs" = 0, # Number of searching epochs
-  #"numFolds" = 0, # Number of Folds for cross-validation
   "ratio" = 0.8, # Ratio between training set and validation set
-
   "numSplits" = 20, # Number of splits
   "task" = "regression" # Task regression or classification
 )
@@ -109,6 +102,7 @@ time = out_regression[[4]]
 Results
 ```{r}
 cat(sprintf("Average RMSE: %s +- %s", mean(metric[["RMSElist"]]), sd(metric[["RMSElist"]])))
+cat(sprintf("Average LL: %s +- %s", mean(metric[["LLlist"]]), sd(metric[["LLlist"]])))
 ```
 
 Extreme Gradient Boosting
