@@ -3,9 +3,9 @@ Title: Tractable Approximate Gaussian Inference in Neural Networks
 Version: 0.0.0.9000
 Authors@R: 
     person("Magali-Chen", "Goulet", role = c("aut", "cre"), email = "magali.goulet@hotmail.com")
-    person("Mélina", "Mailhot", role = c("aut", "cre"), email = "magali.goulet@hotmail.com")
-    person("James-Alexandre", "Goulet", role = c("aut", "cre"), email = "magali.goulet@hotmail.com")
-    person("Luong-Ha", "Nguyen", role = c("aut", "cre"), email = "magali.goulet@hotmail.com")
+    person("Mélina", "Mailhot", role = c("aut", "cre"), email = "melina.mailhot@concordia.ca")
+    person("James-Alexandre", "Goulet", role = c("aut", "cre"), email = "      ")
+    person("Luong-Ha", "Nguyen", role = c("aut", "cre"), email = "      ")
 Description: In this package, we implement the Tractable Approximate Gaussian Inference (TAGI) 
     is a method developped by Goulet et al. (2020), 
     used in Bayesian neural networks.
