@@ -2,7 +2,7 @@
 #'
 #' This function trains neural network models to solve a regression problem.
 #'
-#' @param NN List that contains the structure of the neural network
+#' @param NN Lists the structure of the neural network
 #' @param x Set of input data
 #' @param y Set of corresponding responses
 #' @param trainIdx Observations IDs that are assigned to the training set
