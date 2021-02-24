@@ -213,7 +213,7 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
 
 #' Mean vector of units
 #'
-#' This function calculate the mean vector of the units \eqn{\mu_{Z}} for a given layer.
+#' This function calculate the mean vector of units \eqn{\mu_{Z}} for a given layer.
 #'
 #' @param mp Mean vector of the parameters for the current layer
 #' @param ma Mean vector of the activation units from previous layer
