@@ -7,7 +7,7 @@
 regression(NN, x, y, trainIdx, testIdx)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
 \item{x}{Set of input data}
 

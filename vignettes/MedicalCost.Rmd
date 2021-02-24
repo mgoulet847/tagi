@@ -1,5 +1,7 @@
 ---
 title: "Medical Cost"
+author: "Magali-Chen Goulet"
+date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{MedicalCost}

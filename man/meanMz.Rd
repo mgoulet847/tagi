@@ -20,5 +20,5 @@ units for the current and previous layers respectively}
 Mean vector of the units for the current layer \eqn{\mu_{Z}}
 }
 \description{
-This function calculate the mean vector of the units \eqn{\mu_{Z}} for a given layer.
+This function calculate the mean vector of units \eqn{\mu_{Z}} for a given layer.
 }
