@@ -34,7 +34,7 @@ require(randtoolbox)
 Data
 ------------
 
-Bh contains 506 rows and 14 variables.
+BH contains 506 rows and 14 variables.
 
 ```{r, results='hide'}
 data(BH, package = 'tagi')
