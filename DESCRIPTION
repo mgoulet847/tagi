@@ -4,7 +4,6 @@ Version: 0.0.0.9000
 Author: Magali-Chen Goulet [aut, cre],
     Mélina Mailhot [aut],
     James-Alexandre Goulet [aut],
-    Luong-Ha Nguyen [aut]
 Maintainer: Magali-Chen Goulet <mag_goul@live.concordia.ca>
 Description: In this package, we implement the Tractable Approximate Gaussian Inference (TAGI) 
     is a method developped by Goulet et al. (2020), 
