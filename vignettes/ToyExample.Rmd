@@ -58,6 +58,7 @@ Then, define the neural network properties, such as the number of epochs, activa
 nx <- ncol(ToyExample.x_obs)
 ny <- ncol(ToyExample.y_obs)
 
+# Specific to the network we want to build
 NN <- list(
   "nx" = nx, # Number of input covariates
   "ny" = ny, # Number of output responses
@@ -71,6 +72,9 @@ NN <- list(
   "dropWeight" = 1, # Weight percentage being set to 0
   "trainMode" = 1
 )
+
+# Add general components to NN
+NN <- initialization_net(NN)
 ```
 
 Next, initialize weights and biases and parameters for the training set.

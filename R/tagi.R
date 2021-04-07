@@ -549,3 +549,83 @@ initializeWeightBias <- function(NN){
   outputs <- list(mp, Sp)
   return(outputs)
 }
+
+#' States Initialization
+#'
+#' Initiliazes neural network states.
+#'
+#' @param nodes Vector that contains the number of nodes at each layer
+#' @param B Batch size
+#' @param rB Number of times batch size is repeated
+#' @param xsc TBD
+#' @return states States of the neural network
+#' @export
+initializeStates <- function(nodes, B, rB, xsc){
+  # Normal network
+  numLayers = length(nodes)
+  mz <- createStateCellarray(nodes, numLayers, B, rB)
+  Sz = mz
+  ma = mz
+  Sa = mz
+  J = mz
+  # Residual network
+  idx = ifelse(xsc, no = 0)
+  mdxs = matrix(list(), nrow = numLayers, ncol = 1)
+  for (i in 1:numLayers){
+    if (idx[i] == 1){
+      mdxs[[i, 1]] = mz[[i, 1]]
+    }
+  }
+  Sdxs = mdxs
+  mxs = mdxs
+  Sxs = mdxs
+  states = compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
+  return(states)
+}
+
+#' States Initialization (Zero-Matrices)
+#'
+#' Initiliazes neural network states at 0.
+#'
+#' @param nodes Vector that contains the number of nodes at each layer
+#' @param numLayers Number of layers in the neural network
+#' @param B Batch size
+#' @param rB Number of times batch size is repeated
+#' @return mz Zero-matrices for each layer
+#' @export
+createStateCellarray <- function(nodes, numLayers, B, rB){
+  z = matrix(list(), nrow = numLayers, ncol = 1)
+  for (j in 2:numLayers){
+    z[[j, 1]] = matrix(0, nrow = nodes[j]*B, ncol = rB)
+  }
+  return(z)
+}
+
+#' Compress States
+#'
+#' Put together states into a list of states.
+#'
+#' @param mz TBD
+#' @param Sz TBD
+#' @param ma TBD
+#' @param Sa TBD
+#' @param J TBD
+#' @param mdxs TBD
+#' @param Sdxs TBD
+#' @param mxs TBD
+#' @param Sxs TBD
+#' @return states List of states
+#' @export
+compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
+  states = matrix(list(), nrow = 9, ncol = 1)
+  states[[1, 1]] = mz
+  states[[2, 1]] = Sz
+  states[[3, 1]] = ma
+  states[[4, 1]] = Sa
+  states[[5, 1]] = J
+  states[[6, 1]] = mdxs
+  states[[7, 1]] = Sdxs
+  states[[8, 1]] = mxs
+  states[[9, 1]] = Sxs
+  return(states)
+}

@@ -1,3 +1,135 @@
+#' Network initialization
+#'
+#' Verify and add components to the neural network structure.
+#'
+#' @param NN List that contains the structure of the neural network
+#' @return NN with all required components
+#' @export
+initialization_net <- function(NN){
+  if (!any(NN$layer %in% NN)){
+    NN$layer = rep(1, length(NN$nodes))
+  }
+  numLayers = length(NN$layer)
+  if (!any(NN$task %in% NN)){
+    NN$task = "regression"
+  }
+  if (NN$task %in% c("classification", "regression")){
+    if (!any(NN$filter %in% NN)){
+      NN$filter = rep(0, numLayers)
+    }
+    if (!any(NN$kernelSize %in% NN)){
+      NN$kernelSize = rep(0, numLayers)
+    }
+    if (!any(NN$padding %in% NN)){
+      NN$padding = rep(0, numLayers)
+    }
+    if (!any(NN$paddingType %in% NN)){
+      NN$paddingType = rep(0, numLayers)
+    }
+    if (!any(NN$stride %in% NN)){
+      NN$stride = rep(0, numLayers)
+    }
+    if (!any(NN$actFunIdx %in% NN)){
+      NN$actFunIdx = rep(0, numLayers)
+    }
+    if (!any(NN$xsc %in% NN)){
+      NN$xsc = rep(0, numLayers)
+    }
+    if (!any(NN$imgH %in% NN)){
+      NN$imgH = rep(0, numLayers)
+      if (any(NN$imgSize %in% NN)){
+        NN$imgH[1] = NN$imgSize[1]
+      }
+    }
+    if (!any(NN$obsShow %in% NN)){
+      NN$obsShow = 10000
+    }
+    if (!any(NN$epsilon %in% NN)){
+      NN$epsilon = 0.0001
+    }
+    if (!any(NN$normMomentum %in% NN)){
+      NN$normMomentum = 0.9
+    }
+    if (!any(NN$da %in% NN)){
+      da <- list(enable = 0, p = 0.5, types = NULL)
+      NN$da <- da
+    }
+    if (!any(NN$svDecayFactor %in% NN)){
+      NN$svDecayFactor = 0.8
+    }
+    if (!any(NN$svmin %in% NN)){
+      NN$svmin = 0
+    }
+    if (!any(NN$earlyStop %in% NN)){
+      NN$earlyStop = 0
+    }
+    if (!any(NN$displayMode %in% NN)){
+      NN$displayMode = 1
+    }
+    if (!any(NN$errorRateEval %in% NN)){
+      NN$errorRateEval = 1
+    }
+    if (!any(NN$numDevices %in% NN)){
+      NN$numDevices = 1
+    }
+  }
+  if (!any(NN$collectDev %in% NN)){
+    NN$collectDev = 0
+  }
+  if (!any(NN$initParamType %in% NN)){
+    NN$initParamType = "Xavier"
+  }
+  if (!any(NN$gainM %in% NN)){
+    NN$gainM = rep(1, numLayers - 1)
+  }
+  if (!any(NN$gainS %in% NN)){
+    if (NN$initParamType == "Xavier"){
+      NN$gainS = rep(1, numLayers - 1)
+    }
+    else if (NN$initParamType == "He"){
+      NN$gainS = rep(2, numLayers - 1)
+    }
+  }
+  if (!any(NN$maxEpoch %in% NN)){
+    NN$maxEpoch = 10
+  }
+  if (!any(NN$convariateEstm %in% NN)){
+    NN$convariateEstm = 0
+  }
+  if (!any(NN$learnSv %in% NN)){
+    NN$learnSv = 0
+  }
+  if (!any(NN$imgSize %in% NN)){
+    NN$imgSize = rep(0, numLayers - 1)
+  }
+  if (!any(NN$savedEpoch %in% NN)){
+    NN$savedEpoch = 0
+  }
+  if (!any(NN$learningRateSchedule %in% NN)){
+    NN$learningRateSchedule = 0
+  }
+  if (!any(NN$scheduleSv %in% NN)){
+    NN$scheduleSv = 0
+  }
+  if (!any(NN$lastLayerUpdate %in% NN)){
+    NN$lastLayerUpdate = 1
+  }
+  NN <- NN
+}
+
+#' Layer Encoder
+#'
+#' Add layer encoder to the neural network structure.
+#'
+#' @param NN List that contains the structure of the neural network
+#' @return NN with layer encoder
+#' @export
+layerEncoder <- function(NN){
+  layerEncoder <- list("fc" = 1)
+  NN$layerEncoder <- layerEncoder
+  NN <- NN
+}
+
 #' Indices for biases and weights
 #'
 #' This function assigns indices for all weights and biases in
@@ -22,25 +154,62 @@
 parameters <- function(NN){
   # Initialization
   nodes = NN$nodes
+  layer = NN$layer
   numLayers = length(nodes)
   # Bias
   idxb = matrix(list(), nrow = numLayers - 1, ncol = 1)
   # Weights
   idxw = matrix(list(), nrow = numLayers - 1, ncol = 1)
+  idxwXsc = matrix(list(), nrow = numLayers - 1, ncol = 1)
+  idxbXsc = matrix(list(), nrow = numLayers - 1, ncol = 1)
   # Bias and Weights
   idxbw = matrix(list(), nrow = numLayers - 1, ncol = 1)
+  # Total number of parameters
+  numParams = matrix(list(), nrow = numLayers - 1, ncol = 1)
+  numParamsPerLayer = matrix(1, numLayers, numLayers - 1)
+  totalNumParams = 0
 
   for (j in 1:(numLayers - 1)){
-    numParams = nodes[j+1] + nodes[j+1] * nodes[j]
-    idxbw[[j, 1]] = matrix(1:numParams, 1, numParams)
-    idxb[[j, 1]] = matrix(idxbw[[j, 1]][1, 1:(nodes[j+1])], nrow = nodes[j+1], ncol = 1)
-    idxw[[j, 1]] = matrix(idxbw[[j, 1]][1, ((nodes[j+1]) + 1):numParams], nrow = (numParams - nodes[j+1]), ncol = 1)
+    numParams[[j, 1]] = nodes[j+1] + nodes[j+1] * nodes[j]
+    if ((NN$collectDev >= 1) & (layer[j+1] == 1)){
+      idxb[[j, 1]] = matrix(1:(nodes[j+1]), nrow = nodes[j+1], ncol = 1)
+      idxw[[j, 1]] = matrix(1:(nodes[j+1] * nodes[j]), nrow = nodes[j+1] * nodes[j], ncol = 1)
+
+      if (!(is.null(idxw[[j, 1]]))){
+        numParamsPerLayer[1,j] = nrow(idxw[[j, 1]])
+      }
+
+      if (!(is.null(idxb[[j, 1]]))){
+        numParamsPerLayer[2,j] = nrow(idxb[[j, 1]])
+      }
+
+      if (!(is.null(numParams[[j, 1]]))){
+        totalNumParams = totalNumParams + numParams[[j, 1]]
+      }
+
+    } else {
+      idxbw[[j, 1]] = matrix(1:numParams[[j, 1]], 1, numParams[[j, 1]])
+      idxb[[j, 1]] = matrix(idxbw[[j, 1]][1, 1:(nodes[j+1])], nrow = nodes[j+1], ncol = 1)
+      idxw[[j, 1]] = matrix(idxbw[[j, 1]][1, ((nodes[j+1]) + 1):numParams[[j, 1]]], nrow = (numParams[[j, 1]] - nodes[j+1]), ncol = 1)
+    }
   }
+
+  numParamsPerLayer_2 = cbind(matrix(0, nrow(numParamsPerLayer), 1), numParamsPerLayer)
+  numParamsPerLayer_2 = t(apply(numParamsPerLayer_2,1,cumsum))
 
   NN$idxb = NULL
   NN$idxw = NULL
   NN$idxbw = NULL
-  NN <- c(NN,idxb = list(idxb), idxw = list(idxw), idxbw = list(idxbw))
+  NN$idxwXsc = NULL
+  NN$idxbXsc = NULL
+  NN$totalNumParams = NULL
+  NN$numParamsPerLayer = NULL
+  NN$numParamsPerLayer_2 = NULL
+  NN <- c(NN,idxb = list(idxb), idxw = list(idxw), idxbw = list(idxbw),
+          idxwXsc = list(idxwXsc), idxbXsc = list(idxbXsc),
+          totalNumParams = list(totalNumParams),
+          numParamsPerLayer = list(numParamsPerLayer),
+          numParamsPerLayer_2 = list(numParamsPerLayer_2))
 }
 
 #' Indices for covariances in the neural network
@@ -119,9 +288,9 @@ covariance <- function(NN){
     idxSzpUd[[j, 1]] = do.call(rbind, replicate(nodes[j] + 1, matrix(idxaNext, nodes[j+1], batchSize), simplify=FALSE))
 
     # Get indices for F*Cwwa
-      # Indices for Sp that uses to evaluate Cwwa
+    # Indices for Sp that uses to evaluate Cwwa
     idxFCwwa[[j, 1]] = matrix(matlab::repmat(t(NN$idxw[[j, 1]]), batchSize, 1), nrow = nodes[j] * dnext, ncol = 1)
-      # Indices for ma that uses to evaluate Cwwa
+    # Indices for ma that uses to evaluate Cwwa
     idxFCwwa[[j, 2]] = matrix(matlab::repmat(matrix(idxa[[j, 1]], nodes[j], batchSize), nodes[j+1], 1), nrow = nodes[j] * dnext, ncol = 1)
 
     # Get indices for F*Sb
@@ -142,17 +311,17 @@ covariance <- function(NN){
   }
 
   # Outputs
-    # F*mwa
+  # F*mwa
   NN$idxFmwa = NULL
   NN$idxFmwab = NULL
-    # F*Cawa
+  # F*Cawa
   NN$idxFCzwa = NULL
   NN$idxSzpUd = NULL
-    # Caa
+  # Caa
   NN$idxSzzUd = NULL
-    # F*Cwwa
+  # F*Cwwa
   NN$idxFCwwa = NULL
-    # a
+  # a
   NN$idxa = NULL
   NN$idxFCb = NULL
 
@@ -164,5 +333,5 @@ covariance <- function(NN){
           idxFCwwa = list(idxFCwwa),
           idxa = list(idxa),
           idxFCb = list(idxFCb)
-          )
+  )
 }
