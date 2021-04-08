@@ -550,6 +550,72 @@ initializeWeightBias <- function(NN){
   return(outputs)
 }
 
+#' Weights and biases initialization for calculating derivatives
+#'
+#' This function initializes the first weights and biases of the neural network.
+#'
+#' @param NN List that contains the structure of the neural network
+#' @return A list that contains:
+#' @return - List that contains all parameters required in the neural network to perform derivative calculations
+#' @export
+initializeWeightBiasD <- function(NN){
+  # Initialization
+  nodes = NN$nodes
+  numLayers = length(nodes)
+  idxw = NN$idxw
+  idxb = NN$idxb
+  biasStd = 0.01
+  noParam = NaN
+  gainM = NN$gainM
+  gainS = NN$gainS
+  mw = createInitCellwithArray(numLayers-1)
+  Sw = createInitCellwithArray(numLayers-1)
+  mb = createInitCellwithArray(numLayers-1)
+  Sb = createInitCellwithArray(numLayers-1)
+  mwx = createInitCellwithArray(numLayers-1)
+  Swx = createInitCellwithArray(numLayers-1)
+  mbx = createInitCellwithArray(numLayers-1)
+  Sbx = createInitCellwithArray(numLayers-1)
+
+  for (j in 2:numLayers){
+    if (!is.null(idxw[[j-1,1]])){
+      fanIn = nodes[j-1]
+      fanOut = nodes[j]
+      if (NN$initParamType == "Xavier"){
+        scale = 2 / (fanIn +fanOut)
+        Sw[[j-1,1]] = gainS[j-1] * scale * rep(1, nrow(idxw[[j-1,1]]))
+      }
+      else if (NN$initParamType == "He"){
+        scale = 1 / (fanIn +fanOut)
+        Sw[[j-1,1]] = gainS[j-1] * scale * rep(1, nrow(idxw[[j-1,1]]))
+      }
+      mw[[j-1,1]] = gainM[j-1] * stats::rnorm(length(Sw[[j-1,1]])) * sqrt(Sw[[j-1,1]])
+      if (!is.null(idxb[[j-1,1]])){
+        Sb[[j-1,1]] = gainS[j-1] * scale * rep(1, nrow(idxb[[j-1,1]]))
+        mb[[j-1,1]] = stats::rnorm(length(Sb[[j-1,1]])) * sqrt(Sb[[j-1,1]])
+      }
+    else {
+      mw[[j-1,1]] = noParam
+      Sw[[j-1,1]] = noParam
+      Sb[[j-1,1]] = noParam
+      mb[[j-1,1]] = noParam
+      }
+    }
+  }
+  out_catParameters = catParameters(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
+  mw = out_catParameters[[1]]
+  Sw = out_catParameters[[2]]
+  mb = out_catParameters[[3]]
+  Sb = out_catParameters[[4]]
+  mwx = out_catParameters[[5]]
+  Swx = out_catParameters[[6]]
+  mbx = out_catParameters[[7]]
+  Sbx = out_catParameters[[8]]
+
+  theta = compressParameters(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
+  return(theta)
+}
+
 #' States Initialization
 #'
 #' Initiliazes neural network states.
@@ -601,6 +667,65 @@ createStateCellarray <- function(nodes, numLayers, B, rB){
   return(z)
 }
 
+#' Initialization (Matrix of Lists)
+#'
+#' Initializes a matrix containing lists.
+#'
+
+#' @param numLayers Number of layers in the neural network
+#' @return x Matrix containing empty lists
+#' @export
+createInitCellwithArray <- function(numLayers){
+  x = matrix(list(), nrow = numLayers, ncol = 1)
+  for (j in 1:numLayers){
+    x[[j, 1]] = NaN
+  }
+  return(x)
+}
+
+#' Concatenate Parameters
+#'
+#' Combines in a single column vector each parameter for all layers.
+#'
+#' @param mw TBD
+#' @param Sw TBD
+#' @param mb TBD
+#' @param Sb TBD
+#' @param mwx TBD
+#' @param Swx TBD
+#' @param mbx TBD
+#' @param Sbx TBD
+#' @return mw TBD in vector format
+#' @return Sw TBD in vector format
+#' @return mb TBD in vector format
+#' @return Sb TBD in vector format
+#' @return mwx TBD in vector format
+#' @return Swx TBD in vector format
+#' @return mbx TBD in vector format
+#' @return Sbx TBD in vector format
+#' @export
+catParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
+  var <- list(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
+  for (n in 1:length(var)){
+    start = var[[n]][[1]]
+    for (i in 1:(length(var[[n]])-1)){
+      start = c(start, var[[n]][[i+1]])
+    }
+    var[[n]] = start
+  }
+  mw  = var[[1]]
+  Sw  = var[[2]]
+  mb  = var[[3]]
+  Sb  = var[[4]]
+  mwx = var[[5]]
+  Swx = var[[6]]
+  mbx = var[[7]]
+  Sbx = var[[8]]
+
+  outputs <- list(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
+  return(outputs)
+}
+
 #' Compress States
 #'
 #' Put together states into a list of states.
@@ -628,4 +753,31 @@ compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
   states[[8, 1]] = mxs
   states[[9, 1]] = Sxs
   return(states)
+}
+
+#' Compress Parameters
+#'
+#' Put together parameters into a list of parameters.
+#'
+#' @param mw TBD
+#' @param Sw TBD
+#' @param mb TBD
+#' @param Sb TBD
+#' @param mwx TBD
+#' @param Swx TBD
+#' @param mbx TBD
+#' @param Sbx TBD
+#' @return theta List of parameters
+#' @export
+compressParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
+  theta = matrix(list(), nrow = 8, ncol = 1)
+  theta[[1, 1]] = mw
+  theta[[2, 1]] = Sw
+  theta[[3, 1]] = mb
+  theta[[4, 1]] = Sb
+  theta[[5, 1]] = mwx
+  theta[[6, 1]] = Swx
+  theta[[7, 1]] = mbx
+  theta[[8, 1]] = Sbx
+  return(theta)
 }

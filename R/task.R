@@ -6,4 +6,7 @@ runBatchDerivative <- function(NN, xtrain, ytrain, xtest, ytest){
   out_initialization <- initialization(NN)
   NN <- out_initialization[[1]]
   states <- out_initialization[[2]]
+
+  theta <- initializeWeightBiasD(NN)
+  # normStat <- createInitNormStat(NN)
 }
