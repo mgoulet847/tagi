@@ -16,7 +16,7 @@ createStateCellarray(nodes, numLayers, B, rB)
 \item{rB}{Number of times batch size is repeated}
 }
 \value{
-mz Zero-matrices for each layer
+mz: Zero-matrices for each layer
 }
 \description{
 Initiliazes neural network states at 0.

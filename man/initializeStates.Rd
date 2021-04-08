@@ -16,7 +16,7 @@ initializeStates(nodes, B, rB, xsc)
 \item{xsc}{TBD}
 }
 \value{
-states States of the neural network
+states: States of the neural network
 }
 \description{
 Initiliazes neural network states.

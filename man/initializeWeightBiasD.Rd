@@ -10,11 +10,7 @@ initializeWeightBiasD(NN)
 \item{NN}{List that contains the structure of the neural network}
 }
 \value{
-A list that contains:
-
-\itemize{
-\item List that contains all parameters required in the neural network to perform derivative calculations
-}
+theta: List that contains all parameters required in the neural network to perform derivative calculations
 }
 \description{
 This function initializes the first weights and biases of the neural network.

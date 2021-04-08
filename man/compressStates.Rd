@@ -26,7 +26,7 @@ compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
 \item{Sxs}{TBD}
 }
 \value{
-states List of states
+states: List of states
 }
 \description{
 Put together states into a list of states.

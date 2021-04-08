@@ -555,8 +555,7 @@ initializeWeightBias <- function(NN){
 #' This function initializes the first weights and biases of the neural network.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @return A list that contains:
-#' @return - List that contains all parameters required in the neural network to perform derivative calculations
+#' @return theta: List that contains all parameters required in the neural network to perform derivative calculations
 #' @export
 initializeWeightBiasD <- function(NN){
   # Initialization
@@ -624,7 +623,7 @@ initializeWeightBiasD <- function(NN){
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
 #' @param xsc TBD
-#' @return states States of the neural network
+#' @return states: States of the neural network
 #' @export
 initializeStates <- function(nodes, B, rB, xsc){
   # Normal network
@@ -657,7 +656,7 @@ initializeStates <- function(nodes, B, rB, xsc){
 #' @param numLayers Number of layers in the neural network
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
-#' @return mz Zero-matrices for each layer
+#' @return mz: Zero-matrices for each layer
 #' @export
 createStateCellarray <- function(nodes, numLayers, B, rB){
   z = matrix(list(), nrow = numLayers, ncol = 1)
@@ -673,7 +672,7 @@ createStateCellarray <- function(nodes, numLayers, B, rB){
 #'
 
 #' @param numLayers Number of layers in the neural network
-#' @return x Matrix containing empty lists
+#' @return x: Matrix containing empty lists
 #' @export
 createInitCellwithArray <- function(numLayers){
   x = matrix(list(), nrow = numLayers, ncol = 1)
@@ -739,7 +738,7 @@ catParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
 #' @param Sdxs TBD
 #' @param mxs TBD
 #' @param Sxs TBD
-#' @return states List of states
+#' @return states: List of states
 #' @export
 compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
   states = matrix(list(), nrow = 9, ncol = 1)
@@ -767,7 +766,7 @@ compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
 #' @param Swx TBD
 #' @param mbx TBD
 #' @param Sbx TBD
-#' @return theta List of parameters
+#' @return theta: List of parameters
 #' @export
 compressParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   theta = matrix(list(), nrow = 8, ncol = 1)
@@ -780,4 +779,38 @@ compressParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   theta[[7, 1]] = mbx
   theta[[8, 1]] = Sbx
   return(theta)
+}
+
+#' Compress Normalized Statistics TBD
+#'
+#' Put together normalized statistics into a list.
+#'
+#' @param mra TBD
+#' @param Sra TBD
+#' @return normStat: TBD
+#' @export
+compressNormStat <- function(mra, Sra){
+  normStat = matrix(list(), nrow = 2, ncol = 1)
+  normStat[[1, 1]] = mra
+  normStat[[2, 1]] = Sra
+  return(normStat)
+}
+
+#' Initialization (TBD)
+#'
+#' Initializes a matrix containing lists of 0 for TBD.
+#'
+
+#' @param NN List that contains the structure of the neural network
+#' @return normStat: TBD
+#' @export
+createInitNormStat <- function(NN){
+  mra = matrix(list(), nrow = length(NN$nodes) - 1, ncol = 1)
+  Sra = matrix(list(), nrow = length(NN$nodes) - 1, ncol = 1)
+  for (i in 1:(length(NN$nodes) - 1)){
+    mra[[i,1]] = 0
+    Sra[[i,1]] = 0
+  }
+  normStat = compressNormStat(mra, Sra)
+  return(normStat)
 }

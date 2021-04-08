@@ -10,7 +10,7 @@ createInitCellwithArray(numLayers)
 \item{numLayers}{Number of layers in the neural network}
 }
 \value{
-x Matrix containing empty lists
+x: Matrix containing empty lists
 }
 \description{
 Initializes a matrix containing lists.

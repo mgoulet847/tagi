@@ -24,7 +24,7 @@ compressParameters(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
 \item{Sbx}{TBD}
 }
 \value{
-theta List of parameters
+theta: List of parameters
 }
 \description{
 Put together parameters into a list of parameters.
