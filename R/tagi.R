@@ -648,6 +648,83 @@ initializeStates <- function(nodes, B, rB, xsc){
   return(states)
 }
 
+#' Input Initialization
+#'
+#' Initializes neural network inputs.
+#'
+#' @param states States of the neural network
+#' @param mz0 TBD
+#' @param Sz0 TBD
+#' @param ma0 TBD
+#' @param Sa0 TBD
+#' @param J0 TBD
+#' @param mdxs0 TBD
+#' @param Sdxs0 TBD
+#' @param mxs0 TBD
+#' @param Sxs0 TBD
+#' @param xsc TBD
+#' @return \code{states}: States of the neural network
+#' @export
+initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0, Sxs0, xsc){
+  out_extractStates = extractStates(states)
+  mz  = out_extractStates[[1]]
+  Sz  = out_extractStates[[2]]
+  ma  = out_extractStates[[3]]
+  Sa  = out_extractStates[[4]]
+  J = out_extractStates[[5]]
+  mdxs = out_extractStates[[6]]
+  Sdxs = out_extractStates[[7]]
+  mxs = out_extractStates[[8]]
+  Sxs = out_extractStates[[9]]
+
+  # Normal network
+  mz[[1]] = mz0
+  if (any(is.null(Sz0))){
+    Sz[[1,1]] = rep(0, length(mz0))
+  } else {
+    Sz[[1,1]] = Sz0
+  }
+  if (any(is.null(ma0))){
+    ma[[1,1]] = mz0
+  } else {
+    ma[[1,1]] = ma0
+  }
+  if (any(is.null(Sa0))){
+    Sa[[1,1]] = Sz[[1,1]]
+  } else {
+    Sa[[1,1]] = Sa0
+  }
+  if (any(is.null(J0))){
+    J[[1,1]] = rep(1, length(mz0))
+  } else {
+    J[[1,1]] = J0
+  }
+
+  # Residual network
+  if (any(is.null(mdxs0)) & !all(xsc == 0)){
+    mdxs[[1,1]] = mz0
+  } else {
+    mdxs[1,1] = list(mdxs0) # In this case, mdxs0 might be NULL (only way to code it)
+  }
+  if (any(is.null(Sdxs0)) & !all(xsc == 0)){
+    Sdxs[[1,1]] = rep(0, length(mz0))
+  } else {
+    Sdxs[1,1] = list(Sdxs0)
+  }
+  if (any(is.null(mxs0)) & !all(xsc == 0)){
+    mxs[[1,1]] = mz0
+  } else {
+    mxs[1,1] = list(mxs0)
+  }
+  if (any(is.null(Sxs0)) & !all(xsc == 0)){
+    Sxs[[1,1]] = rep(0, length(mz0))
+  } else {
+    Sxs[1,1] = list(Sxs0)
+  }
+  states = compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
+  return(states)
+}
+
 #' States Initialization (Zero-Matrices)
 #'
 #' Initiliazes neural network states at 0.
@@ -752,6 +829,35 @@ compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
   states[[8, 1]] = mxs
   states[[9, 1]] = Sxs
   return(states)
+}
+
+#' Extract States
+#'
+#' Extract states from list of states.
+#'
+#' @param states List of states
+#' @return mz TBD
+#' @return Sz TBD
+#' @return ma TBD
+#' @return Sa TBD
+#' @return J TBD
+#' @return mdxs TBD
+#' @return Sdxs TBD
+#' @return mxs TBD
+#' @return Sxs TBD
+#' @export
+extractStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
+  mz = states[[1, 1]]
+  Sz = states[[2, 1]]
+  ma = states[[3, 1]]
+  Sa = states[[4, 1]]
+  J = states[[5, 1]]
+  mdxs = states[[6, 1]]
+  Sdxs = states[[7, 1]]
+  mxs = states[[8, 1]]
+  Sxs = states[[9, 1]]
+  outputs <- list(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
+  return(outputs)
 }
 
 #' Compress Parameters
