@@ -2,7 +2,7 @@
 % Please edit documentation in R/act.R
 \name{activationFunIndex}
 \alias{activationFunIndex}
-\title{Assign ID to activation functions}
+\title{Assign ID to Activation Functions}
 \usage{
 activationFunIndex(funName)
 }

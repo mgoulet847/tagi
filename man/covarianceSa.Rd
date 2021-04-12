@@ -2,7 +2,7 @@
 % Please edit documentation in R/act.R
 \name{covarianceSa}
 \alias{covarianceSa}
-\title{Calculate variance of activated units}
+\title{Calculate Variance of Activated Units}
 \usage{
 covarianceSa(J, Sz)
 }

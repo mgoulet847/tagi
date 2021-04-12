@@ -2,7 +2,7 @@
 % Please edit documentation in R/act.R
 \name{meanA}
 \alias{meanA}
-\title{Calculate mean of activated units}
+\title{Calculate Mean of Activated Units}
 \usage{
 meanA(z, mz, funIdx)
 }

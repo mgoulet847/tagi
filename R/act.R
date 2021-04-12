@@ -1,6 +1,4 @@
-# Activation function
-
-#' Assign ID to activation functions
+#' Assign ID to Activation Functions
 #'
 #' This function assigns a number attached to the type of activation function.
 #'
@@ -28,7 +26,7 @@ activationFunIndex <- function(funName){
   return(funIdx)
 }
 
-#' Calculate mean of activated units
+#' Calculate Mean of Activated Units
 #'
 #' This function uses lineratization to estimate the activation units mean vector
 #' \eqn{\mu_{A}} and the Jacobian matrix evaluated at \eqn{\mu_{Z}}.
@@ -68,7 +66,7 @@ meanA <- function(z, mz, funIdx){
   return(outputs)
 }
 
-#' Calculate variance of activated units
+#' Calculate Variance of Activated Units
 #'
 #' This function uses lineratization to estimate the covariance matrix of activation units \eqn{\Sigma_{A}}.
 #'
@@ -79,4 +77,27 @@ meanA <- function(z, mz, funIdx){
 covarianceSa <- function(J, Sz){
   Sa = J * Sz * J
   return(Sa)
+}
+
+#' Mean, Jacobian and Variance of Activated Units
+#'
+#' This function returns mean vector \eqn{\mu_{A}}, Jacobian matrix evaluated at
+#' \eqn{\mu_{Z}} and covariance matrix of activation units \eqn{\Sigma_{A}}.
+#'
+#' @param z Vector of units for the current layer
+#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param funIdx Activation function index defined by \code{\link{activationFunIndex}}
+#' @return The activation units mean vector \eqn{\mu_{A}}
+#' @return The activation units variance vector \eqn{\Sigma_{A}}
+#' @return Jacobian matrix evaluated at \eqn{\mu_{Z}}
+#' @export
+meanVar <- function(z, mz, Sz, funIdx){
+  out_meanA <- meanA(z, mz, funIdx)
+  m = out_meanA[[1]]
+  J = out_meanA[[2]]
+  out_covarianceSa <- covarianceSa(J, Sz)
+  S = out_covarianceSa[[1]]
+  outputs <- list(m, S, J)
+  return(outputs)
 }

@@ -207,43 +207,21 @@ feedForwardPass <- function(NN, theta, states){
         Sz[[j,1]] = out_fcMeanVar[[2]]
       }
     }
-    mz[[j,1]] = meanMz(mp[[j-1,1]], ma[[j-1,1]], NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
-    # Covariance for z^(j)
-    Sz[[j,1]] = covarianceSz(mp[[j-1,1]], ma[[j-1,1]], Sp[[j-1,1]], Sa[[j-1,1]],NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
-    if (NN$trainMode == 1){
-      # Covariance between z^(j) and w^(j-1)
-      out = covarianceCzp(ma[[j-1,1]], Sp[[j-1,1]], NN$idxFCwwa[j-1,], NN$idxFCb[[j-1,1]])
-      Czb[[j,1]] = out[[1]]
-      Czw[[j,1]] = out[[2]]
-      # Covariance between z^(j+1) and z^(j)
-      if (!(is.null(Sz[[j-1,1]]))){
-        Czz[[j,1]] = covarianceCzz(mp[[j-1,1]], Sz[[j-1,1]], J[[j-1,1]], NN$idxFCzwa[j-1,])
-      }
-    }
 
     # Activation
-    if (j < numLayers){
-      out_act = meanA(mz[[2,1]], mz[[2,1]], hiddenLayerActFunIdx)
-      ma[[2,1]] = out_act[[1]]
-      J[[j,1]] = out_act[[2]]
-      Sa[[j,1]] = covarianceSa(J[[j,1]], Sz[[j,1]])
+    if (actFunIdx[j] != 0){
+      out_meanVar = meanVar(mz[[j,1]], mz[[j,1]], Sz[[j,1]], actBound[j])
+      ma[[j,1]] = out_meanVar[[1]]
+      Sa[[j,1]] = out_meanVar[[2]]
+      J[[j,1]] = out_meanVar[[3]]
+    } else {
+      ma[[j,1]] = mz[[j,1]]
+      Sa[[j,1]] = Sz[[j,1]]
+      J[[j,1]]= rep(1, nrow(mz[[j,1]]))
     }
   }
-
-  # Outputs
-  if (!(NN$outputActivation == "linear")){
-    ouputLayerActFunIdx = activationFunIndex(NN$outputActivation)
-    out_feedForward = meanA(mz[[numLayers,1]], mz[[numLayers,1]], ouputLayerActFunIdx)
-    mz[[numLayers,1]] = out_feedForward[[1]]
-    J[[numLayers,1]] = out_feedForward[[2]]
-    Sz[[numLayers,1]] = covarianceSa(J[[numLayers,1]], Sz[[numLayers,1]])
-  }
-  if (NN$trainMode == 0){
-    mz = mz[[numLayers,1]]
-    Sz = Sz[[numLayers,1]]
-  }
-  outputs <- list(mz, Sz, Czw, Czb, Czz)
-  return(outputs)
+  states <- compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
+  return(states)
 }
 
 # Backward network
