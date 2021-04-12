@@ -61,9 +61,7 @@ network <- function(NN, mp, Sp, x, y){
   return(outputs)
 }
 
-# Forward network
-
-#' Forward uncertainty propagation
+#' Forward Uncertainty Propagation
 #'
 #' This function feeds the neural network forward from input data to
 #' responses.
@@ -106,6 +104,109 @@ feedForward <- function(NN, x, mp, Sp){
 
   # Hidden Layers
   for (j in 2:numLayers){
+    mz[[j,1]] = meanMz(mp[[j-1,1]], ma[[j-1,1]], NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
+    # Covariance for z^(j)
+    Sz[[j,1]] = covarianceSz(mp[[j-1,1]], ma[[j-1,1]], Sp[[j-1,1]], Sa[[j-1,1]],NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
+    if (NN$trainMode == 1){
+      # Covariance between z^(j) and w^(j-1)
+      out = covarianceCzp(ma[[j-1,1]], Sp[[j-1,1]], NN$idxFCwwa[j-1,], NN$idxFCb[[j-1,1]])
+      Czb[[j,1]] = out[[1]]
+      Czw[[j,1]] = out[[2]]
+      # Covariance between z^(j+1) and z^(j)
+      if (!(is.null(Sz[[j-1,1]]))){
+        Czz[[j,1]] = covarianceCzz(mp[[j-1,1]], Sz[[j-1,1]], J[[j-1,1]], NN$idxFCzwa[j-1,])
+      }
+    }
+
+    # Activation
+    if (j < numLayers){
+      out_act = meanA(mz[[2,1]], mz[[2,1]], hiddenLayerActFunIdx)
+      ma[[2,1]] = out_act[[1]]
+      J[[j,1]] = out_act[[2]]
+      Sa[[j,1]] = covarianceSa(J[[j,1]], Sz[[j,1]])
+    }
+  }
+
+  # Outputs
+  if (!(NN$outputActivation == "linear")){
+    ouputLayerActFunIdx = activationFunIndex(NN$outputActivation)
+    out_feedForward = meanA(mz[[numLayers,1]], mz[[numLayers,1]], ouputLayerActFunIdx)
+    mz[[numLayers,1]] = out_feedForward[[1]]
+    J[[numLayers,1]] = out_feedForward[[2]]
+    Sz[[numLayers,1]] = covarianceSa(J[[numLayers,1]], Sz[[numLayers,1]])
+  }
+  if (NN$trainMode == 0){
+    mz = mz[[numLayers,1]]
+    Sz = Sz[[numLayers,1]]
+  }
+  outputs <- list(mz, Sz, Czw, Czb, Czz)
+  return(outputs)
+}
+
+#' Forward Uncertainty Propagation for Derivative Calculation
+#'
+#' This function feeds the neural network forward from input data to
+#' responses and considers components required for derivative calculations.
+#'
+#' @param NN List that contains the structure of the neural network
+#' @param theta List that of parameters
+#' @param states List of states
+#' @param x Set of input data
+#' @return A list that contains:
+#' @return - \code{states}: List that contains states
+#' @return - \code{mda}: TBD
+#' @return - \code{Sda}: TBD
+#' @export
+feedForwardPass <- function(NN, theta, states){
+
+  # Initialization
+  out_extractParameters <- extractParameters(theta)
+  mw = out_extractParameters[[1]]
+  Sw = out_extractParameters[[2]]
+  mb = out_extractParameters[[3]]
+  Sb = out_extractParameters[[4]]
+  out_extractStates <- extractStates(states)
+  mz = out_extractStates[[1]]
+  Sz = out_extractStates[[2]]
+  ma = out_extractStates[[3]]
+  Sa = out_extractStates[[4]]
+  J = out_extractStates[[5]]
+  mdxs = out_extractStates[[6]]
+  Sdxs = out_extractStates[[7]]
+  mxs = out_extractStates[[8]]
+  Sxs = out_extractStates[[9]]
+  numLayers = length(NN$nodes)
+  actFunIdx = NN$actFunIdx
+  actBound = NN$actBound
+  B = NN$batchSize
+  rB = NN$repBatchSize
+  nodes = NN$nodes
+  numParamsPerLayer_2 = NN$numParamsPerLayer_2
+
+  # Derivative
+  mda = matrix(list(), nrow = numLayers, ncol = 1)
+  Sda = matrix(list(), nrow = numLayers, ncol = 1)
+  mda[[1,1]] = rep(1, nrow(mz[[1,1]]))
+  Sda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
+  # test
+  j = 2
+
+  # Hidden Layers
+  for (j in 2:numLayers){
+    idxw = (numParamsPerLayer_2[1, j-1]+1):numParamsPerLayer_2[1, j]
+    idxb = (numParamsPerLayer_2[2, j-1]+1):numParamsPerLayer_2[2, j]
+    # Max pooling
+    if (NN$layer[j] == NN$layerEncoder$fc){
+      if ((B == 1) & (rB == 1)){
+        out_fcMeanVarB1 <- fcMeanVarB1(mw[idxw], Sw[idxw], mb[idxb], Sb[idxb], ma[[j-1,1]], Sa[[j-1,1]], nodes[j-1], nodes[j])
+        mz[[j,1]] = out_fcMeanVarB1[[1]]
+        Sz[[j,1]] = out_fcMeanVarB1[[2]]
+      } else {
+        out_fcMeanVar <- fcMeanVar(mz[[j,1]], Sz[[j,1]], mw[idxw], Sw[idxw], mb[idxb], Sb[idxb], ma[[j-1,1]], Sa[[j-1,1]], nodes[j-1], nodes[j], B, rB)
+        mz[[j,1]] = out_fcMeanVar[[1]]
+        Sz[[j,1]] = out_fcMeanVar[[2]]
+      }
+    }
     mz[[j,1]] = meanMz(mp[[j-1,1]], ma[[j-1,1]], NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
     # Covariance for z^(j)
     Sz[[j,1]] = covarianceSz(mp[[j-1,1]], ma[[j-1,1]], Sp[[j-1,1]], Sa[[j-1,1]],NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
@@ -291,6 +392,86 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
   }
   Sz = Sz + Spb
   return(Sz)
+}
+
+#' Mean and Covariance Vectors of Units (Many Observations)
+#'
+#' This function calculate the mean vector of units \eqn{\mu_{Z}} and the covariance matrix of the units \eqn{\Sigma_{Z}}for a given layer.
+#'
+#' @param mw Mean vector of the weights for the current layer
+#' @param Sw Covariance of the weights for the current layer
+#' @param mb Mean vector of the biases for the current layer
+#' @param Sb Covariance of the biases for the current layer
+#' @param ma Mean vector of the activation units from previous layer
+#' @param Sa Covariance of the activation units from previous layer
+#' @param ni Number of units in previous layer
+#' @param no Number of units in current layer
+#' @param B Batch size
+#' @param rB TBD
+#' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @return Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @export
+fcMeanVar <- function(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB){
+  if (any(is.nan(mb))){
+    mb = rep(0, 1)
+    Sb = rep(0, 1)
+  } else {
+    mb = matrix(mb, nrow = length(mb)*B)
+    Sb = matrix(Sb, nrow = length(Sb)*B)
+  }
+  mw = matrix(matrix(mw, ni, no), ncol = no*B)
+  Sw = matrix(matrix(Sw, ni, no), ncol = no*B)
+  for (t in 1:rB){
+    maloop = matrix(matrix(matrix(ma[,t], ni, B), nrow = ni*no), nrow = ni, ncol = no*B)
+    Saloop = matrix(matrix(matrix(Sa[,t], ni, B), nrow = ni*no), nrow = ni, ncol = no*B)
+    out_vectorizedMeanVar <- vectorizedMeanVar(maloop, mw, Saloop, Sw)
+    mzloop = out_vectorizedMeanVar[[1]]
+    Szloop = out_vectorizedMeanVar[[2]]
+    mzloop = colSums(mzloop)
+    Szloop = colSums(Szloop)
+
+    mz[,t] = mzloop + mb
+    Sz[,t] = Szloop + Sb
+    }
+  outputs <- list(mz, Sz)
+  return(outputs)
+}
+
+#' Mean and Covariance Vectors of Units (One Observation)
+#'
+#' This function calculate the mean vector of units \eqn{\mu_{Z}} and the covariance matrix of the units \eqn{\Sigma_{Z}}for a given layer.
+#'
+#' @param mw Mean vector of the weights for the current layer
+#' @param Sw Covariance of the weights for the current layer
+#' @param mb Mean vector of the biases for the current layer
+#' @param Sb Covariance of the biases for the current layer
+#' @param ma Mean vector of the activation units from previous layer
+#' @param Sa Covariance of the activation units from previous layer
+#' @param ni Number of units in previous layer
+#' @param no Number of units in current layer
+#' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @return Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @export
+fcMeanVarB1 <- function(mw, Sw, mb, Sb, ma, Sa, ni, no){
+
+  if (any(is.nan(mb))){
+    mb = rep(0, 1)
+    Sb = rep(0, 1)
+  }
+  mw = matrix(mw, ni, no)
+  Sw = matrix(Sw, ni, no)
+
+  out_vectorizedMeanVar <- vectorizedMeanVar(ma, mw, Sa, Sw)
+  mzloop = out_vectorizedMeanVar[[1]]
+  Szloop = out_vectorizedMeanVar[[2]]
+  mzloop = t(colSums(mzloop))
+  Szloop = t(colSums(Szloop))
+
+  mz = mzloop + mb
+  Sz = Szloop + Sb
+
+  outputs <- list(mz, Sz)
+  return(outputs)
 }
 
 #' Covariance matrices between units and parameters
@@ -885,6 +1066,33 @@ compressParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   theta[[7, 1]] = mbx
   theta[[8, 1]] = Sbx
   return(theta)
+}
+
+#' Extract Parameters
+#'
+#' Extract parameters from list of parameters.
+#'
+#' @param theta List of parameters
+#' @return mw: TBD
+#' @return Sw: TBD
+#' @return mb: TBD
+#' @return Sb: TBD
+#' @return mwx: TBD
+#' @return Swx: TBD
+#' @return mbx: TBD
+#' @return Sbx: TBD
+#' @export
+extractParameters <- function(theta){
+  mw = theta[[1, 1]]
+  Sw = theta[[2, 1]]
+  mb = theta[[3, 1]]
+  Sb = theta[[4, 1]]
+  mwx = theta[[5, 1]]
+  Swx = theta[[6, 1]]
+  mbx = theta[[7, 1]]
+  Sbx = theta[[8, 1]]
+  outputs <- list(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
+  return(outputs)
 }
 
 #' Compress Normalized Statistics TBD

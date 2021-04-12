@@ -25,6 +25,7 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
 
   #test
   x = xtrain
+  y = ytrain
   dlayer = 1
   i = 1
 
@@ -55,21 +56,21 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
     Sxloop = matrix(t(Sx[idxBatch]), nrow = NN$batchSize * numCovariates, ncol = NN$repBatchSize)
     states = initializeInputs(states, xloop, Sxloop, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NN$xsc)
 
-  #   # Training
-  #   if (NN$trainMode == 1){
-  #     yloop = matrix(t(y[idxBatch,]), nrow = length(idxBatch) * NN$ny, ncol = 1)
-  #     out_feedForward = feedForward(NN, xloop, mp, Sp)
-  #     mz = out_feedForward[[1]]
-  #     Sz = out_feedForward[[2]]
-  #     Czw = out_feedForward[[3]]
-  #     Czb = out_feedForward[[4]]
-  #     Czz = out_feedForward[[5]]
+    # Training
+    if (NN$trainMode == 1){
+      yloop = matrix(t(y[idxBatch,]), nrow = NN$batchSize * NN$ny, ncol = NN$repBatchSize)
+      out_feedForward = feedForward(NN, xloop, mp, Sp)
+      mz = out_feedForward[[1]]
+      Sz = out_feedForward[[2]]
+      Czw = out_feedForward[[3]]
+      Czb = out_feedForward[[4]]
+      Czz = out_feedForward[[5]]
   #     out_feedBackward = feedBackward(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, yloop)
   #     mp = out_feedBackward[[1]]
   #     Sp = out_feedBackward[[2]]
   #     zn[idxBatch,] = t(matrix(mz[[length(mz)]], nrow = NN$ny, ncol = length(idxBatch)))
   #     Szn[idxBatch,] = t(matrix(Sz[[length(Sz)]], nrow = NN$ny, ncol = length(idxBatch)))
-  #   }
+    }
   #
   #   # Testing
   #   else {

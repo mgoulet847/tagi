@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{feedForward}
 \alias{feedForward}
-\title{Forward uncertainty propagation}
+\title{Forward Uncertainty Propagation}
 \usage{
 feedForward(NN, x, mp, Sp)
 }
