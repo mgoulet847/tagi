@@ -45,8 +45,8 @@ meanA <- function(z, mz, funIdx){
   } else if (funIdx == 2){ # sigmoid
     sigmoid <- function(x){1 / (1 + exp(-x))}
     dsigmoid <- function(x){sigmoid(x) * (1 -sigmoid(x))}
-    s = sigmoid(2)
-    J= dsigmoid(2)
+    s = sigmoid(mz)
+    J= dsigmoid(z)
   } else if (funIdx == 3){ # cdf
     s = stats::dnorm(mz) * (z - mz) + stats::pnorm(mz)
     J = stats::dnorm(z)
@@ -96,8 +96,65 @@ meanVar <- function(z, mz, Sz, funIdx){
   out_meanA <- meanA(z, mz, funIdx)
   m = out_meanA[[1]]
   J = out_meanA[[2]]
-  out_covarianceSa <- covarianceSa(J, Sz)
-  S = out_covarianceSa[[1]]
+  S = covarianceSa(J, Sz)
   outputs <- list(m, S, J)
+  return(outputs)
+}
+
+#' Mean and Variance of Activated Units for Derivatives
+#'
+#' This function calculates mean vector and covariance matrix of activation units'
+#' derivatives.
+#'
+#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param funIdx Activation function index defined by \code{\link{activationFunIndex}}
+#' @param bound TBD
+#' @return The activation units' first derivative mean vector
+#' @return The activation units' first derivative variance vector
+#' @return The activation units' second derivative mean vector
+#' @return The activation units' second derivative variance vector
+#' @export
+meanVarDev <- function(mz, Sz, funIdx, bound){
+  if (funIdx == 1){ # tanh
+    ma = bound*tanh(mz)
+    J = bound*(1 - ma^2)
+    Sa = J*J*Sz
+
+    # 1st derivative
+    md = bound*(1- ma^2 - Sa)
+    Sd = (bound^2)*(2*Sa*(Sa + 2*(ma^2)))
+
+    # 2nd derivative
+    Cdd = 4*Sa*ma
+    mdd = -2*md*ma + Cdd
+    Sdd = 4*Sd*Sa + Cdd^2 - 4*Cdd*md*ma + 4*Sd*(ma^2) + 4*Sa*(md^2)
+
+  } else if (funIdx == 2){ # sigmoid
+    sigmoid <- function(x){1 / (1 + exp(-x))}
+    ma = sigmoid(mz)
+    J = ma*(1 - ma)
+    Sa = J*J*Sz
+
+    # 1st derivative
+    md = J - Sa
+    Sd = Sa*(2*Sa + 4*ma^2 - 4*ma + 1)
+
+    # 2nd derivative
+    Cdd = 4*Sa*ma - 2*Sa
+    mdd = md*(1 - 2*ma) + Cdd
+    Sdd = 4*Sd*Sa + Cdd^2 + 2*Cdd*md*(1 - 2*ma) + Sd*((1 - 2*ma)^2) + 4*Sa*(md^2)
+
+  } else if (funIdx == 4){ # relu
+    # 1st derivative
+    md = matrix(0, nrow = nrow(mz), ncol = ncol(mz))
+    md[mz > 0] = 1
+    Sd = matrix(0, nrow = nrow(mz), ncol = ncol(mz))
+
+    # 2nd derivative
+    mdd = Sd
+    Sdd = Sd
+  }
+  outputs <- list(md, Sd, mdd, Sdd)
   return(outputs)
 }

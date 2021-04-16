@@ -188,8 +188,6 @@ feedForwardPass <- function(NN, theta, states){
   Sda = matrix(list(), nrow = numLayers, ncol = 1)
   mda[[1,1]] = rep(1, nrow(mz[[1,1]]))
   Sda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
-  # test
-  j = 2
 
   # Hidden Layers
   for (j in 2:numLayers){
@@ -210,7 +208,7 @@ feedForwardPass <- function(NN, theta, states){
 
     # Activation
     if (actFunIdx[j] != 0){
-      out_meanVar = meanVar(mz[[j,1]], mz[[j,1]], Sz[[j,1]], actBound[j])
+      out_meanVar = meanVar(mz[[j,1]], mz[[j,1]], Sz[[j,1]], actFunIdx[j])
       ma[[j,1]] = out_meanVar[[1]]
       Sa[[j,1]] = out_meanVar[[2]]
       J[[j,1]] = out_meanVar[[3]]
@@ -219,9 +217,17 @@ feedForwardPass <- function(NN, theta, states){
       Sa[[j,1]] = Sz[[j,1]]
       J[[j,1]]= rep(1, nrow(mz[[j,1]]))
     }
+
+    # Derivative for FC
+    if ((NN$collectDev > 0) & (actFunIdx[j] != 0)){
+      out_meanVarDev = meanVarDev(mz[[j,1]], Sz[[j,1]], actFunIdx[j], actBound[j])
+      mda[[j,1]] = out_meanVarDev[[1]]
+      Sda[[j,1]] = out_meanVar[[2]]
+    }
   }
   states <- compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
-  return(states)
+  outputs <- list(states, mda, Sda)
+  return(outputs)
 }
 
 # Backward network
@@ -397,11 +403,11 @@ fcMeanVar <- function(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB){
     mb = matrix(mb, nrow = length(mb)*B)
     Sb = matrix(Sb, nrow = length(Sb)*B)
   }
-  mw = matrix(matrix(mw, ni, no), ncol = no*B)
-  Sw = matrix(matrix(Sw, ni, no), ncol = no*B)
+  mw = matrix(matrix(mw, ni, no), nrow = ni, ncol = no*B)
+  Sw = matrix(matrix(Sw, ni, no), nrow = ni, ncol = no*B)
   for (t in 1:rB){
-    maloop = matrix(matrix(matrix(ma[,t], ni, B), nrow = ni*no), nrow = ni, ncol = no*B)
-    Saloop = matrix(matrix(matrix(Sa[,t], ni, B), nrow = ni*no), nrow = ni, ncol = no*B)
+    maloop = matrix(matrix(rep(matrix(ma[,t], ni, B), each = no), ncol = B), ni, no*B)
+    Saloop = matrix(matrix(rep(matrix(Sa[,t], ni, B), each = no), ncol = B), ni, no*B)
     out_vectorizedMeanVar <- vectorizedMeanVar(maloop, mw, Saloop, Sw)
     mzloop = out_vectorizedMeanVar[[1]]
     Szloop = out_vectorizedMeanVar[[2]]
@@ -837,7 +843,7 @@ initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0,
   Sxs = out_extractStates[[9]]
 
   # Normal network
-  mz[[1]] = mz0
+  mz[[1,1]] = mz0
   if (any(is.null(Sz0))){
     Sz[[1,1]] = rep(0, length(mz0))
   } else {
@@ -1005,7 +1011,7 @@ compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
 #' @return mxs TBD
 #' @return Sxs TBD
 #' @export
-extractStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
+extractStates <- function(states){
   mz = states[[1, 1]]
   Sz = states[[2, 1]]
   ma = states[[3, 1]]
