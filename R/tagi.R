@@ -457,6 +457,123 @@ fcMeanVarDnode <- function(mw, Sw, mda, Sda, ni, no, B){
   return(outputs)
 }
 
+#' Covariance between Activation Units and Weights
+#'
+#' This function calculates covariance between activation units and weights and
+#' covariance between activation units from consecutive layers.
+#'
+#' @param mw Mean vector of the weights for the current layer
+#' @param Sw Covariance of the weights for the current layer
+#' @param Jo Jacobian of next layer
+#' @param mai Mean vector of the activation units from current layer
+#' @param Sai Covariance of the activation units from current layer
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param B Batch size
+#' @return Covariance between activation units and weights
+#' @return Covariance between activation units from current and next layers
+#' @export
+fcCovawaa <- function(mw, Sw, Jo, mai, Sai, ni, no, B){
+  Joloop = t(matrix(matrix(rep(matrix(Jo, no, B), each = ni), nrow =no*ni, ncol = B), no, ni*B))
+  Sw = matrix(rep(matrix(Sw, ni, no), each = B), nrow = ni*B, ncol = no)
+  Caw = Sw*mai*Joloop
+
+  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
+  Caw = mw*Sai*Joloop
+
+  outputs <- list(Caw, Caa)
+  return(outputs)
+}
+
+#' Covariance between Derivatives and Weights
+#'
+#' This function calculates covariance between derivatives and weights and
+#' covariance between derivatives from consecutive layers.
+#'
+#' @param mao Mean vector of the activation units from next layer
+#' @param Sao Covariance of the activation units from next layer
+#' @param mai Mean vector of the activation units from current layer
+#' @param Sai Covariance of the activation units from current layer
+#' @param Caow Covariance between activation units and weights
+#' @param Caoai Covariance between activation units from current and next layers
+#' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
+#' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param B Batch size
+#' @return Covariance between derivatives and weights
+#' @return Covariance between derivatives from current and next layers
+#' @export
+fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
+  mao = t(matrix(matrix(rep(matrix(mao, no, B), each = ni), nrow = no*ni, ncol = B), no, ni*B))
+  Sao = t(matrix(matrix(rep(matrix(mao, no, B), each = ni), nrow = no*ni, ncol = B), no, ni*B))
+
+  if (acti == 1){ # tanh
+    Cdodi = 2*Caoai^2 + 4*mao*Caoai*mai
+  } else if (acti == 2){ # sigmoid
+    Cdodi = Caoai - 2*Caoai*mai - 2*mao*Caoai + 2*Caoai^2 + 4*mao*Caoai*mai
+  } else if (acti == 4){ # relu
+    Cdizi = matrix(0, dim(mao))
+  } else {
+    Cdizi = matrix(0, dim(mao))
+  }
+
+  if (acto == 1){ # tanh
+    Cdow = -2*mao*Caow
+  } else if (acto == 2){ # sigmoid
+    Cdow = Caow*(1-2*mao)
+  } else if (acto == 4){ # relu
+    Cdow = matrix(0, dim(mao))
+  } else {
+    Cdow = matrix(0, dim(mao))
+  }
+
+  outputs <- list(Cdow, Cdodi)
+  return(outputs)
+}
+
+#' Covariance between Derivatives and Weights*Derivatives
+#'
+#' This function calculates covariance between derivatives and weights and
+#' covariance between derivatives from consecutive layers.
+#'
+#' @param md Mean vector of derivatives
+#' @param mw Mean vector of the weights for the current layer
+#' @param Cdow Covariance between derivatives and weights
+#' @param Cdodi Covariance between derivatives from current and next layers
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param B Batch size
+#' @return Covariance between derivatives and weights times derivatives
+#' @export
+fcCovdwd <- function(md, mw, Cdow, Cdodi, ni, no, B){
+  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
+  Cdowdi = Cdow*md + Cdodi*mw
+  return(Cdowdi)
+}
+
+#' Covariance between Products of Derivatives and Weights
+#'
+#' This function calculates covariance between products of derivatives and
+#' weights from consecutive layers.
+#'
+#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mwo Mean vector of the weights for the next layer
+#' @param Cdowdi Covariance between derivatives and weights times derivatives
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in 2nd next layer
+#' @param B Batch size
+#' @return Covariance between derivatives and weights times derivatives
+#' @export
+fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
+  mdgo2 = matrix(matrix(rep(t(mdgo2), each = no), nrow = nrow(t(mdgo2))*no), no*no2, B)
+  m = t(matrix(matrix(rep(mdgo2*mwo, each = ni), nrow = nrow(mdgo2*mwo)*ni), no*no2, B*ni))
+  Cdowdi = matrix(rep(Cdowdi, no2), nrow = nrow(Cdodi))
+  Cdgodgi = Cdowdi*m
+  return(Cdgodgi)
+}
+
 #' Covariance between Activation and Hidden Units
 #'
 #' This function calculates covariance between activation and hidden units.
@@ -524,6 +641,7 @@ fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
   outputs <- list(Cdozi, Cdizi)
   return(outputs)
 }
+
 #' Covariance between Derivatives and Inputs
 #'
 #' This function calculates covariance between derivatives and inputs.
