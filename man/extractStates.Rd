@@ -4,7 +4,7 @@
 \alias{extractStates}
 \title{Extract States}
 \usage{
-extractStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
+extractStates(states)
 }
 \arguments{
 \item{states}{List of states}

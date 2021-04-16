@@ -5,6 +5,8 @@
 \title{States Initialization (Zero-Matrices)}
 \usage{
 createStateCellarray(nodes, numLayers, B, rB)
+
+createStateCellarray(nodes, numLayers, B, rB)
 }
 \arguments{
 \item{nodes}{Vector that contains the number of nodes at each layer}
@@ -16,8 +18,12 @@ createStateCellarray(nodes, numLayers, B, rB)
 \item{rB}{Number of times batch size is repeated}
 }
 \value{
-mz: Zero-matrices for each layer
+Zero-matrices for each layer
+
+Unit matrices for each layer
 }
 \description{
 Initiliazes neural network states at 0.
+
+Initiliazes neural network derivative states at 1.
 }

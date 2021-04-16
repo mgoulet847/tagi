@@ -12,8 +12,6 @@ feedForwardPass(NN, theta, states)
 \item{theta}{List that of parameters}
 
 \item{states}{List of states}
-
-\item{x}{Set of input data}
 }
 \value{
 A list that contains:

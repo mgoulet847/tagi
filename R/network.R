@@ -57,6 +57,10 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       states = out_feedForwardPass[[1]]
       mda = out_feedForwardPass[[2]]
       Sda = out_feedForwardPass[[3]]
+      out_derivative = derivative(NN, theta, states, mda, Sda, dlayer)
+      mdgi = out_derivative[[1]]
+      Sdgi = out_derivative[[2]]
+      Cdgzi = out_derivative[[3]]
   #     out_feedBackward = feedBackward(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, yloop)
   #     mp = out_feedBackward[[1]]
   #     Sp = out_feedBackward[[2]]
