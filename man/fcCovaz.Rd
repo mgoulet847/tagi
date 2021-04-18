@@ -4,9 +4,15 @@
 \alias{fcCovaz}
 \title{Covariance between Activation and Hidden Units}
 \usage{
-fcCovaz(mw, Sw, mda, Sda, ni, no, B)
+fcCovaz(Jo, J, Sz, mw, ni, no, B)
 }
 \arguments{
+\item{Jo}{Jacobian of next layer}
+
+\item{J}{Jacobian of current layer}
+
+\item{Sz}{Covariance of the units from current layer}
+
 \item{mw}{Mean vector of the weights for the current layer}
 
 \item{ni}{Number of units in current layer}
@@ -14,12 +20,6 @@ fcCovaz(mw, Sw, mda, Sda, ni, no, B)
 \item{no}{Number of units in next layer}
 
 \item{B}{Batch size}
-
-\item{Jo}{Jacobian of next layer}
-
-\item{J}{Jacobian of current layer}
-
-\item{Sz}{Covariance of the units from current layer}
 }
 \value{
 Covariance between activation and hidden layers (same layer)

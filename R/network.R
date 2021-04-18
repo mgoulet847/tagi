@@ -22,7 +22,6 @@
 #' @export
 batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
   # Initialization
-
   numObs = nrow(x)
   numDataPerBatch = NN$repBatchSize * NN$batchSize
   numCovariates = NN$nx
@@ -61,12 +60,12 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       mdgi = out_derivative[[1]]
       Sdgi = out_derivative[[2]]
       Cdgzi = out_derivative[[3]]
+    }
   #     out_feedBackward = feedBackward(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, yloop)
   #     mp = out_feedBackward[[1]]
   #     Sp = out_feedBackward[[2]]
   #     zn[idxBatch,] = t(matrix(mz[[length(mz)]], nrow = NN$ny, ncol = length(idxBatch)))
   #     Szn[idxBatch,] = t(matrix(Sz[[length(Sz)]], nrow = NN$ny, ncol = length(idxBatch)))
-    }
   #
   #   # Testing
   #   else {
@@ -75,8 +74,7 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
   #     Sz = out_feedForward[[2]]
   #     zn[idxBatch,] = t(matrix(mz, nrow = NN$ny, ncol = length(idxBatch)))
   #     Szn[idxBatch,] = t(matrix(Sz, nrow = NN$ny, ncol = length(idxBatch)))
-  # }
-  }
+ }
   # outputs <- list(mp, Sp, zn, Szn)
   # return(outputs)
 }

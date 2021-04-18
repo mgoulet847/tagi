@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcMeanVarDnode}
 \alias{fcMeanVarDnode}
-\title{Mean and Covariance Vectors of Derivatives}
+\title{Mean and Covariance of Derivatives}
 \usage{
 fcMeanVarDnode(mw, Sw, mda, Sda, ni, no, B)
 }

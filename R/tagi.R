@@ -273,7 +273,7 @@ derivative <- function(NN, theta, states, mda, Sda, dlayer){
   for (j in (numLayers-1):dlayer){
     idxw = (numParamsPerLayer_2[1, j]+1):numParamsPerLayer_2[1, j+1]
     if (NN$layer[j+1] == NN$layerEncoder$fc){
-      if ((NN$collectDev > 0) & (k == (numLayers-1))){
+      if ((NN$collectDev > 0) & (j == (numLayers-1))){
         out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mda[[j,1]], Sda[[j,1]], nodes[j], nodes[j+1], B)
         mdgk = out_fcMeanVarDnode[[1]]
         Sdgk = out_fcMeanVarDnode[[2]]
@@ -283,24 +283,24 @@ derivative <- function(NN, theta, states, mda, Sda, dlayer){
         out_fcCovdz <- fcCovdz(ma[[j+1,1]], ma[[j,1]], Caizi, Caozi, actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], B)
         Cdozi = out_fcCovdz[[1]]
         Cdizi = out_fcCovdz[[2]]
-        mdg[[j,1]] = rowSums(mdgk)
-        Sdg[[j,1]] = rowSums(Sdgk)
+        mdg[[j,1]] = matrix(rowSums(mdgk), nrow(mdgk), 1)
+        Sdg[[j,1]] = matrix(rowSums(Sdgk), nrow(Sdgk), 1)
         mdge[[j,1]] = mdgk
         Cdgk = covdx(0, mw[idxw], rep(0, NN$ny*B), 0, rep(1, NN$ny*B), Cdozi, Cdizi, nodes[j], nodes[j+1], 1, B)
-        Cdgk[[j,1]] = rowSums(Cdgk)
-      } else if ((NN$collectDev > 0) & (k < (numLayers-1))){
-        out_fcMeanVar <- fcDerivative(mw[idxw], Sw[idxw], mw[idxwo], J[[j+1,1]], J[[j,1]],
+        Cdgz[[j,1]] = matrix(rowSums(Cdgk), nrow(Cdgk), 1)
+      } else if ((NN$collectDev > 0) & (j < (numLayers-1))){
+        out_fcDerivative <- fcDerivative(mw[idxw], Sw[idxw], mw[idxwo], J[[j+1,1]], J[[j,1]],
                                       ma[[j+1,1]], Sa[[j+1,1]], ma[[j,1]], Sa[[j,1]],
                                       Sz[[j,1]], mda[[j,1]], Sda[[j,1]],
                                       mdg[[j+1,1]], mdge[[j+1,1]], Sdg[[j+1,1]], mdg[[j+2,1]],
                                       actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
         mdgk = out_fcDerivative[[1]]
         Sdgk = out_fcDerivative[[2]]
-        Cdgk = out_fcDerivative[[3]]
-        mdg[[j,1]] = rowSums(mdgk)
-        Sdg[[j,1]] = rowSums(Sdgk)
+        Cdgzk = out_fcDerivative[[3]]
+        mdg[[j,1]] = matrix(rowSums(mdgk), nrow(mdgk), 1)
+        Sdg[[j,1]] = matrix(rowSums(Sdgk), nrow(Sdgk), 1)
         mdge[[j,1]] = mdgk
-        Cdgk[[j,1]] = rowSums(Cdgk)
+        Cdgz[[j,1]] = matrix(rowSums(Cdgzk), nrow(Cdgzk), 1)
       }
     }
     idxwo = idxw
@@ -418,22 +418,22 @@ fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai
   Cdowdi = fcCovdwd(mdai, mw, Cdow, Cdodi, ni, no, B)
   Cdgodgi = fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
   out_fcMeanVarDlayer <- fcMeanVarDlayer(mpdi, Spdi, mdgo, mdgoe, Sdgo, Cdgodgi, ni, no, no2, B)
-  mpgi = out_fcMeanVarDlayer[[1]]
-  Spgi = out_fcMeanVarDlayer[[2]]
+  mdgi = out_fcMeanVarDlayer[[1]]
+  Sdgi = out_fcMeanVarDlayer[[2]]
 
   out_fcCovaz <- fcCovaz(Jo, J, Szi, mw, ni, no, B)
-  Caizi = fcCovaz[[1]]
-  Caozi = fcCovaz[[2]]
+  Caizi = out_fcCovaz[[1]]
+  Caozi = out_fcCovaz[[2]]
   out_fcCovdz <- fcCovdz(mao, mai, Caizi, Caozi, acto, acti, ni, no, B)
-  Caizi = out_fcCovdz[[1]]
-  Caozi = out_fcCovdz[[2]]
+  Cdozi = out_fcCovdz[[1]]
+  Cdizi = out_fcCovdz[[2]]
   Cdx = covdx(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B)
 
   outputs <- list(mdgi, Sdgi, Cdx)
   return(outputs)
 }
 
-#' Mean and Covariance Vectors of Derivatives
+#' Mean and Covariance of Derivatives
 #'
 #' This function calculates the mean vector and the covariance matrix for derivatives.
 #'
@@ -448,8 +448,10 @@ fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai
 #' @return Covariance matrix of the derivatives
 #' @export
 fcMeanVarDnode <- function(mw, Sw, mda, Sda, ni, no, B){
-  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
-  Sw = matrix(rep(matrix(Sw, ni, no), each = B), nrow = ni*B, ncol = no)
+  mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  Sw = matrix(rep(t(matrix(Sw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  mda = matrix(mda, nrow(mw), ncol(mw))
+  Sda = matrix(Sda, nrow(Sw), ncol(Sw))
   md = mw*mda
   Sd = Sw*Sda + Sw*(mda^2) + Sda*(mw^2)
 
@@ -474,12 +476,14 @@ fcMeanVarDnode <- function(mw, Sw, mda, Sda, ni, no, B){
 #' @return Covariance between activation units from current and next layers
 #' @export
 fcCovawaa <- function(mw, Sw, Jo, mai, Sai, ni, no, B){
-  Joloop = t(matrix(matrix(rep(matrix(Jo, no, B), each = ni), nrow =no*ni, ncol = B), no, ni*B))
-  Sw = matrix(rep(matrix(Sw, ni, no), each = B), nrow = ni*B, ncol = no)
+  Joloop = t(matrix(matrix(rep(t(matrix(Jo, no, B)), ni), nrow =no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  Sw = matrix(rep(t(matrix(Sw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  mai = matrix(mai, nrow(Sw), ncol(Sw))
   Caw = Sw*mai*Joloop
 
-  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
-  Caw = mw*Sai*Joloop
+  mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  Sai = matrix(Sai, nrow(mw), ncol(mw))
+  Caa = mw*Sai*Joloop
 
   outputs <- list(Caw, Caa)
   return(outputs)
@@ -505,17 +509,19 @@ fcCovawaa <- function(mw, Sw, Jo, mai, Sai, ni, no, B){
 #' @return Covariance between derivatives from current and next layers
 #' @export
 fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
-  mao = t(matrix(matrix(rep(matrix(mao, no, B), each = ni), nrow = no*ni, ncol = B), no, ni*B))
-  Sao = t(matrix(matrix(rep(matrix(mao, no, B), each = ni), nrow = no*ni, ncol = B), no, ni*B))
+  mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  Sao = t(matrix(matrix(rep(t(matrix(Sao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  mai = matrix(mai, nrow(mao), ncol(mao))
+  Sai = matrix(Sai, nrow(Sao), ncol(Sao))
 
   if (acti == 1){ # tanh
     Cdodi = 2*Caoai^2 + 4*mao*Caoai*mai
   } else if (acti == 2){ # sigmoid
     Cdodi = Caoai - 2*Caoai*mai - 2*mao*Caoai + 2*Caoai^2 + 4*mao*Caoai*mai
   } else if (acti == 4){ # relu
-    Cdizi = matrix(0, dim(mao))
+    Cdodi = matrix(0, nrow(mao), ncol(mao))
   } else {
-    Cdizi = matrix(0, dim(mao))
+    Cdodi = matrix(0, nrow(mao), ncol(mao))
   }
 
   if (acto == 1){ # tanh
@@ -523,9 +529,9 @@ fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
   } else if (acto == 2){ # sigmoid
     Cdow = Caow*(1-2*mao)
   } else if (acto == 4){ # relu
-    Cdow = matrix(0, dim(mao))
+    Cdow = matrix(0, nrow(mao), ncol(mao))
   } else {
-    Cdow = matrix(0, dim(mao))
+    Cdow = matrix(0, nrow(mao), ncol(mao))
   }
 
   outputs <- list(Cdow, Cdodi)
@@ -547,7 +553,8 @@ fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
 #' @return Covariance between derivatives and weights times derivatives
 #' @export
 fcCovdwd <- function(md, mw, Cdow, Cdodi, ni, no, B){
-  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
+  mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  md = matrix(md, nrow(mw), ncol(mw))
   Cdowdi = Cdow*md + Cdodi*mw
   return(Cdowdi)
 }
@@ -567,11 +574,57 @@ fcCovdwd <- function(md, mw, Cdow, Cdodi, ni, no, B){
 #' @return Covariance between derivatives and weights times derivatives
 #' @export
 fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
-  mdgo2 = matrix(matrix(rep(t(mdgo2), each = no), nrow = nrow(t(mdgo2))*no), no*no2, B)
-  m = t(matrix(matrix(rep(mdgo2*mwo, each = ni), nrow = nrow(mdgo2*mwo)*ni), no*no2, B*ni))
-  Cdowdi = matrix(rep(Cdowdi, no2), nrow = nrow(Cdodi))
+  mdgo2 = matrix(matrix(rep(mdgo2, no), nrow = nrow(t(mdgo2))*no, byrow = TRUE), no*no2, B)
+  m = t(matrix(matrix(rep(t(mdgo2*mwo), ni), nrow = nrow(mdgo2*mwo)*ni, byrow = TRUE), no*no2, B*ni))
+  Cdowdi = matrix(rep(Cdowdi, no2), nrow = nrow(Cdowdi))
   Cdgodgi = Cdowdi*m
   return(Cdgodgi)
+}
+
+#' Mean and Variance of Derivatives
+#'
+#' This function calculates mean and variance of derivatives.
+#'
+#' @param mx Mean vector of inputs
+#' @param Sx Variance of inputs
+#' @param mye Mean derivatives at each node in next layer
+#' @param my Mean vector of outputs
+#' @param Sy Variance of outputs
+#' @param Cxy Covariance between inputs and outputs
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in 2nd next layer
+#' @param B Batch size
+#' @return Covariance between derivatives and weights times derivatives
+#' @export
+fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
+  my = t(matrix(matrix(rep(t(matrix(my, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  Sy = t(matrix(matrix(rep(t(matrix(Sy, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  mye = array(aperm(array(t(mye), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  mye = t(matrix(mye[, rep(1:ncol(mye), each = ni),], no*no2,B*ni))
+
+  md = mx*my
+  Sd = Sx*Sy + Sy*(mx^2)
+
+  SxS = matrix(rep(Sx, no2), nrow = nrow(Sx), ncol = ncol(Sx)*no2)
+  Sd2 = rowSums(matrix(SxS*(mye^2), B*ni*no, no2))
+  Sd2 = matrix(Sd2, B*ni, no)
+
+  Sd = Sd + Sd2
+
+  Cxym = rowSums(matrix(Cxy, B*ni*no, no2))
+  Cxym = matrix(Cxym, B*ni, no)
+  md = md + Cxym
+
+  CxyS1 = rowSums(matrix(Cxy^2, B*ni*no, no2))
+  CxyS1 = matrix(CxyS1, B*ni, no)
+  CxyS2 = rowSums(matrix(2*Cxy*mye, B*ni*no, no2))
+  CxyS2 = matrix(CxyS2, B*ni, no)
+  CxyS2 = CxyS2*mx
+  Sd = Sd + CxyS1 + CxyS2
+
+  outputs <- list(md, Sd)
+  return(outputs)
 }
 
 #' Covariance between Activation and Hidden Units
@@ -589,11 +642,11 @@ fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
 #' @return Covariance between activation and hidden layers (same layer)
 #' @return Covariance between activation (next layer) and hidden (current layer) layers
 #' @export
-fcCovaz <- function(mw, Sw, mda, Sda, ni, no, B){
-  Jo = t(matrix(matrix(rep(matrix(Jo, no, B), each = ni), nrow = no*ni, ncol = B), no, ni*B))
-  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
+fcCovaz <- function(Jo, J, Sz, mw, ni, no, B){
+  Jo = t(matrix(matrix(rep(t(matrix(Jo, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
   Caizi = J*Sz
-  Caozi = Jo*Caizi*mw
+  Caozi = Jo*matrix(Caizi, nrow(mw), ncol(mw))*mw
 
   outputs <- list(Caizi, Caozi)
   return(outputs)
@@ -617,15 +670,15 @@ fcCovaz <- function(mw, Sw, mda, Sda, ni, no, B){
 #' @return Covariance between derivative and hidden layers (same layer)
 #' @export
 fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
-  mao = t(matrix(matrix(rep(matrix(mao, no, B), each = ni), nrow = no*ni, ncol = B), no, ni*B))
+  mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
   if (acti == 1){ # tanh
     Cdizi = -2*mai*Caizi
   } else if (acti == 2){ # sigmoid
     Cdizi = (1-2*mai)*Caizi
   } else if (acti == 4){ # relu
-    Cdizi = matrix(0, dim(mai))
+    Cdizi = matrix(0, nrow(mai), ncol(mai))
   } else {
-    Cdizi = matrix(0, dim(mai))
+    Cdizi = matrix(0, nrow(mai), ncol(mai))
   }
 
   if (acto == 1){ # tanh
@@ -633,9 +686,9 @@ fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
   } else if (acto == 2){ # sigmoid
     Cdozi = (1-2*mao)*Caozi
   } else if (acto == 4){ # relu
-    Cdozi = matrix(0, dim(mao))
+    Cdozi = matrix(0, nrow(mao), ncol(mao))
   } else {
-    Cdozi = matrix(0, dim(mao))
+    Cdozi = matrix(0, nrow(mao), ncol(mao))
   }
 
   outputs <- list(Cdozi, Cdizi)
@@ -660,15 +713,17 @@ fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
 #' @return Covariance between derivative and input layers
 #' @export
 covdx <- function(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B){
-  mdgo2 = matrix(matrix(rep(t(mdgo2), each = no), nrow = no), no*no2, B)
-  mw = matrix(rep(matrix(mw, ni, no), each = B), nrow = ni*B, ncol = no)
-  mdgoe = t(matrix(array(aperm(array(t(mdgoe), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,ni,B)), no*no2,B*ni))
-  m = t(matrix(matrix(rep(mgdo2*mwo, each = ni), nrow = ni), no*no2, B*ni))
+  mdgo2 = matrix(matrix(rep(mdgo2, no), nrow = no, byrow = TRUE), no*no2, B)
+  mw = matrix(rep(matrix(t(mw), ni, no), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  mdgoe = array(aperm(array(t(mdgoe), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  mdgoe = t(matrix(mdgoe[, rep(1:ncol(mdgoe), each = ni),], no*no2,B*ni))
+  m = t(matrix(matrix(rep(t(mdgo2*mwo), ni), nrow = ni*nrow(mdgo2*mwo), byrow = TRUE), no*no2, B*ni))
   Cdozi = matrix(rep(Cdozi, no2), nrow = nrow(Cdozi))
-  mpdi = matrix(rep(mpdi, no2), dim(Cdozi))
+  mpdi = matrix(rep(mpdi, no2), nrow(Cdozi), ncol(Cdozi))
   Cdx1 = Cdozi*m*mpdi
 
   mwdx2 = matrix(rep(mw, no2), nrow = nrow(mw))
+  Cdizi = matrix(Cdizi, nrow(mwdx2), ncol(mwdx2))
   Cdx2 = Cdizi*mwdx2*mdgoe
 
   Cdx = matrix(rowSums(matrix(Cdx1+Cdx2, B*ni*no, no2)), B*ni, no)
@@ -785,8 +840,8 @@ fcMeanVar <- function(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB){
   mw = matrix(matrix(mw, ni, no), nrow = ni, ncol = no*B)
   Sw = matrix(matrix(Sw, ni, no), nrow = ni, ncol = no*B)
   for (t in 1:rB){
-    maloop = matrix(matrix(rep(matrix(ma[,t], ni, B), each = no), ncol = B), ni, no*B)
-    Saloop = matrix(matrix(rep(matrix(Sa[,t], ni, B), each = no), ncol = B), ni, no*B)
+    maloop = matrix(matrix(rep(t(matrix(ma[,t], ni, B)), no), ncol = B, byrow = TRUE), ni, no*B)
+    Saloop = matrix(matrix(rep(t(matrix(Sa[,t], ni, B)), no), ncol = B, byrow = TRUE), ni, no*B)
     out_vectorizedMeanVar <- vectorizedMeanVar(maloop, mw, Saloop, Sw)
     mzloop = out_vectorizedMeanVar[[1]]
     Szloop = out_vectorizedMeanVar[[2]]
@@ -1312,12 +1367,12 @@ createStateCellarray <- function(nodes, numLayers, B, rB){
 #' @param rB Number of times batch size is repeated
 #' @return Unit matrices for each layer
 #' @export
-createStateCellarray <- function(nodes, numLayers, B, rB){
+createDevCellarray <- function(nodes, numLayers, B, rB){
   d = matrix(list(), nrow = numLayers, ncol = 1)
   for (j in 1:numLayers){
     d[[j, 1]] = matrix(1, nrow = nodes[j]*B, ncol = rB)
   }
-  return(z)
+  return(d)
 }
 
 #' Concatenate Parameters
