@@ -63,6 +63,7 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       out_hiddenStateBackwardPass = hiddenStateBackwardPass(NN, theta, states, yloop, NULL, NULL)
       deltaM = out_hiddenStateBackwardPass[[1]]
       deltaS = out_hiddenStateBackwardPass[[2]]
+      dtheta = parameterBackwardPass(NN, theta, states, deltaM, deltaS)
     }
   #     out_feedBackward = feedBackward(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, yloop)
   #     mp = out_feedBackward[[1]]

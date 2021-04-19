@@ -373,9 +373,9 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
   return(outputs)
 }
 
-#' Backpropagation (Deltas)
+#' Backpropagation (States' Deltas)
 #'
-#' This function update last hidden layer's deltas.
+#' This function calculates states' deltas.
 #'
 #' @param NN List that contains the structure of the neural network
 #' @param theta List that of parameters
@@ -384,8 +384,8 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
 #' @param Sy Variance of responses
 #' @param udIdx TBD
 #' @return A list that contains:
-#' @return - Delta of mean vector of hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}} at all layers
-#' @return - Delta of covariance matrix of hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}} at all layers
+#' @return - Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y}} at all layers
+#' @return - Delta of covariance matrix of units given \eqn{y} \eqn{\Sigma_{Z}|y}} at all layers
 #' @export
 hiddenStateBackwardPass <- function(NN, theta, states, y, Sy, udIdx){
 
@@ -479,22 +479,91 @@ hiddenStateBackwardPass <- function(NN, theta, states, y, Sy, udIdx){
   return(outputs)
 }
 
-#' Backpropagation (Deltas) for Fully Connected layers (Many Observations)
+#' Backpropagation (Parameters' Deltas)
 #'
-#' This function update last hidden layer's deltas.
+#' This function calculates parameter's deltas.
+#'
+#' @param NN List that contains the structure of the neural network
+#' @param theta List that of parameters
+#' @param states List of states
+#' @param deltaM Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y} at all layers
+#' @param deltaS Delta of covariance matrix of units given \eqn{y} \eqn{\Sigma_{Z}|y} at all layers
+#' @return Parameters' deltas (mean and covariance for each)
+#' @export
+parameterBackwardPass <- function(NN, theta, states, deltaM, deltaS){
+
+  # Initialization
+  out_extractParameters <- extractParameters(theta)
+  mw = out_extractParameters[[1]]
+  Sw = out_extractParameters[[2]]
+  mb = out_extractParameters[[3]]
+  Sb = out_extractParameters[[4]]
+  mwx = out_extractParameters[[5]]
+  Swx = out_extractParameters[[6]]
+  mbx = out_extractParameters[[7]]
+  Sbx = out_extractParameters[[8]]
+  out_extractStates <- extractStates(states)
+  ma = out_extractStates[[3]]
+  numLayers = length(NN$nodes)
+  B = NN$batchSize
+  rB = NN$repBatchSize
+  nodes = NN$nodes
+  layer = NN$layer
+  numParamsPerLayer_2 = NN$numParamsPerLayer_2
+
+  deltaMw = mw
+  deltaSw = Sw
+  deltaMb = mb
+  deltaSb = Sb
+  deltaMwx = mwx
+  deltaSwx = Swx
+  deltaMbx = mbx
+  deltaSbx = Sbx
+
+  for (j in (numLayers-1):1){
+    idxw = (numParamsPerLayer_2[1, j]+1):numParamsPerLayer_2[1, j+1]
+    idxb = (numParamsPerLayer_2[2, j]+1):numParamsPerLayer_2[2, j+1]
+
+    # Convolutional
+    if (layer[j+1] == NN$layerEncoder$fc){
+      if ((j > 1)|(NN$convariateEstm == 1)){
+        if ((B == 1) & (rB == 1)){
+          out_fcParameterBackwardPassB1 <- fcParameterBackwardPassB1(Sw[idxw], Sb[idxb], ma[[j,1]], deltaM[[j+1,1]], deltaS[[j+1,1]], nodes[j], nodes[j+1])
+          deltaMz[idxw] = out_fcParameterBackwardPassB1[[1]]
+          deltaSz[idxw] = out_fcParameterBackwardPassB1[[2]]
+          deltaMb[idxb] = out_fcParameterBackwardPassB1[[3]]
+          deltaSb[idxb] = out_fcParameterBackwardPassB1[[4]]
+        } else {
+          out_fcParameterBackwardPass <- fcParameterBackwardPass(deltaMw[idxw], deltaSw[idxw], deltaMb[idxb], deltaSb[idxb], Sw[idxw], Sb[idxb], ma[[j,1]], deltaM[[j+1,1]], deltaS[[j+1,1]], nodes[j], nodes[j+1], B, rB)
+          deltaMz[idxw] = out_fcParameterBackwardPass[[1]]
+          deltaSz[idxw] = out_fcParameterBackwardPass[[2]]
+          deltaMb[idxb] = out_fcParameterBackwardPass[[3]]
+          deltaSb[idxb] = out_fcParameterBackwardPass[[4]]
+        }
+      }
+    }
+  }
+  deltaTheta = compressParameters(deltaMw, deltaSw, deltaMb, deltaSb, deltaMwx, deltaSwx, deltaMbx, deltaSbx)
+  return(deltaTheta)
+}
+
+#' Backpropagation (States' Deltas) for Fully Connected Layers (Many Observations)
+#'
+#' This function calculates last layer units' deltas when using more than one
+#' observation at the time.
 #'
 #' @param Sz Covariance of the units from current layer
 #' @param Sxs TBD
 #' @param J Jacobian of current layer
 #' @param mw Mean vector of the weights for the current layer
-#' @param deltaM Delta of mean vector of the next hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}
-#' @param deltaS Delta of covariance matrix of the next hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param deltaM Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaS Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
-#' @return - Delta of mean vector of the hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
-#' @return - Delta of covariance matrix of the hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+#' @return - Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+#' @return - Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 #' @return - TBD
 #' @return - TBD
 #' @export
@@ -538,20 +607,20 @@ fcHiddenStateBackwardPass <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B,
 }
 
 
-#' Backpropagation (Deltas) for Fully Connected layers (One Observation)
+#' Backpropagation (States' Deltas) for Fully Connected Layers (One Observation)
 #'
-#' This function update last hidden layer's deltas.
+#' This function calculates last layer units' deltas when using one observation at the time.
 #'
 #' @param Sz Covariance of the units from current layer
 #' @param Sxs TBD
 #' @param J Jacobian of current layer
 #' @param mw Mean vector of the weights for the current layer
-#' @param deltaM Delta of mean vector of the next hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}
-#' @param deltaS Delta of covariance matrix of the next hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param deltaM Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaS Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @return - Delta of mean vector of the hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
-#' @return - Delta of covariance matrix of the hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+#' @return - Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+#' @return - Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 #' @return - TBD
 #' @return - TBD
 #' @export

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{hiddenStateBackwardPass}
 \alias{hiddenStateBackwardPass}
-\title{Backpropagation (Deltas)}
+\title{Backpropagation (States' Deltas)}
 \usage{
 hiddenStateBackwardPass(NN, theta, states, y, Sy, udIdx)
 }
@@ -23,13 +23,13 @@ hiddenStateBackwardPass(NN, theta, states, y, Sy, udIdx)
 A list that contains:
 
 \itemize{
-\item Delta of mean vector of hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}} at all layers
+\item Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y}} at all layers
 }
 
 \itemize{
-\item Delta of covariance matrix of hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}} at all layers
+\item Delta of covariance matrix of units given \eqn{y} \eqn{\Sigma_{Z}|y}} at all layers
 }
 }
 \description{
-This function update last hidden layer's deltas.
+This function calculates states' deltas.
 }

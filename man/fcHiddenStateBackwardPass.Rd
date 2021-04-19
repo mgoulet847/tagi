@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcHiddenStateBackwardPass}
 \alias{fcHiddenStateBackwardPass}
-\title{Backpropagation (Deltas) for Fully Connected layers (Many Observations)}
+\title{Backpropagation (States' Deltas) for Fully Connected Layers (Many Observations)}
 \usage{
 fcHiddenStateBackwardPass(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB)
 }
@@ -15,9 +15,9 @@ fcHiddenStateBackwardPass(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB)
 
 \item{mw}{Mean vector of the weights for the current layer}
 
-\item{deltaM}{Delta of mean vector of the next hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item{deltaM}{Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
 
-\item{deltaS}{Delta of covariance matrix of the next hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+\item{deltaS}{Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 
 \item{ni}{Number of units in current layer}
 
@@ -29,11 +29,11 @@ fcHiddenStateBackwardPass(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB)
 }
 \value{
 \itemize{
-\item Delta of mean vector of the hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
 }
 
 \itemize{
-\item Delta of covariance matrix of the hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+\item Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 }
 
 \itemize{
@@ -45,5 +45,6 @@ fcHiddenStateBackwardPass(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB)
 }
 }
 \description{
-This function update last hidden layer's deltas.
+This function calculates last layer units' deltas when using more than one
+observation at the time.
 }
