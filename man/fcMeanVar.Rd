@@ -25,7 +25,7 @@ fcMeanVar(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB)
 
 \item{B}{Batch size}
 
-\item{rB}{TBD}
+\item{rB}{Number of times batch size is repeated}
 }
 \value{
 Mean vector of the units for the current layer \eqn{\mu_{Z}}

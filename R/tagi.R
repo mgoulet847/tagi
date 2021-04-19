@@ -214,7 +214,7 @@ feedForwardPass <- function(NN, theta, states){
     } else {
       ma[[j,1]] = mz[[j,1]]
       Sa[[j,1]] = Sz[[j,1]]
-      J[[j,1]]= rep(1, nrow(mz[[j,1]]))
+      J[[j,1]]= matrix(1, nrow(mz[[j,1]]), ncol(mz[[j,1]]))
     }
 
     # Derivative for FC
@@ -309,9 +309,6 @@ derivative <- function(NN, theta, states, mda, Sda, dlayer){
   return(outputs)
 }
 
-
-# Backward network
-
 #' Backpropagation
 #'
 #' This function feeds the neural network backward from responses to input data.
@@ -373,6 +370,231 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
     }
   }
   outputs <- list(mpUd, SpUd)
+  return(outputs)
+}
+
+#' Backpropagation (Deltas)
+#'
+#' This function update last hidden layer's deltas.
+#'
+#' @param NN List that contains the structure of the neural network
+#' @param theta List that of parameters
+#' @param states List of states
+#' @param y A vector or a matrix of responses
+#' @param Sy Variance of responses
+#' @param udIdx TBD
+#' @return A list that contains:
+#' @return - Delta of mean vector of hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}} at all layers
+#' @return - Delta of covariance matrix of hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}} at all layers
+#' @export
+hiddenStateBackwardPass <- function(NN, theta, states, y, Sy, udIdx){
+
+  # Initialization
+  out_extractParameters <- extractParameters(theta)
+  mw = out_extractParameters[[1]]
+  out_extractStates <- extractStates(states)
+  mz = out_extractStates[[1]]
+  Sz = out_extractStates[[2]]
+  ma = out_extractStates[[3]]
+  Sa = out_extractStates[[4]]
+  J = out_extractStates[[5]]
+  mdxs = out_extractStates[[6]]
+  Sdxs = out_extractStates[[7]]
+  Sxs = out_extractStates[[9]]
+  numLayers = length(NN$nodes)
+  B = NN$batchSize
+  rB = NN$repBatchSize
+  nodes = NN$nodes
+  layer = NN$layer
+  lHL = numLayers - 1
+  numParamsPerLayer_2 = NN$numParamsPerLayer_2
+
+  deltaM = matrix(list(), nrow = numLayers, ncol = 1)
+  deltaS = matrix(list(), nrow = numLayers, ncol = 1)
+
+  # Update hidden states for the last hidden layer
+  if (NN$lastLayerUpdate == 1){
+    if (is.null(Sy)){
+      R = NN$sv^2
+    } else {
+      R = NN$sv^2 + Sy
+    }
+    if (is.null(udIdx)){
+      Szv = Sa[[length(Sa),1]] + R
+      out_forwardHiddenStateUpdate = forwardHiddenStateUpdate(0, 0, ma[[lHL+1,1]], Szv, J[[lHL+1,1]]*Sz[[lHL+1,1]], y)
+      deltaMz = out_forwardHiddenStateUpdate[[1]]
+      deltaSz = out_forwardHiddenStateUpdate[[2]]
+    } else {
+      mzf = ma[[length(ma),1]][udIdx]
+      Szf = J[[lHL+1,1]][udIdx] * Sz[[lHL+1,1]][udIdx]
+      ys = y
+      Szv = Sa[[length(Sa),1]][udIdx] + R
+      deltaMz = matrix(0, nrow(mz[[lHL+1,1]]), ncol(mz[[lHL+1,1]]))
+      deltaSz = matrix(0, nrow(Sz[[lHL+1,1]]), ncol(Sz[[lHL+1,1]]))
+      out_forwardHiddenStateUpdate = forwardHiddenStateUpdate(0, 0, mzf, Szv, Szf, ys)
+      deltaMz[udIdx] = out_forwardHiddenStateUpdate[[1]]
+      deltaSz[udIdx] = out_forwardHiddenStateUpdate[[2]]
+    }
+  } else {
+    deltaMz = y
+    deltaSz = Sy
+  }
+
+  for (j in (numLayers-1):1){
+    if (is.null(mdxs[[j+1,1]])){
+      nSz = Sz[[j+1,1]]
+    } else {
+      nSz = Sdxs[[j+1,1]]
+    }
+    if (is.null(mdxs[[j,1]])){
+      cSz = Sz[[j,1]]
+    } else {
+      cSz = Sdxs[[j,1]]
+    }
+
+    cSxs = Sxs[[j,1]]
+    idxw = (numParamsPerLayer_2[1, j]+1):numParamsPerLayer_2[1, j+1]
+
+    # Innovation vector
+    out_innovationVector = innovationVector(nSz, deltaMz, deltaSz)
+    deltaM[[j+1,1]] = out_innovationVector[[1]]
+    deltaS[[j+1,1]] = out_innovationVector[[2]]
+
+    # Max pooling
+    if (layer[j+1] == NN$layerEncoder$fc){
+      if ((j > 1)|(NN$convariateEstm == 1)){
+        if ((B == 1) & (rB == 1)){
+          out_fcHiddenStateBackwardPassB1 <- fcHiddenStateBackwardPassB1(cSz, cSxs, J[[j,1]], mw[idxw], deltaM[[j+1,1]], deltaS[[j+1,1]], nodes[j], nodes[j+1])
+          deltaMz = out_fcHiddenStateBackwardPassB1[[1]]
+          deltaSz = out_fcHiddenStateBackwardPassB1[[2]]
+        } else {
+          out_fcHiddenStateBackwardPass <- fcHiddenStateBackwardPass(cSz, cSxs, J[[j,1]], mw[idxw], deltaM[[j+1,1]], deltaS[[j+1,1]], nodes[j], nodes[j+1], B, rB)
+          deltaMz = out_fcHiddenStateBackwardPass[[1]]
+          deltaSz = out_fcHiddenStateBackwardPass[[2]]
+        }
+      }
+    }
+  }
+  outputs <- list(deltaM, deltaS)
+  return(outputs)
+}
+
+#' Backpropagation (Deltas) for Fully Connected layers (Many Observations)
+#'
+#' This function update last hidden layer's deltas.
+#'
+#' @param Sz Covariance of the units from current layer
+#' @param Sxs TBD
+#' @param J Jacobian of current layer
+#' @param mw Mean vector of the weights for the current layer
+#' @param deltaM Delta of mean vector of the next hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaS Delta of covariance matrix of the next hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param B Batch size
+#' @param rB Number of times batch size is repeated
+#' @return - Delta of mean vector of the hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+#' @return - Delta of covariance matrix of the hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+#' @return - TBD
+#' @return - TBD
+#' @export
+fcHiddenStateBackwardPass <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB){
+  deltaMz = Sz
+  deltaSz = Sz
+  deltaMzx = Sxs
+  deltaSzx = Sxs
+  mw = matrix(rep(t(matrix(mw, ni, no)),B), nrow = ni*B, byrow = TRUE)
+
+  if (is.null(Sxs)){
+    for (t in 1:rB){
+      Czz = J[,t]*Sz[,t]*mw
+      deltaMzloop = t(matrix(matrix(rep(t(matrix(deltaM[,t], no, B)), ni), ncol = B, byrow = TRUE), no, ni*B))
+      deltaSzloop = t(matrix(matrix(rep(t(matrix(deltaS[,t], no, B)), ni), ncol = B, byrow = TRUE), no, ni*B))
+      deltaMzloop = Czz*deltaMzloop
+      deltaSzloop = Czz*deltaSzloop*Czz
+      deltaMz[,t] = matrix(rowSums(deltaMzloop), ncol=1)
+      deltaSz[,t] = matrix(rowSums(deltaSzloop), ncol=1)
+      deltaMzx[,t] = NULL
+      deltaSzx[,t] = NULL
+    }
+  } else {
+    for (t in 1:rB){
+      Czz = J[,t]*Sz[,t]*mw
+      Czx = J[,t]*Sxs[,t]*mw
+      deltaMloop = t(matrix(matrix(rep(t(matrix(deltaM[,t], no, B)), ni), ncol = B, byrow = TRUE), no, ni*B))
+      deltaSloop = t(matrix(matrix(rep(t(matrix(deltaS[,t], no, B)), ni), ncol = B, byrow = TRUE), no, ni*B))
+      deltaMzloop = Czz*deltaMloop
+      deltaSzloop = Czz*deltaSloop*Czz
+      deltaMxsloop = Czx*deltaMloop
+      deltaSxsloop = Czx*deltaSloop*Czx
+      deltaMz[,t] = matrix(rowSums(deltaMzloop), nrow(deltaMzloop), 1)
+      deltaSz[,t] = matrix(rowSums(deltaSzloop), nrow(deltaSzloop), 1)
+      deltaMzx[,t] = matrix(rowSums(deltaMxsloop), nrow(deltaMxsloop), 1)
+      deltaSzx[,t] = matrix(rowSums(deltaSxsloop), nrow(deltaSxsloop), 1)
+    }
+  }
+  outputs <- list(deltaMz, deltaSz, deltaMzx, deltaSzx)
+  return(outputs)
+}
+
+
+#' Backpropagation (Deltas) for Fully Connected layers (One Observation)
+#'
+#' This function update last hidden layer's deltas.
+#'
+#' @param Sz Covariance of the units from current layer
+#' @param Sxs TBD
+#' @param J Jacobian of current layer
+#' @param mw Mean vector of the weights for the current layer
+#' @param deltaM Delta of mean vector of the next hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaS Delta of covariance matrix of the next hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @return - Delta of mean vector of the hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+#' @return - Delta of covariance matrix of the hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+#' @return - TBD
+#' @return - TBD
+#' @export
+fcHiddenStateBackwardPassB1 <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no){
+  mw = matrix(mw, ni, no)
+  deltaMzx = Sxs
+  deltaSzx = Sxs
+
+  if (is.null(Sxs)){
+    deltaMloop = matrix(rep(deltaM, ni), nrow = ni, byrow = TRUE)
+    deltaSloop = matrix(rep(deltaS, ni), nrow = ni, byrow = TRUE)
+
+    Caz = J*Sz
+    Caz = matrix(Caz, nrow(mw), ncol(mw))
+    Cwa = mw*Caz
+    deltaMzloop = Cwa*deltaMloop
+    deltaSzloop = (Cwa^2)*deltaSloop
+
+    deltaMz = matrix(rowSums(deltaMzloop), nrow(deltaMzloop), 1)
+    deltaSz = matrix(rowSums(deltaSzloop), nrow(deltaSzloop), 1)
+    deltaMzx = NULL
+    deltaSzx = NULL
+  } else {
+    deltaMloop = matrix(rep(deltaM, ni), nrow = ni, byrow = TRUE)
+    deltaSloop = matrix(rep(deltaS, ni), nrow = ni, byrow = TRUE)
+
+    Caz = J*Sz
+    Caxs = J*Sxs
+    Caz = matrix(Caz, nrow(mw), ncol(mw))
+    Caxs = matrix(Caz, nrow(mw), ncol(mw))
+
+    out_vectorized4delta <- vectorized4delta(mw, Caz, Caxs, deltaMloop, deltaSloop)
+    deltaMzloop = out_vectorized4delta[[1]]
+    deltaSzloop = out_vectorized4delta[[2]]
+    deltaMzsloop = out_vectorized4delta[[3]]
+    deltaSzsloop = out_vectorized4delta[[4]]
+
+    deltaMz = matrix(rowSums(deltaMzloop), nrow(deltaMzloop), 1)
+    deltaSz = matrix(rowSums(deltaSzloop), nrow(deltaSzloop), 1)
+    deltaMzx = matrix(rowSums(deltaMzsloop), nrow(deltaMzsloop), 1)
+    deltaSzx = matrix(rowSums(deltaSzsloop), nrow(deltaSzsloop), 1)
+  }
+  outputs <- list(deltaMz, deltaSz, deltaMzx, deltaSzx)
   return(outputs)
 }
 
@@ -825,7 +1047,7 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
 #' @param ni Number of units in previous layer
 #' @param no Number of units in current layer
 #' @param B Batch size
-#' @param rB TBD
+#' @param rB Number of times batch size is repeated
 #' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
 #' @return Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
 #' @export
@@ -873,17 +1095,23 @@ fcMeanVar <- function(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB){
 fcMeanVarB1 <- function(mw, Sw, mb, Sb, ma, Sa, ni, no){
 
   if (any(is.nan(mb))){
-    mb = rep(0, 1)
-    Sb = rep(0, 1)
+    mb = matrix(0, no, 1)
+    Sb = matrix(0, no, 1)
+  } else {
+    mb = matrix(mb, no, 1)
+    Sb = matrix(Sb, no, 1)
   }
+
   mw = matrix(mw, ni, no)
   Sw = matrix(Sw, ni, no)
+  ma = matrix(ma, ni, no)
+  Sa = matrix(Sa, ni, no)
 
   out_vectorizedMeanVar <- vectorizedMeanVar(ma, mw, Sa, Sw)
   mzloop = out_vectorizedMeanVar[[1]]
   Szloop = out_vectorizedMeanVar[[2]]
-  mzloop = t(colSums(mzloop))
-  Szloop = t(colSums(Szloop))
+  mzloop = matrix(colSums(mzloop), no, 1)
+  Szloop = matrix(colSums(Szloop), no, 1)
 
   mz = mzloop + mb
   Sz = Szloop + Sb
@@ -1030,6 +1258,34 @@ backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
   return(outputs)
 }
 
+#' Last Hidden Layer States' Deltas Update
+#'
+#' This function updates hidden layer units' deltas using next hidden layer' deltas. It updates
+#' \eqn{\mu_{Z|y}} and \eqn{\Sigma_{Z|y}} from the \eqn{Z|y}
+#' distribution.
+#'
+#' @param SzF Covariance matrix of the units for the next layer \eqn{\Sigma_{y}}
+#' @param dMz Delta of mean vector of the units for the next hidden layer \eqn{\mu_{Z}}
+#' @param dSz Delta of covariance matrix of the units for the next hidden layer \eqn{\Sigma_{Z}}
+#' @details \eqn{f(\boldsymbol{z}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z};\boldsymbol{\mu_{Z|y}},\boldsymbol{\Sigma_{Z^|y}})} where
+#' @details \eqn{\boldsymbol{\mu_{{Z}|y}} = \boldsymbol{\mu_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
+#' @details \eqn{\boldsymbol{\Sigma_{{Z}|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})}\boldsymbol{J_{Z}^{T}}
+#' @details \eqn{\boldsymbol{J_{Z}} = \boldsymbol{\Sigma_{ZZ^{+}}} \boldsymbol{\Sigma_{Z^{+}}^{-1}}}
+#' @return A list that contains:
+#' @return - Delta of mean vector of the current hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+#' @return - Delta of covariance matrix of the current hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+#' @export
+innovationVector <- function(SzF, dMz, dSz){
+  iSzF = 1 / SzF
+  iSzF[is.infinite(iSzF)] = 0
+  out_vectorizedDelta <- vectorizedDelta(iSzF, dMz, dSz)
+  deltaM = out_vectorizedDelta[[1]]
+  deltaS = out_vectorizedDelta[[2]]
+
+  out <- list(deltaM, deltaS)
+  return(out)
+}
+
 #' Last hidden layer states update
 #'
 #' This function updates last hidden layer units using responses. It updates
@@ -1052,6 +1308,7 @@ backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
 forwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
   dz = y - mzF
   SzF = 1 / SzF
+  SzF[is.infinite(SzF)] = 0
   K = Cyz * SzF
   # Mean
   mzUd = mz + K * dz
@@ -1279,7 +1536,7 @@ initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0,
   # Normal network
   mz[[1,1]] = mz0
   if (any(is.null(Sz0))){
-    Sz[[1,1]] = rep(0, length(mz0))
+    Sz[[1,1]] = matrix(0, nrow(mz0), ncol(mz0))
   } else {
     Sz[[1,1]] = Sz0
   }
@@ -1294,7 +1551,7 @@ initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0,
     Sa[[1,1]] = Sa0
   }
   if (any(is.null(J0))){
-    J[[1,1]] = rep(1, length(mz0))
+    J[[1,1]] = matrix(1, nrow(mz0), ncol(mz0))
   } else {
     J[[1,1]] = J0
   }
@@ -1306,7 +1563,7 @@ initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0,
     mdxs[1,1] = list(mdxs0) # In this case, mdxs0 might be NULL (only way to code it)
   }
   if (any(is.null(Sdxs0)) & !all(xsc == 0)){
-    Sdxs[[1,1]] = rep(0, length(mz0))
+    Sdxs[[1,1]] = matrix(0, nrow(mz0), ncol(mz0))
   } else {
     Sdxs[1,1] = list(Sdxs0)
   }
@@ -1316,7 +1573,7 @@ initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0,
     mxs[1,1] = list(mxs0)
   }
   if (any(is.null(Sxs0)) & !all(xsc == 0)){
-    Sxs[[1,1]] = rep(0, length(mz0))
+    Sxs[[1,1]] = matrix(0, nrow(mz0), ncol(mz0))
   } else {
     Sxs[1,1] = list(Sxs0)
   }
