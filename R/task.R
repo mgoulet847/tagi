@@ -28,12 +28,12 @@ runBatchDerivative <- function(NN, xtrain, ytrain, xtest, ytest){
   Sx = Sxopt * rep(1, nrow(xtrain))
 
   while (stop == 0){
+    epoch = epoch + 1
     if (epoch >= 1){
       idxtrain = sample(nrow(ytrain))
       ytrain = matrix(ytrain[idxtrain,], nrow = length(ytrain[idxtrain,]))
-      xtrain = xtrain[idxtrain,]
+      xtrain = matrix(xtrain[idxtrain,], nrow = length(xtrain[idxtrain,]))
     }
-    epoch = epoch + 1
     out_batchDerivative = batchDerivative(NN, theta, normStat, states, xtrain, Sx, ytrain, 1)
     theta = out_batchDerivative[[1]]
     normStat = out_batchDerivative[[2]]
@@ -45,4 +45,13 @@ runBatchDerivative <- function(NN, xtrain, ytrain, xtest, ytest){
       stop = 1
     }
   }
+
+  # Testing
+  out_batchDerivative = batchDerivative(NNtest, theta, normStatT, statesT, xtest, Sx, NULL, 1)
+  yp = out_batchDerivative[[3]]
+  Syp = out_batchDerivative[[4]]
+  dyp = out_batchDerivative[[5]]
+
+  outputs <- list(yp, Syp, dyp)
+  return(outputs)
 }

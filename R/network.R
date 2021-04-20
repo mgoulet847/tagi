@@ -27,7 +27,7 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
   numCovariates = NN$nx
   mzl = matrix(0, numObs, NN$ny)
   Szl = matrix(0, numObs, NN$ny)
-  mdg = matrix(0, NN$nodes[dlayer], numCovariates)
+  mdg = matrix(0, numObs, numCovariates)
   Sdg = mdg
   Cdgz = mdg
   # Loop
@@ -64,23 +64,31 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       deltaM = out_hiddenStateBackwardPass[[1]]
       deltaS = out_hiddenStateBackwardPass[[2]]
       dtheta = parameterBackwardPass(NN, theta, states, deltaM, deltaS)
+      theta = globalParameterUpdate(theta, dtheta)
     }
-  #     out_feedBackward = feedBackward(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, yloop)
-  #     mp = out_feedBackward[[1]]
-  #     Sp = out_feedBackward[[2]]
-  #     zn[idxBatch,] = t(matrix(mz[[length(mz)]], nrow = NN$ny, ncol = length(idxBatch)))
-  #     Szn[idxBatch,] = t(matrix(Sz[[length(Sz)]], nrow = NN$ny, ncol = length(idxBatch)))
-  #
-  #   # Testing
-  #   else {
-  #     out_feedForward = feedForward(NN, xloop, mp, Sp)
-  #     mz = out_feedForward[[1]]
-  #     Sz = out_feedForward[[2]]
-  #     zn[idxBatch,] = t(matrix(mz, nrow = NN$ny, ncol = length(idxBatch)))
-  #     Szn[idxBatch,] = t(matrix(Sz, nrow = NN$ny, ncol = length(idxBatch)))
- }
-  # outputs <- list(mp, Sp, zn, Szn)
-  # return(outputs)
+    # Testing
+    else {
+      out_feedForwardPass = feedForwardPass(NN, theta, states)
+      states = out_feedForwardPass[[1]]
+      mda = out_feedForwardPass[[2]]
+      Sda = out_feedForwardPass[[3]]
+      out_derivative = derivative(NN, theta, states, mda, Sda, dlayer)
+      mdgi = out_derivative[[1]]
+      Sdgi = out_derivative[[2]]
+      Cdgzi = out_derivative[[3]]
+    }
+
+    out_extractStates = extractStates(states)
+    ma = out_extractStates[[3]]
+    Sa = out_extractStates[[4]]
+    mzl[idxBatch,] = t(matrix(ma[[length(ma),1]], NN$ny, numDataPerBatch))
+    Szl[idxBatch,] = t(matrix(Sa[[length(Sa),1]], NN$ny, numDataPerBatch))
+    mdg[idxBatch,] = t(matrix(mdgi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
+    Sdg[idxBatch,] = t(matrix(Sdgi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
+    Cdgz[idxBatch,] = t(matrix(Cdgzi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
+  }
+  outputs <- list(theta, normStat, mzl, Szl, mdg, Sdg, Cdgz)
+  return(outputs)
 }
 
 #' Network initialization

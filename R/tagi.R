@@ -149,7 +149,7 @@ feedForward <- function(NN, x, mp, Sp){
 #' responses and considers components required for derivative calculations.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param theta List that of parameters
+#' @param theta List of parameters
 #' @param states List of states
 #' @return A list that contains:
 #' @return - \code{states}: List that contains states
@@ -234,7 +234,7 @@ feedForwardPass <- function(NN, theta, states){
 #' This function does derivative calculations.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param theta List that of parameters
+#' @param theta List of parameters
 #' @param states List of states
 #' @param mda Mean vector of activation units' derivative
 #' @param Sda Covariance matrix of activation units' derivative
@@ -378,7 +378,7 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
 #' This function calculates states' deltas.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param theta List that of parameters
+#' @param theta List of parameters
 #' @param states List of states
 #' @param y A vector or a matrix of responses
 #' @param Sy Variance of responses
@@ -484,7 +484,7 @@ hiddenStateBackwardPass <- function(NN, theta, states, y, Sy, udIdx){
 #' This function calculates parameter's deltas.
 #'
 #' @param NN List that contains the structure of the neural network
-#' @param theta List that of parameters
+#' @param theta List of parameters
 #' @param states List of states
 #' @param deltaM Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y} at all layers
 #' @param deltaS Delta of covariance matrix of units given \eqn{y} \eqn{\Sigma_{Z}|y} at all layers
@@ -1495,6 +1495,53 @@ forwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
   #Outputs
   out <- list(mzUd, SzUd)
   return(out)
+}
+
+#' Backpropagation (Parameters Update)
+#'
+#' This function updates parameters.
+#'
+#' @param theta List of parameters
+#' @param deltaTheta Parameters' deltas (mean and covariance for each)
+#' @return List of updated parameters
+#' @export
+globalParameterUpdate <- function(theta, deltaTheta){
+
+  # Initialization
+  out_extractParameters <- extractParameters(theta)
+  mw = out_extractParameters[[1]]
+  Sw = out_extractParameters[[2]]
+  mb = out_extractParameters[[3]]
+  Sb = out_extractParameters[[4]]
+  mwx = out_extractParameters[[5]]
+  Swx = out_extractParameters[[6]]
+  mbx = out_extractParameters[[7]]
+  Sbx = out_extractParameters[[8]]
+  out_extractParameters <- extractParameters(deltaTheta)
+  deltaMw = out_extractParameters[[1]]
+  deltaSw = out_extractParameters[[2]]
+  deltaMb = out_extractParameters[[3]]
+  deltaSb = out_extractParameters[[4]]
+  deltaMwx = out_extractParameters[[5]]
+  deltaSwx = out_extractParameters[[6]]
+  deltaMbx = out_extractParameters[[7]]
+  deltaSbx = out_extractParameters[[8]]
+
+  out_twoPlus <- twoPlus(mw, Sw, deltaMw, deltaSw)
+  mw = out_twoPlus[[1]]
+  Sw = out_twoPlus[[2]]
+  out_twoPlus <- twoPlus(mb, Sb, deltaMb, deltaSb)
+  mb = out_twoPlus[[1]]
+  Sb = out_twoPlus[[2]]
+  out_twoPlus <- twoPlus(mwx, Swx, deltaMwx, deltaSwx)
+  mwx = out_twoPlus[[1]]
+  Swx = out_twoPlus[[2]]
+  out_twoPlus <- twoPlus(mbx, Sbx, deltaMbx, deltaSbx)
+  mbx = out_twoPlus[[1]]
+  Sbx = out_twoPlus[[2]]
+
+  theta = compressParameters(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
+  return(theta)
 }
 
 #' Reformat covariance matrix between units and parameters

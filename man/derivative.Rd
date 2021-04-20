@@ -9,7 +9,7 @@ derivative(NN, theta, states, mda, Sda, dlayer)
 \arguments{
 \item{NN}{List that contains the structure of the neural network}
 
-\item{theta}{List that of parameters}
+\item{theta}{List of parameters}
 
 \item{states}{List of states}
 

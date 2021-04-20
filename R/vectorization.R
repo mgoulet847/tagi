@@ -1,3 +1,10 @@
+twoPlus <- function(m, S, deltaM, deltaS){
+  m = m + deltaM
+  S = S + deltaS
+  outputs <- list(m, S)
+  return(outputs)
+}
+
 vectorizedMeanVar <- function(ma, mp, Sa, Sp){
   Sz = Sp*ma*ma + Sa*Sp + Sa*mp*mp
   mz = ma*mp
