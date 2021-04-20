@@ -41,5 +41,5 @@ fcHiddenStateBackwardPassB1(Sz, Sxs, J, mw, deltaM, deltaS, ni, no)
 }
 }
 \description{
-This function calculates last layer units' deltas when using one observation at the time.
+This function calculates units' deltas at a given layer when using one observation at the time.
 }

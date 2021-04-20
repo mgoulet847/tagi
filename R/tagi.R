@@ -511,14 +511,14 @@ parameterBackwardPass <- function(NN, theta, states, deltaM, deltaS){
   layer = NN$layer
   numParamsPerLayer_2 = NN$numParamsPerLayer_2
 
-  deltaMw = mw
-  deltaSw = Sw
-  deltaMb = mb
-  deltaSb = Sb
-  deltaMwx = mwx
-  deltaSwx = Swx
-  deltaMbx = mbx
-  deltaSbx = Sbx
+  deltaMw = matrix(mw, ncol = 1)
+  deltaSw = matrix(Sw, ncol = 1)
+  deltaMb = matrix(mb, ncol = 1)
+  deltaSb = matrix(Sb, ncol = 1)
+  deltaMwx = matrix(mwx, ncol = 1)
+  deltaSwx = matrix(Swx, ncol = 1)
+  deltaMbx = matrix(mbx, ncol = 1)
+  deltaSbx = matrix(Sbx, ncol = 1)
 
   for (j in (numLayers-1):1){
     idxw = (numParamsPerLayer_2[1, j]+1):numParamsPerLayer_2[1, j+1]
@@ -529,14 +529,14 @@ parameterBackwardPass <- function(NN, theta, states, deltaM, deltaS){
       if ((j > 1)|(NN$convariateEstm == 1)){
         if ((B == 1) & (rB == 1)){
           out_fcParameterBackwardPassB1 <- fcParameterBackwardPassB1(Sw[idxw], Sb[idxb], ma[[j,1]], deltaM[[j+1,1]], deltaS[[j+1,1]], nodes[j], nodes[j+1])
-          deltaMz[idxw] = out_fcParameterBackwardPassB1[[1]]
-          deltaSz[idxw] = out_fcParameterBackwardPassB1[[2]]
+          deltaMw[idxw] = out_fcParameterBackwardPassB1[[1]]
+          deltaSw[idxw] = out_fcParameterBackwardPassB1[[2]]
           deltaMb[idxb] = out_fcParameterBackwardPassB1[[3]]
           deltaSb[idxb] = out_fcParameterBackwardPassB1[[4]]
         } else {
           out_fcParameterBackwardPass <- fcParameterBackwardPass(deltaMw[idxw], deltaSw[idxw], deltaMb[idxb], deltaSb[idxb], Sw[idxw], Sb[idxb], ma[[j,1]], deltaM[[j+1,1]], deltaS[[j+1,1]], nodes[j], nodes[j+1], B, rB)
-          deltaMz[idxw] = out_fcParameterBackwardPass[[1]]
-          deltaSz[idxw] = out_fcParameterBackwardPass[[2]]
+          deltaMw[idxw] = out_fcParameterBackwardPass[[1]]
+          deltaSw[idxw] = out_fcParameterBackwardPass[[2]]
           deltaMb[idxb] = out_fcParameterBackwardPass[[3]]
           deltaSb[idxb] = out_fcParameterBackwardPass[[4]]
         }
@@ -549,7 +549,7 @@ parameterBackwardPass <- function(NN, theta, states, deltaM, deltaS){
 
 #' Backpropagation (States' Deltas) for Fully Connected Layers (Many Observations)
 #'
-#' This function calculates last layer units' deltas when using more than one
+#' This function calculates units' deltas at a given layer when using more than one
 #' observation at the time.
 #'
 #' @param Sz Covariance of the units from current layer
@@ -609,7 +609,7 @@ fcHiddenStateBackwardPass <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B,
 
 #' Backpropagation (States' Deltas) for Fully Connected Layers (One Observation)
 #'
-#' This function calculates last layer units' deltas when using one observation at the time.
+#' This function calculates units' deltas at a given layer when using one observation at the time.
 #'
 #' @param Sz Covariance of the units from current layer
 #' @param Sxs TBD
@@ -1186,6 +1186,114 @@ fcMeanVarB1 <- function(mw, Sw, mb, Sb, ma, Sa, ni, no){
   Sz = Szloop + Sb
 
   outputs <- list(mz, Sz)
+  return(outputs)
+}
+
+#' Backpropagation (Parameters' Deltas) for Fully Connected Layers (Many Observations)
+#'
+#' This function calculates parameters' deltas at a given layer when using more than one observation at the time.
+#'
+#' @param deltaMw Next layer delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @param deltaSw Next layer delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
+#' @param deltaMb Next layer delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @param deltaSb Next layer delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}
+#' @param Sw Covariance of the weights for the current layer
+#' @param Sb Covariance of the biases for the current layer
+#' @param ma Mean vector of the activation units for the current layer
+#' @param deltaMr Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaSr Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @return - Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
+#' @return - Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+#' @return - Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
+#' @return - Delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+#' @export
+fcParameterBackwardPass <- function(deltaMw, deltaSw, deltaMb, deltaSb, Sw, Sb, ma, deltaMr, deltaSr, ni, no, B, rB){
+  Cbz = matrix(rep(Sb, B), nrow = length(Sb))
+  deltaMw = matrix(deltaMw, ncol = rB)
+  deltaSw = matrix(deltaSw, ncol = rB)
+  deltaMb = matrix(deltaMb, ncol = rB)
+  deltaSb = matrix(deltaSb, ncol = rB)
+
+  for (t in 1:rB){
+    maloop = matrix(rep(t(matrix(ma[,t], ni, B)), no), ncol = B, byrow = TRUE)
+    deltaMrw = matrix(matrix(rep(deltaMr[,t], ni), nrow = ni, byrow = TRUE), ni*no, B)
+    deltaSrw = matrix(matrix(rep(deltaSr[,t], ni), nrow = ni, byrow = TRUE), ni*no, B)
+
+    # Weights
+    Cwz = Sw*maloop
+    deltaMrw = Cwz*deltaMrw
+    deltaSrw = (Cwz^2)*deltaSrw
+
+    deltaMw[,t] = matrix(rowSums(deltaMrw), nrow(deltaMrw), 1)
+    deltaSw[,t] = matrix(rowSums(deltaSrw), nrow(deltaSrw), 1)
+
+    # Bias
+    if (any(!is.nan(Sb))){
+      deltaMrb = matrix(deltaMr[,t], no, B)
+      deltaSrb = matrix(deltaSr[,t], no, B)
+      deltaMrb = Cbz*deltaMrb
+      deltaSrb = (Cbz^2)*deltaSrb
+      deltaMb[,t] = matrix(rowSums(deltaMrb), nrow(deltaMrb), 1)
+      deltaSb[,t] = matrix(rowSums(deltaSrb), nrow(deltaSrb), 1)
+    }
+  }
+
+  deltaMw = matrix(rowSums(deltaMw), nrow(deltaMw), 1)
+  deltaSw = matrix(rowSums(deltaSw), nrow(deltaSw), 1)
+  deltaMb = matrix(rowSums(deltaMb), nrow(deltaMb), 1)
+  deltaSb = matrix(rowSums(deltaSb), nrow(deltaSb), 1)
+  outputs <- list(deltaMw, deltaSw, deltaMb, deltaSb)
+  return(outputs)
+}
+
+
+#' Backpropagation (Parameters' Deltas) for Fully Connected Layers (One Observation)
+#'
+#' This function calculates parameters' deltas at a given layer when using one observation at the time.
+#'
+#' @param Sw Covariance of the weights for the current layer
+#' @param Sb Covariance of the biaises for the current layer
+#' @param ma Mean vector of the activation units for the current layer
+#' @param deltaMr Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaSr Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @return - Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
+#' @return - Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+#' @return - Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
+#' @return - Delta of covariance matrix of biaises given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+#' @export
+fcParameterBackwardPassB1 <- function(Sw, Sb, ma, deltaMr, deltaSr, ni, no){
+  Cbz = Sb
+  maloop = matrix(rep(t(ma), no), nrow = nrow(ma)*no, byrow = TRUE)
+  deltaMrw = matrix(rep(deltaMr, ni), nrow = ncol(deltaMr)*ni, byrow = TRUE)
+  deltaMrw = matrix(deltaMrw, ncol = 1)
+  deltaSrw = matrix(rep(deltaSr, ni), nrow = ncol(deltaSr)*ni, byrow = TRUE)
+  deltaSrw = matrix(deltaSrw, ncol = 1)
+
+  # Weights
+  Cwz = Sw*maloop
+  deltaMrw = Cwz*deltaMrw
+  deltaSrw = (Cwz^2)*deltaSrw
+
+  deltaMw = matrix(rowSums(deltaMrw), nrow(deltaMrw), 1)
+  deltaSw = matrix(rowSums(deltaSrw), nrow(deltaSrw), 1)
+
+  # Bias
+  if (any(!is.nan(Sb))){
+    out_vectorizedDelta <- vectorizedDelta(Cbz, deltaMr, deltaSr)
+    deltaMrb = out_vectorizedDelta[[1]]
+    deltaSrb = out_vectorizedDelta[[2]]
+
+    deltaMb = matrix(rowSums(deltaMrb), nrow(deltaMrb), 1)
+    deltaSb = matrix(rowSums(deltaSrb), nrow(deltaSrb), 1)
+  } else {
+    deltaMb = Sb
+    deltaSb = Sb
+  }
+  outputs <- list(deltaMw, deltaSw, deltaMb, deltaSb)
   return(outputs)
 }
 
