@@ -31,8 +31,8 @@ runBatchDerivative <- function(NN, xtrain, ytrain, xtest, ytest){
     epoch = epoch + 1
     if (epoch >= 1){
       idxtrain = sample(nrow(ytrain))
-      ytrain = matrix(ytrain[idxtrain,], nrow = length(ytrain[idxtrain,]))
-      xtrain = matrix(xtrain[idxtrain,], nrow = length(xtrain[idxtrain,]))
+      ytrain = matrix(ytrain[idxtrain,], nrow = length(idxtrain))
+      xtrain = matrix(xtrain[idxtrain,], nrow = length(idxtrain))
     }
     out_batchDerivative = batchDerivative(NN, theta, normStat, states, xtrain, Sx, ytrain, 1)
     theta = out_batchDerivative[[1]]
