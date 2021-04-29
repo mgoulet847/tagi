@@ -21,11 +21,19 @@ A list that contains:
 }
 
 \itemize{
-\item \code{mda}: TBD
+\item \code{mda}: Mean vector of activation units' derivative
 }
 
 \itemize{
-\item \code{Sda}: TBD
+\item \code{Sda}: Covariance matrix of activation units' derivative
+}
+
+\itemize{
+\item \code{mdda}: Mean vector of activation units' second derivative
+}
+
+\itemize{
+\item \code{Sdda}: Covariance matrix of activation units' second derivative
 }
 }
 \description{

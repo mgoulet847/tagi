@@ -53,6 +53,10 @@ A list that contains:
 \itemize{
 \item \code{Cdgz}: Covariance between derivatives and inputs
 }
+
+\itemize{
+\item \code{mddg}: Predicted second derivatives
+}
 }
 \description{
 This function goes through one learning iteration of the neural network model

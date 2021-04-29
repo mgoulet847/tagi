@@ -153,8 +153,10 @@ feedForward <- function(NN, x, mp, Sp){
 #' @param states List of states
 #' @return A list that contains:
 #' @return - \code{states}: List that contains states
-#' @return - \code{mda}: TBD
-#' @return - \code{Sda}: TBD
+#' @return - \code{mda}: Mean vector of activation units' derivative
+#' @return - \code{Sda}: Covariance matrix of activation units' derivative
+#' @return - \code{mdda}: Mean vector of activation units' second derivative
+#' @return - \code{Sdda}: Covariance matrix of activation units' second derivative
 #' @export
 feedForwardPass <- function(NN, theta, states){
 
@@ -185,8 +187,12 @@ feedForwardPass <- function(NN, theta, states){
   # Derivative
   mda = matrix(list(), nrow = numLayers, ncol = 1)
   Sda = matrix(list(), nrow = numLayers, ncol = 1)
+  mdda = matrix(list(), nrow = numLayers, ncol = 1)
+  Sdda = matrix(list(), nrow = numLayers, ncol = 1)
   mda[[1,1]] = rep(1, nrow(mz[[1,1]]))
   Sda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
+  mdda[[1,1]] = rep(1, nrow(mz[[1,1]]))
+  Sdda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
 
   # Hidden Layers
   for (j in 2:numLayers){
@@ -221,11 +227,13 @@ feedForwardPass <- function(NN, theta, states){
     if ((NN$collectDev > 0) & (actFunIdx[j] != 0)){
       out_meanVarDev = meanVarDev(mz[[j,1]], Sz[[j,1]], actFunIdx[j], actBound[j])
       mda[[j,1]] = out_meanVarDev[[1]]
-      Sda[[j,1]] = out_meanVar[[2]]
+      Sda[[j,1]] = out_meanVarDev[[2]]
+      mdda[[j,1]] = out_meanVarDev[[3]]
+      Sdda[[j,1]] = out_meanVarDev[[4]]
     }
   }
   states <- compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
-  outputs <- list(states, mda, Sda)
+  outputs <- list(states, mda, Sda, mdda, Sdda)
   return(outputs)
 }
 
@@ -238,13 +246,16 @@ feedForwardPass <- function(NN, theta, states){
 #' @param states List of states
 #' @param mda Mean vector of activation units' derivative
 #' @param Sda Covariance matrix of activation units' derivative
+#' @param mdda Mean vector of activation units' second derivative
+#' @param Sdda Covariance matrix of activation units' second derivative
 #' @param dlayer Layer from which derivatives will be in respect to
 #' @return A list that contains:
 #' @return - \code{mdg}: Mean vector of derivative of the output layer
 #' @return - \code{Sdg}: Variance of derivative of the output layer
 #' @return - \code{Cdgz}: Covariance of derivative of the output layer
+#' @return - \code{mddg}: Mean vector of second derivative of the output layer
 #' @export
-derivative <- function(NN, theta, states, mda, Sda, dlayer){
+derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
 
   # Initialization
   out_extractParameters <- extractParameters(theta)
@@ -269,6 +280,8 @@ derivative <- function(NN, theta, states, mda, Sda, dlayer){
   Sdg = mdg
   Cdgz = mdg
   mdge = mdg
+  mddg = mdg
+  Sddg = mdg
 
   for (j in (numLayers-1):dlayer){
     idxw = (numParamsPerLayer_2[1, j]+1):numParamsPerLayer_2[1, j+1]
@@ -288,6 +301,13 @@ derivative <- function(NN, theta, states, mda, Sda, dlayer){
         mdge[[j,1]] = mdgk
         Cdgk = covdx(0, mw[idxw], rep(0, NN$ny*B), 0, rep(1, NN$ny*B), Cdozi, Cdizi, nodes[j], nodes[j+1], 1, B)
         Cdgz[[j,1]] = matrix(rowSums(Cdgk), nrow(Cdgk), 1)
+
+        # For second and higher order derivative
+        if (NN$collectDev > 1){
+          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
+          mddgk = out_fcMeanVarDnode[[1]]
+          Sddgk = out_fcMeanVarDnode[[2]]
+        }
       } else if ((NN$collectDev > 0) & (j < (numLayers-1))){
         out_fcDerivative <- fcDerivative(mw[idxw], Sw[idxw], mw[idxwo], J[[j+1,1]], J[[j,1]],
                                       ma[[j+1,1]], Sa[[j+1,1]], ma[[j,1]], Sa[[j,1]],
@@ -305,7 +325,7 @@ derivative <- function(NN, theta, states, mda, Sda, dlayer){
     }
     idxwo = idxw
   }
-  outputs <- list(mdg, Sdg, Cdgz)
+  outputs <- list(mdg, Sdg, Cdgz, mddg)
   return(outputs)
 }
 

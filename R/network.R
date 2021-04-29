@@ -19,6 +19,7 @@
 #' @return - \code{mdg}: Predicted derivatives
 #' @return - \code{Sdg}: Variance vector of derivatives
 #' @return - \code{Cdgz}: Covariance between derivatives and inputs
+#' @return - \code{mddg}: Predicted second derivatives
 #' @export
 batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
   # Initialization
@@ -30,6 +31,7 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
   mdg = matrix(0, numObs, numCovariates)
   Sdg = mdg
   Cdgz = mdg
+  mddg = mdg
   # Loop
   loop = 0
 
@@ -56,10 +58,13 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       states = out_feedForwardPass[[1]]
       mda = out_feedForwardPass[[2]]
       Sda = out_feedForwardPass[[3]]
-      out_derivative = derivative(NN, theta, states, mda, Sda, dlayer)
+      mdda = out_feedForwardPass[[4]]
+      Sdda = out_feedForwardPass[[5]]
+      out_derivative = derivative(NN, theta, states, mda, Sda, mdda, Sdda, dlayer)
       mdgi = out_derivative[[1]]
       Sdgi = out_derivative[[2]]
       Cdgzi = out_derivative[[3]]
+      mddgi = out_derivative[[4]]
       out_hiddenStateBackwardPass = hiddenStateBackwardPass(NN, theta, states, yloop, NULL, NULL)
       deltaM = out_hiddenStateBackwardPass[[1]]
       deltaS = out_hiddenStateBackwardPass[[2]]
@@ -72,10 +77,13 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       states = out_feedForwardPass[[1]]
       mda = out_feedForwardPass[[2]]
       Sda = out_feedForwardPass[[3]]
-      out_derivative = derivative(NN, theta, states, mda, Sda, dlayer)
+      mdda = out_feedForwardPass[[4]]
+      Sdda = out_feedForwardPass[[5]]
+      out_derivative = derivative(NN, theta, states, mda, Sda, mdda, Sdda, dlayer)
       mdgi = out_derivative[[1]]
       Sdgi = out_derivative[[2]]
       Cdgzi = out_derivative[[3]]
+      mddgi = out_derivative[[4]]
     }
 
     out_extractStates = extractStates(states)

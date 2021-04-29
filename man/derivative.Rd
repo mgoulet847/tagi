@@ -4,7 +4,7 @@
 \alias{derivative}
 \title{Derivative Calculation}
 \usage{
-derivative(NN, theta, states, mda, Sda, dlayer)
+derivative(NN, theta, states, mda, Sda, mdda, Sdda, dlayer)
 }
 \arguments{
 \item{NN}{List that contains the structure of the neural network}
@@ -16,6 +16,10 @@ derivative(NN, theta, states, mda, Sda, dlayer)
 \item{mda}{Mean vector of activation units' derivative}
 
 \item{Sda}{Covariance matrix of activation units' derivative}
+
+\item{mdda}{Mean vector of activation units' second derivative}
+
+\item{Sdda}{Covariance matrix of activation units' second derivative}
 
 \item{dlayer}{Layer from which derivatives will be in respect to}
 }
@@ -32,6 +36,10 @@ A list that contains:
 
 \itemize{
 \item \code{Cdgz}: Covariance of derivative of the output layer
+}
+
+\itemize{
+\item \code{mddg}: Mean vector of second derivative of the output layer
 }
 }
 \description{
