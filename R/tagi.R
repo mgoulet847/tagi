@@ -307,6 +307,8 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
           out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
           mddgk = out_fcMeanVarDnode[[1]]
           Sddgk = out_fcMeanVarDnode[[2]]
+          mddg[[j,1]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
+          Sddg[[j,1]] = matrix(rowSums(Sddgk), nrow(Sddgk), 1)
         }
       } else if ((NN$collectDev > 0) & (j < (numLayers-1))){
         out_fcDerivative <- fcDerivative(mw[idxw], Sw[idxw], mw[idxwo], J[[j+1,1]], J[[j,1]],
@@ -321,6 +323,22 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
         Sdg[[j,1]] = matrix(rowSums(Sdgk), nrow(Sdgk), 1)
         mdge[[j,1]] = mdgk
         Cdgz[[j,1]] = matrix(rowSums(Cdgzk), nrow(Cdgzk), 1)
+
+        # For second and higher order derivative
+        if (NN$collectDev > 1){
+          # First order derivative of current layer (wd)
+          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mda[[j,1]], Sda[[j,1]], nodes[j], nodes[j+1], B)
+          mpdi = out_fcMeanVarDnode[[1]]
+          Spdi = out_fcMeanVarDnode[[2]]
+
+          # Second order derivative of current layer (wdd)
+          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
+          mpddi = out_fcMeanVarDnode[[1]]
+          Spddi = out_fcMeanVarDnode[[2]]
+
+          # Combination of products of first order derivative of current layer (wd)*(wd)
+          mpdi2 <- fcCombinaisonDnode(mpdi, Spdi, mw[idxw], Sw[idxw], mda[[j,1]], Sda[[j,1]], nodes[j], nodes[j+1], B)
+        }
       }
     }
     idxwo = idxw
@@ -1596,6 +1614,46 @@ buildCzp <- function(Czw, Czb, currentHiddenUnit, prevHiddenUnit, batchSize){
 buildCzz <- function(Czz, currentHiddenUnit, prevHiddenUnit, batchSize){
   Czz = t(matrix(Czz, nrow = currentHiddenUnit, ncol = prevHiddenUnit*batchSize))
   return(Czz)
+}
+
+#' Combination of Products of First Order Derivative
+#'
+#' This function calculates mean of combination of products of first order derivative (wd)*(wd).
+#'
+#' @param mpdi Mean vector of the current product of derivative and weight
+#' @param Spdi Covariance matrix of current product of derivative and weight
+#' @param mw Mean vector of the weights for the current layer
+#' @param Sw Covariance of the weights for the current layer
+#' @param mda Mean vector of the activation units' derivative from current layer
+#' @param Sda Covariance of the activation units' derivative from current layer
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param B Batch size
+#' @return Mean of the derivatives' product combination
+#' @export
+fcCombinaisonDnode <- function(mpdi, Spdi, mw, Sw, mda, Sda, ni, no, B){
+  mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  Sw = matrix(rep(t(matrix(Sw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  mda = matrix(mda, nrow(mw), ncol(mw))
+  Sda = matrix(Sda, nrow(Sw), ncol(Sw))
+
+  mpdi2 = array(0, c(ni*B, no, ni))
+  for (b in 0:(B-1)){
+    for (k in 1:ni){
+      for (j in 1:no){
+        for (i in (b*ni+1):(b*ni+ni)){
+          if (b*ni+k == i){
+            var = Sw[i,j]*Sda[i,j] + Sw[i,j]*mda[i,j]^2 + Sda[i,j]*mw[i,j]^2
+          } else{
+            var = 0
+          }
+          mpdi2[i,j,k] = mpdi[i,j]*mpdi[b*ni+k,j] + var
+        }
+      }
+    }
+  }
+
+  return(mpdi2)
 }
 
 #' Weights and biases initialization
