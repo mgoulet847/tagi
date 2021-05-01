@@ -78,6 +78,16 @@ fcDerivative(
 Mean vector of the derivatives
 
 Covariance matrix of the derivatives
+
+Covariance matrix of derivative and input layers
+
+Covariance between activation units and weights
+
+Covariance between activation units from current and next layers
+
+Covariance between derivatives and weights
+
+Covariance between derivatives from current and next layers
 }
 \description{
 This function calculates mean and variance of derivatives and covariance of derivative and input layers.
