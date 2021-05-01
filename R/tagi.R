@@ -365,18 +365,18 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
 
           for (i in 1:nrow(combinations_matrix)){
             # Case where to multiply first order wd to previous first order wd
-            if (combinations_matrix[i,j+1] == 0){
+            if (combinations_matrix[i,j] == 0){
               mddg_combinations[[i]][[j]] = mdg[[j,1]]
             }
             # Case where to multiply second order wdd to previous first order wd
-            else if (combinations_matrix[i,j+1] == 1){
+            else if (combinations_matrix[i,j] == 1){
               mddgk = fcDerivative2(mw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j,1]],
                                                           mdda[[j,1]], mpddi, mdg[[j+1,1]], mdg[[j+2,1]], Caow, Caoai, Cdow,
                                                           Cdodi, actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
               mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
             }
             # Case where to multiply first order wd*wd to second order wdd
-            else if ((combinations_matrix[i,j] == 1) & (combinations_matrix[i,j+1] > 1)){
+            else if ((combinations_matrix[i,j+1] == 1) & (combinations_matrix[i,j] > 1)){
 
             }
             # Case where to multiply first order wd*wd to previous terms' product wd*wd
@@ -384,7 +384,13 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
 
             }
           }
-
+          # Only sum combinations that have a second order derivative so far to have g'' with respect to current layer j
+          mddg[[j,1]] = matrix(0, nrow(mddg_combinations[[1]][[j]]), 1)
+          for (i in 1:nrow(combinations_matrix)){
+            if (combinations_matrix[i,j] > 0){
+              mddg[[j,1]] = mddg[[j,1]] + mddg_combinations[[i]][[j]]
+            }
+          }
         }
       }
     }

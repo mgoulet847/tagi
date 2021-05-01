@@ -94,8 +94,9 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
     mdg[idxBatch,] = t(matrix(mdgi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
     Sdg[idxBatch,] = t(matrix(Sdgi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
     Cdgz[idxBatch,] = t(matrix(Cdgzi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
+    mddg[idxBatch,] = t(matrix(mddgi[[dlayer,1]], NN$nodes[dlayer], numDataPerBatch))
   }
-  outputs <- list(theta, normStat, mzl, Szl, mdg, Sdg, Cdgz)
+  outputs <- list(theta, normStat, mzl, Szl, mdg, Sdg, Cdgz, mddg)
   return(outputs)
 }
 

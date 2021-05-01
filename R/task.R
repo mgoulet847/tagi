@@ -51,7 +51,8 @@ runBatchDerivative <- function(NN, xtrain, ytrain, xtest, ytest){
   yp = out_batchDerivative[[3]]
   Syp = out_batchDerivative[[4]]
   dyp = out_batchDerivative[[5]]
+  ddyp = out_batchDerivative[[8]]
 
-  outputs <- list(yp, Syp, dyp)
+  outputs <- list(yp, Syp, dyp, ddyp)
   return(outputs)
 }
