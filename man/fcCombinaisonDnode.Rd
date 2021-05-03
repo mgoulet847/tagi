@@ -26,8 +26,8 @@ fcCombinaisonDnode(mpdi, Spdi, mw, Sw, mda, Sda, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Mean of the derivatives' product combination
+Mean array of combination of products of first order derivatives
 }
 \description{
-This function calculates mean of combination of products of first order derivative (wd)*(wd).
+This function calculates mean of combination of products of first order derivatives (wd)*(wd).
 }

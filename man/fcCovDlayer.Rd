@@ -22,7 +22,7 @@ fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between derivatives and weights times derivatives
+Covariance between weights times derivatives from consecutive layers
 }
 \description{
 This function calculates covariance between products of derivatives and

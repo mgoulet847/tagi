@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovdaddd}
 \alias{fcCovdaddd}
-\title{Covariance between First and Second Orders Derivatives}
+\title{Covariance between Second and First Orders Derivatives from Consecutive Layers}
 \usage{
 fcCovdaddd(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B)
 }
@@ -28,9 +28,9 @@ fcCovdaddd(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B)
 \value{
 Covariance between first order derivatives from next layer and activation units from current layer
 
-Covariance between first and second orders derivatives from consecutive layers
+Covariance between second and first orders derivatives from consecutive layers
 }
 \description{
-This function calculates covariance between first order derivatives and activation units and
-covariance between first and second orders derivatives from consecutive layers.
+This function calculates covariance between activation units and first order derivatives and
+covariance between second and first orders derivatives from consecutive layers.
 }

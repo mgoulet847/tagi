@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcMeanVarDlayer}
 \alias{fcMeanVarDlayer}
-\title{Mean and Variance of Derivatives}
+\title{Mean and Variance of Weights times Derivatives Products Terms}
 \usage{
 fcMeanVarDlayer(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B)
 }
@@ -28,8 +28,10 @@ fcMeanVarDlayer(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between derivatives and weights times derivatives
+Mean of weights times derivatives products terms
+
+Covariance between weights times derivatives products terms
 }
 \description{
-This function calculates mean and variance of derivatives.
+This function calculates mean and variance of weights times derivatives products terms.
 }

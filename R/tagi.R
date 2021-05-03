@@ -371,13 +371,16 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
             # Case where to multiply second order wdd to previous first order wd
             else if (combinations_matrix[i,j] == 1){
               mddgk = fcDerivative2(mw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j,1]],
-                                                          mdda[[j,1]], mpddi, mdg[[j+1,1]], mdg[[j+2,1]], Caow, Caoai, Cdow,
+                                                          mdda[[j,1]], mpddi, mdg[[j+1,1]], mdg[[j+2,1]], Caoai, Cdow,
                                                           Cdodi, actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
               mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
             }
             # Case where to multiply first order wd*wd to second order wdd
             else if ((combinations_matrix[i,j+1] == 1) & (combinations_matrix[i,j] > 1)){
-
+              mddgk = fcDerivative3(mw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
+                                    mda[[j,1]], mpdi, mpdi2, mdg[[j+1,1]], mdg[[j+2,1]], Caow, Caoai, Cdow,
+                                    Cdodi, actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
+              mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
             }
             # Case where to multiply first order wd*wd to previous terms' product wd*wd
             else {
@@ -833,6 +836,9 @@ fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai
 #' @param mpddi Mean vector of the second order derivative product wdd of current layer
 #' @param mdgo Mean vector of derivatives in next layer
 #' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param Caoai Covariance between activation units from current and next layers
+#' @param Cdow Covariance between derivatives and weights
+#' @param Cdodi Covariance between derivatives from current and next layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
@@ -840,7 +846,7 @@ fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai
 #' @param B Batch size
 #' @return Mean vector of the derivatives
 #' @export
-fcDerivative2 <- function(mw, mwo, mao, mai, mdai, mddai, mpddi, mdgo, mdgo2, Caow, Caoai, Cdow, Cdodi, acti, ni, no, no2, B){
+fcDerivative2 <- function(mw, mwo, mao, mai, mdai, mddai, mpddi, mdgo, mdgo2, Caoai, Cdow, Cdodi, acti, ni, no, no2, B){
   out_fcCovdaddd <- fcCovdaddd(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B)
   Cdoai = out_fcCovdaddd[[1]]
   Cdoddi = out_fcCovdaddd[[2]]
@@ -848,6 +854,44 @@ fcDerivative2 <- function(mw, mwo, mao, mai, mdai, mddai, mpddi, mdgo, mdgo2, Ca
   Cdgoddgi = fcCovDlayer(mdgo2, mwo, Cdowddi, ni, no, no2, B)
   out_fcMeanVarDlayer <- fcMeanVarDlayer(mpddi, matrix(0, nrow(mpddi), ncol(mpddi)), mdgo, matrix(0, nrow(mpddi), ncol(mpddi)), matrix(0, nrow(mpddi), ncol(mpddi)), Cdgoddgi, ni, no, no2, B)
   mddgi = out_fcMeanVarDlayer[[1]]
+
+  return(mddgi)
+}
+
+#' Products of First Order Derivatives Multiplied to Second Order Derivative for Fully Connected layers
+#'
+#' This function calculates mean of product of derivatives, when new product term involves product
+#' of two first order derivatives from the same layer (wd*wd) multiplied to second order derivatives (wdd) from next layer.
+#'
+#' @param mw Mean vector of the weights for the current layer
+#' @param mwo Mean vector of the weights for the next layer
+#' @param mao Mean vector of the activation units from next layer
+#' @param mai Mean vector of the activation units from current layer
+#' @param mdao Mean vector of the activation units' derivative from next layer
+#' @param mdai Mean vector of the activation units' derivative from current layer
+#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpdi2 Mean array of combination of products of first order derivatives
+#' @param mdgo Mean vector of derivatives in next layer
+#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param Caow Covariance between activation units and weights
+#' @param Caoai Covariance between activation units from current and next layers
+#' @param Cdow Covariance between derivatives and weights
+#' @param Cdodi Covariance between derivatives from current and next layers
+#' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
+#' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in 2nd next layer
+#' @param B Batch size
+#' @return Mean vector of the derivatives
+#' @export
+fcDerivative3 <- function(mw, mwo, mao, mai, mdao, mdai, mpdi, mpdi2, mdgo, mdgo2, Caow, Caoai, Cdow, Cdodi, acto, acti, ni, no, no2, B){
+  out_fcCovaddddddw <- fcCovaddddddw(mao, mai, mdao, Caoai, Cdodi, Caow, Cdow, acto, acti, ni, no, B)
+  Cddodi = out_fcCovaddddddw[[1]]
+  Cddow = out_fcCovaddddddw[[2]]
+  Cddowdi = fcCovdwd(mdai, mw, Cddow, Cddodi, ni, no, B)
+  Cdgoddgik = fcCovDlayer(mdgo2, mwo, Cddowdi, ni, no, no2, B)
+  mddgi <- fcMeanDlayer2(mpdi, mpdi2, mdgo, Cdgoddgik, ni, no, no2, B)
 
   return(mddgi)
 }
@@ -957,10 +1001,10 @@ fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between First and Second Orders Derivatives
+#' Covariance between Second and First Orders Derivatives from Consecutive Layers
 #'
-#' This function calculates covariance between first order derivatives and activation units and
-#' covariance between first and second orders derivatives from consecutive layers.
+#' This function calculates covariance between activation units and first order derivatives and
+#' covariance between second and first orders derivatives from consecutive layers.
 #'
 #' @param mao Mean vector of the activation units from next layer
 #' @param mai Mean vector of the activation units from current layer
@@ -972,7 +1016,7 @@ fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
 #' @param no Number of units in next layer
 #' @param B Batch size
 #' @return Covariance between first order derivatives from next layer and activation units from current layer
-#' @return Covariance between first and second orders derivatives from consecutive layers
+#' @return Covariance between second and first orders derivatives from consecutive layers
 #' @export
 fcCovdaddd <- function(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B){
   mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -980,7 +1024,7 @@ fcCovdaddd <- function(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B){
   mdai = matrix(mdai, nrow(mao), ncol(mao))
 
   if (acti == 1){ # tanh
-    Cdoai = - Caoai
+    Cdoai = - 2*Caoai*mao
     Cdoddi = - 2*Cdodi*mai - 2*Cdoai*mdai
   } else if (acti == 2){ # sigmoid
     Cdoai = Caoai * (1 - 2*mao)
@@ -994,6 +1038,59 @@ fcCovdaddd <- function(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B){
   }
 
   outputs <- list(Cdoai, Cdoddi)
+  return(outputs)
+}
+
+#' Covariance between First and Second Orders Derivatives from Consecutive Layers
+#'
+#' This function calculates covariance between weights and second order derivatives and
+#' covariance between first and second orders derivatives from consecutive layers.
+#'
+#' @param mao Mean vector of the activation units from next layer
+#' @param mai Mean vector of the activation units from current layer
+#' @param mdao Mean vector of the activation units' derivative from next layer
+#' @param Caoai Covariance between activation units from current and next layers
+#' @param Cdodi Covariance between derivatives from current and next layers
+#' @param Caow Covariance between activation units and weights
+#' @param Cdow Covariance between derivatives and weights
+#' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
+#' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param B Batch size
+#' @return Covariance between first and second orders derivatives from consecutive layers
+#' @return Covariance between second order derivatives from next layer and weights
+#' @export
+fcCovaddddddw <- function(mao, mai, mdao, Caoai, Cdodi, Caow, Cdow, acto, acti, ni, no, B){
+  mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  mdao = t(matrix(matrix(rep(t(matrix(mdao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  mai = matrix(mai, nrow(mao), ncol(mao))
+
+  if (acti == 1){ # tanh
+    Caodi = - 2*Caoai*mai
+    Cddodi = - 2*Cdodi*mao - 2*Caodi*mdao
+  } else if (acti == 2){ # sigmoid
+    Caodi = Caoai * (1 - 2*mai)
+    Cddodi = Cdodi - 2*Cdodi*mao - 2*Caodi*mdao
+  } else if (acti == 4){ # relu
+    Caodi = matrix(0, nrow(mao), ncol(mao))
+    Cddodi = matrix(0, nrow(mao), ncol(mao))
+  } else {
+    Caodi = matrix(0, nrow(mao), ncol(mao))
+    Cddodi = matrix(0, nrow(mao), ncol(mao))
+  }
+
+  if (acto == 1){ # tanh
+    Cddow = - 2*Caow*mdao - 2*mao*Cdow
+  } else if (acto == 2){ # sigmoid
+    Cddow = Cdow - 2*Caow*mdao - 2*mao*Cdow
+  } else if (acto == 4){ # relu
+    Cddow = matrix(0, nrow(mao), ncol(mao))
+  } else {
+    Cddow = matrix(0, nrow(mao), ncol(mao))
+  }
+
+  outputs <- list(Cddodi, Cddow)
   return(outputs)
 }
 
@@ -1030,7 +1127,7 @@ fcCovdwd <- function(md, mw, Cdow, Cdodi, ni, no, B){
 #' @param no Number of units in next layer
 #' @param no2 Number of units in 2nd next layer
 #' @param B Batch size
-#' @return Covariance between derivatives and weights times derivatives
+#' @return Covariance between weights times derivatives from consecutive layers
 #' @export
 fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
   mdgo2 = matrix(matrix(rep(mdgo2, no), nrow = nrow(t(mdgo2))*no, byrow = TRUE), no*no2, B)
@@ -1040,9 +1137,9 @@ fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
   return(Cdgodgi)
 }
 
-#' Mean and Variance of Derivatives
+#' Mean and Variance of Weights times Derivatives Products Terms
 #'
-#' This function calculates mean and variance of derivatives.
+#' This function calculates mean and variance of weights times derivatives products terms.
 #'
 #' @param mx Mean vector of inputs
 #' @param Sx Variance of inputs
@@ -1054,7 +1151,8 @@ fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
 #' @param no Number of units in next layer
 #' @param no2 Number of units in 2nd next layer
 #' @param B Batch size
-#' @return Covariance between derivatives and weights times derivatives
+#' @return Mean of weights times derivatives products terms
+#' @return Covariance between weights times derivatives products terms
 #' @export
 fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
   my = t(matrix(matrix(rep(t(matrix(my, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1084,6 +1182,51 @@ fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
 
   outputs <- list(md, Sd)
   return(outputs)
+}
+
+#' Mean of Weights times Derivatives Products Terms Squared
+#'
+#' This function calculates mean and variance of weights times derivatives products terms squared.
+#'
+#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpddi Mean vector of the second order derivative product wdd of current layer
+#' @param mdgo Mean vector of derivatives in next layermx Mean vector of inputs
+#' @param Cdgoddgik Covariance between weights times derivatives from consecutive layers
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in 2nd next layer
+#' @param B Batch size
+#' @return Mean of weights times derivatives products terms squared
+#' @export
+fcMeanDlayer2 <- function(mpdi, mpdi2, mdgo, Cdgoddgik, ni, no, no2, B){
+  mdgo = array(t(matrix(rep(t(mdgo), ni), no, B*ni)), c(B*ni, no, ni))
+  md = mpdi2 * mdgo
+
+  Cdgoddgik = rowSums(matrix(Cdgoddgik, B*ni*no, no2))
+  Cdgoddgik = matrix(Cdgoddgik, B*ni, no)
+
+  Cdgoddgi = array(0, c(ni*B, no, ni))
+  for (b in 0:(B-1)){
+    for (k in 1:ni){
+        for (i in (b*ni+1):(b*ni+ni)){
+          Cdgoddgi[i,,k] = mpdi[i,] * Cdgoddgik[k+b*ni,] + mpdi[k+b*ni,] * Cdgoddgik[i,]
+        }
+      }
+    }
+
+  md = md + Cdgoddgi
+
+  # Rearrange to get usual (B*ni x no) matrix
+  md2 = matrix(0, B*ni*ni, no)
+  for (b in 0:(B-1)){
+    for (k in 1:ni){
+      md2[((k-1+b*ni)*ni+1):((k-1+b*ni)*ni+ni),] = md[(b*ni+1):(b*ni+ni),,k]
+    }
+  }
+  md = matrix(md2, nrow = ni)
+  md = matrix(colSums(md), nrow = B*ni)
+
+  return(md)
 }
 
 #' Covariance between Activation and Hidden Units
@@ -1748,7 +1891,7 @@ buildCzz <- function(Czz, currentHiddenUnit, prevHiddenUnit, batchSize){
 
 #' Combination of Products of First Order Derivative
 #'
-#' This function calculates mean of combination of products of first order derivative (wd)*(wd).
+#' This function calculates mean of combination of products of first order derivatives (wd)*(wd).
 #'
 #' @param mpdi Mean vector of the current product of derivative and weight
 #' @param Spdi Covariance matrix of current product of derivative and weight
@@ -1759,7 +1902,7 @@ buildCzz <- function(Czz, currentHiddenUnit, prevHiddenUnit, batchSize){
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Mean of the derivatives' product combination
+#' @return Mean array of combination of products of first order derivatives
 #' @export
 fcCombinaisonDnode <- function(mpdi, Spdi, mw, Sw, mda, Sda, ni, no, B){
   mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
