@@ -4,14 +4,16 @@
 \alias{fcMeanDlayer2}
 \title{Mean of Weights times Derivatives Products Terms Squared}
 \usage{
-fcMeanDlayer2(mpdi, mpdi2, mdgo, Cdgoddgik, ni, no, no2, B)
+fcMeanDlayer2(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B)
 }
 \arguments{
 \item{mpdi}{Mean vector of the first order derivative product wd of current layer}
 
+\item{mpdi2}{Mean array of combination of products of first order derivatives}
+
 \item{mdgo}{Mean vector of derivatives in next layermx Mean vector of inputs}
 
-\item{Cdgoddgik}{Covariance between weights times derivatives from consecutive layers}
+\item{Cwdowdiwdi}{Covariance cov(wdo,(wdi*wdi)) of weights times derivatives products terms when there is one product in next layer and two in current}
 
 \item{ni}{Number of units in current layer}
 
@@ -20,8 +22,6 @@ fcMeanDlayer2(mpdi, mpdi2, mdgo, Cdgoddgik, ni, no, no2, B)
 \item{no2}{Number of units in 2nd next layer}
 
 \item{B}{Batch size}
-
-\item{mpddi}{Mean vector of the second order derivative product wdd of current layer}
 }
 \value{
 Mean of weights times derivatives products terms squared

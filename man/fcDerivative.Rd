@@ -88,6 +88,8 @@ Covariance between activation units from current and next layers
 Covariance between derivatives and weights
 
 Covariance between derivatives from current and next layers
+
+Covariance between weights times derivatives from consecutive layers
 }
 \description{
 This function calculates mean and variance of derivatives and covariance of derivative and input layers.
