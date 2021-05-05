@@ -960,6 +960,8 @@ fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
     Cwdowdowdiwdi <- fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi)
   } else {
     Cwdowdowwdi2 <- fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
+    mddgi <- fcMeanDlayer2array(mpdi, mpdi2w, mdgo, Cwdowdowwdi2, ni, no, no2, B)
+    mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
   }
 
 
@@ -1276,7 +1278,7 @@ fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
 #' @return Mean of weights times derivatives products terms
 #' @export
 fcMeanDlayer2row <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
-  mdgo = array(t(matrix(rep(t(mdgo), ni), no, B*ni)), c(B*ni, no, ni))
+  mdgo = array(matrix(rep(rep(matrix(mdgo, ncol = ni, byrow = TRUE), times = ni), each = ni), B*ni, no), c(B*ni, no, ni))
   md = mpdi2 * mdgo
 
   md = md + Cwdowdiwdi
@@ -1321,9 +1323,9 @@ fcMeanDlayer2row <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
 #' @export
 fcMeanDlayer2array <- function(mpdi, mpdi2w, mdgo, Cwdowdowwdi2, ni, no, no2, B){
   mdgo = array(t(matrix(rep(t(mdgo), ni), no, B*ni)), c(B*ni, no, ni))
-  md = mpdi2 * mdgo
+  md = mpdi2w * mdgo
 
-  md = md + Cwdowdiwdi
+  md = md + Cwdowdowwdi2
 
   # Rearrange to get usual (B*ni x no) matrix
   md2 = matrix(0, B*ni*ni, no)
