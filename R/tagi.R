@@ -371,16 +371,15 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
             # Case where to multiply second order wdd to previous first order wd
             else if (combinations_matrix[i,j] == 1){
               mddgk = fcDerivative2(mw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j,1]],
-                                                          mdda[[j,1]], mpddi, mdg[[j+1,1]], mdg[[j+2,1]], Caoai, Cdow,
+                                                          mdda[[j,1]], mpddi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Caoai, Cdow,
                                                           Cdodi, actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
               mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
             }
             # Case where to multiply first order wd*wd to second order wdd
             else if ((combinations_matrix[i,j+1] == 1) & (combinations_matrix[i,j] > 1)){
-              mddgk = fcDerivative3(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
-                                    mda[[j,1]], Sda[[j,1]], mpdi, mdg[[j+1,1]], mdg[[j+2,1]], Caow, Caoai, Cdow,
+              mddg_combinations[[i]][[j]] = fcDerivative3(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
+                                    mda[[j,1]], Sda[[j,1]], mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Caow, Caoai, Cdow,
                                     Cdodi, actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
-              mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
             }
             # Case where to multiply first order wd*wd to previous terms' product wd*wd
             else {
@@ -391,7 +390,7 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
           mddg[[j,1]] = matrix(0, nrow(mddg_combinations[[1]][[j]]), 1)
           for (i in 1:nrow(combinations_matrix)){
             if (combinations_matrix[i,j] > 0){
-              mddg[[j,1]] = mddg[[j,1]] + mddg_combinations[[i]][[j]]
+              mddg[[j,1]] = mddg[[j,1]] + matrix(rowSums(mddg_combinations[[i]][[j]]), nrow(mddg_combinations[[i]][[j]]), 1)
             }
           }
         }
@@ -903,7 +902,7 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
     mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
 
     Cwdowdiwdi <- fcCovwdowdiwdi(mpdi, Cddgodgik, ni, no, B)
-    mddgi <- fcMeanDlayer2(mpdi, mpdi2n, mdgo, Cwdowdiwdi, ni, no, no2, B)
+    mddgi <- fcMeanDlayer2row(mpdi, mpdi2n, mdgo, Cwdowdiwdi, ni, no, no2, B)
   } else {
     # (wd)^2 only
     mpdi2wn <- fcCombinaisonDweightNode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
@@ -911,6 +910,7 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
     mdgo = t(matrix(matrix(rep(t(matrix(mdgo, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
 
     mddgi = mdgo*mpdi2wn + Cwdowdi2
+    mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
   }
 
 
@@ -957,7 +957,9 @@ fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
     Cdgodgi = rowSums(matrix(Cdgodgi, B*ni*no, no2))
     Cdgodgi = matrix(Cdgoddgi, B*ni, no)
     Cwdowdiwdi <- fcCovwdowdiwdi(mpdi, Cdgodgi, ni, no, B)
-    Cwdowdowdiwdi <- fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi, ni, no, B)
+    Cwdowdowdiwdi <- fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi)
+  } else {
+    Cwdowdowwdi2 <- fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
   }
 
 
@@ -1255,21 +1257,69 @@ fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
   return(outputs)
 }
 
-#' Mean of Weights times Derivatives Products Terms Squared
+#' Mean of Weights times Derivatives Products Terms Squared (wdo x (wdi*wdi))
 #'
-#' This function calculates mean and variance of weights times derivatives products terms squared.
+#' This function calculates mean of weights times derivatives products terms when
+#' adding two of those products from current layer to already calculated expectation
+#' that ended with one such product of next layer (i.e. wdo x (wdi*wdi)). Mean and
+#' covariance terms are in array format. Once added, rows need to be
+#' summed to aggregate expectations by node*node combinations of current layer.
 #'
 #' @param mpdi Mean vector of the first order derivative product wd of current layer
 #' @param mpdi2 Mean array of combination of products of first order derivatives
-#' @param mdgo Mean vector of derivatives in next layermx Mean vector of inputs
+#' @param mdgo Mean vector of derivatives in next layer
 #' @param Cwdowdiwdi Covariance cov(wdo,(wdi*wdi)) of weights times derivatives products terms when there is one product in next layer and two in current
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param no2 Number of units in 2nd next layer
 #' @param B Batch size
-#' @return Mean of weights times derivatives products terms squared
+#' @return Mean of weights times derivatives products terms
 #' @export
-fcMeanDlayer2 <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
+fcMeanDlayer2row <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
+  mdgo = array(t(matrix(rep(t(mdgo), ni), no, B*ni)), c(B*ni, no, ni))
+  md = mpdi2 * mdgo
+
+  md = md + Cwdowdiwdi
+
+  # Rearrange to get (B*ni x ni) matrix (expectation of each node from current layer multiplied by each other)
+  md2 = matrix(md, B*ni, no)
+  for (k in 1:(ni-1)){
+    md2 = rbind(md2, matrix(md[,,k+1], B*ni, no))
+  }
+  md2 = matrix(rowSums(md2), ncol = ni, byrow=TRUE)
+
+  md3 = matrix(md2[1,],nrow=1)
+  if (B>1){
+    for (b in 1:B){
+      for (i in 1:ni){
+        md3 = rbind(md3, matrix(md2[b + i*B - B,], nrow = 1))
+      }
+    }
+  }
+  md = md3[2:nrow(md3),]
+
+  return(md)
+}
+
+#' Mean of Weights times Derivatives Products Terms ((wdo*wdo) x (wwdi^2))
+#'
+#' This function calculates mean of weights times derivatives products terms when
+#' adding two of those products from current layer to already calculated expectation
+#' that ended with one such product of next layer (i.e. (wdo*wdo) x (wwdi^2)). Mean and
+#' covariance terms are in array format. Once added, elements (x,y) in each array dimension need to be
+#' summed to aggregate expectations by node*weight of current layer.
+#'
+#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpdi2w Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
+#' @param mdgo Mean vector of derivatives in next layer
+#' @param Cwdowdowwdi2 Covariance cov(wdowdo,wdiwdi) of weights times derivatives products terms, where the di terms are the same
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in 2nd next layer
+#' @param B Batch size
+#' @return Mean of weights times derivatives products terms
+#' @export
+fcMeanDlayer2array <- function(mpdi, mpdi2w, mdgo, Cwdowdowwdi2, ni, no, no2, B){
   mdgo = array(t(matrix(rep(t(mdgo), ni), no, B*ni)), c(B*ni, no, ni))
   md = mpdi2 * mdgo
 
@@ -1335,17 +1385,54 @@ fcCovwdowdi2 <- function(mpdi, Cdgoddgik){
 #'
 #' @param mpdo Mean vector of the first order derivative product wd of next layer
 #' @param Cwdowdiwdi Covariance cov(wdo,wdi*wdi) of weights times derivatives products terms when there are one product in next layer and two in current
-#' @param ni Number of units in current layer
-#' @param no Number of units in next layer
-#' @param B Batch size
 #' @return Covariance cov(wdo^2,wdi*wdi) of weights times derivatives products terms when there are two products in both next and current layers
 #' @export
-fcCovwdo2wdiwdi <- function(mpdo, Cwdowdiwdi, ni, no, B){
-  Cwdo2wdiwdi = array(0, c(ni*B, no, ni))
-
+fcCovwdo2wdiwdi <- function(mpdo, Cwdowdiwdi){
   Cwdo2wdiwdi = 2*mpdo*Cwdowdiwdi
 
   return(Cwdo2wdiwdi)
+}
+
+#' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative)
+#'
+#' This function calculates covariance cov(wdowdo,wdiwdi) where the di terms are the same.
+#'
+#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpdo Mean vector of the first order derivative product wd of next layer
+#' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in second next layer
+#' @param B Batch size
+#' @return Covariance cov(wdowdo,wdiwdi) where the di terms are the same
+#' @export
+fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
+  mpdo = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  mpdo = t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni))
+
+  Cwdowdowwdi2 = array(0, c(ni*B, no*no2, no))
+  for (b in 0:(no2-1)){
+    for (k in 1:no){
+      for (j in (b*no+1):(b*no+no)){
+        if (j == (b*no+k)){
+          Cwdowdowwdi2[,j,k] = 4 * mpdo[,j] * mpdi[,k] * Cdgodgi[,j]
+        } else {
+          Cwdowdowwdi2[,j,k] = mpdo[,j] * mpdi[,j-b*no] * Cdgodgi[,(b*no+k)] + mpdo[,(b*no+k)] * mpdi[,k] * Cdgodgi[,j]
+        }
+
+      }
+    }
+  }
+
+  # Sum covariances together to come back (B*ni x no x no) array. Iterations on sum are on one weight of next layer that changes.
+  cumul = matrix(Cwdowdowwdi2, B*ni*no, no2)
+  for (k in 1:(no-1)){
+    cumul = rbind(cumul,matrix(Cwdowdowwdi2[,,k+1], B*ni*no, no2))
+  }
+  Cwdowdowwdi2 = array(rowSums(cumul), c(B*ni, no, no))
+
+  return(Cwdowdowwdi2)
+
 }
 
 #' Covariance between Activation and Hidden Units

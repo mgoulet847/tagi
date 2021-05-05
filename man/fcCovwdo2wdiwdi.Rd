@@ -4,18 +4,12 @@
 \alias{fcCovwdo2wdiwdi}
 \title{Covariance between Products in (Same) Next and Current Layers}
 \usage{
-fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi, ni, no, B)
+fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi)
 }
 \arguments{
 \item{mpdo}{Mean vector of the first order derivative product wd of next layer}
 
 \item{Cwdowdiwdi}{Covariance cov(wdo,wdi*wdi) of weights times derivatives products terms when there are one product in next layer and two in current}
-
-\item{ni}{Number of units in current layer}
-
-\item{no}{Number of units in next layer}
-
-\item{B}{Batch size}
 }
 \value{
 Covariance cov(wdo^2,wdi*wdi) of weights times derivatives products terms when there are two products in both next and current layers
