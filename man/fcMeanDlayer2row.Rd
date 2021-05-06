@@ -29,7 +29,7 @@ Mean of weights times derivatives products terms
 \description{
 This function calculates mean of weights times derivatives products terms when
 adding two of those products from current layer to already calculated expectation
-that ended with one such product of next layer (i.e. wdo x (wdi\emph{wdi)). Mean and
-covariance terms are in array format. Once added, rows need to be
+that ended with one such product of next layer (i.e. wdo x (wdi\emph{wdi)). Mean terms
+are in array format. Once added, rows need to be
 summed to aggregate expectations by node}node combinations of current layer.
 }
