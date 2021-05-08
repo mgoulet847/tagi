@@ -382,7 +382,7 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
                                     Cdodi, actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
             }
             # Case where to multiply first order wd*wd to previous terms' product wd*wd
-            else {
+            else if ((combinations_matrix[i,j+1] == 2) & (combinations_matrix[i,j] > 1)){
               mddg_combinations[[i]][[j]] = fcDerivative4(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
                                                           mda[[j,1]], Sda[[j,1]], mpdo, mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Cdgodgi,
                                                           actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
@@ -1421,11 +1421,8 @@ fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
   }
 
   # Sum covariances together to come back (B*ni x no x no) array. Iterations on sum are on one weight of next layer that changes.
-  cumul = matrix(Cwdowdowwdi2, B*ni*no, no2)
-  for (k in 1:(no-1)){
-    cumul = rbind(cumul,matrix(Cwdowdowwdi2[,,k+1], B*ni*no, no2))
-  }
-  Cwdowdowwdi2 = array(rowSums(cumul), c(B*ni, no, no))
+  sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no))
+  Cwdowdowwdi2 = array(apply(sum, 3, rowSums), c(B*ni, no, no))
 
   return(Cwdowdowwdi2)
 
