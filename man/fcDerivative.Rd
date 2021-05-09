@@ -89,7 +89,7 @@ Covariance between derivatives and weights
 
 Covariance between derivatives from current and next layers
 
-Covariance between weights times derivatives from consecutive layers
+Covariance between derivatives from next layer and weights times derivatives from current layer
 }
 \description{
 This function calculates mean and variance of derivatives and covariance of derivative and input layers.

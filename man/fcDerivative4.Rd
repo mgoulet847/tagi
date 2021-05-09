@@ -17,7 +17,7 @@ fcDerivative4(
   mpdi,
   mdgo,
   mdgo2,
-  Cdgodgi,
+  Cdowdi,
   acto,
   acti,
   ni,
@@ -52,7 +52,7 @@ fcDerivative4(
 
 \item{mdgo2}{Mean vector of derivatives in 2nd next layer}
 
-\item{Cdgodgi}{Covariance between weights times derivatives from consecutive layers}
+\item{Cdowdi}{Covariance between derivatives from next layer and weights times derivatives from current layer}
 
 \item{acto}{Activation function index for next layer defined by \code{\link{activationFunIndex}}}
 
