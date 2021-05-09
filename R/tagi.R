@@ -958,20 +958,27 @@ fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
   mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sdai, ni, no, B)
   Cdgodgi <- fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
-  Cwdowdowwdi2 <- fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
 
   if (dlayer == FALSE){
     # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
     mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
     # All possible combinations
-    mpdi2wnAll <- fcCombinaisonDweightNodeAll(mpdi, mpdin, mpdiw, ni, no, B)
+    mpdi2wnAll <- fcCombinaisonDweightNodeAll(mpdi, mpdi2n, mpdi2w, ni, no, B)
 
-    # Cdgodgi = rowSums(matrix(Cdgodgi, B*ni*no, no2))
-    # Cdgodgi = matrix(Cdgodgi, B*ni, no)
-    # Cwdowdiwdi <- fcCovwdowdiwdi(mpdi, Cdgodgi, ni, no, B)
-    Cwdowdowdiwdi <- fcCovwdowdowdiwdi(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
-    # mddgi <- fcMeanDlayer2(mpdi, mpdi2, mdgo, Cwdowdowdiwdi, ni, no, no2, B)
+    Cwdowdowdiwdi <- fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
+
+    mdgo = array(matrix(rep(rep(matrix(mdgo, ncol = no, byrow = TRUE), times = ni), each = ni), B*ni, no*no), c(B*ni, no, no))
+
+    mdgoA = array(0, c(B*ni, no, ni*no))
+    for (b in 0:(no-1)){
+      for (i in (b*ni+1):(b*ni+ni)){
+        mdgoA[,,i] = mdgo[,,b+1]
+      }
+    }
+    md = mpdi2wnAll * mdgoA
+    mddgi = md + Cwdowdowdiwdi
   } else {
+    Cwdowdowwdi2 <- fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
     mddgi <- fcMeanDlayer2array(mpdi2w, mdgo, Cwdowdowwdi2, ni, no, B)
     mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
   }
@@ -1429,7 +1436,7 @@ fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
     }
   }
 
-  # Sum covariances together to come back (B*ni x no x no) array. Iterations on sum are on one weight of next layer that changes.
+  # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change.
   sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no))
   Cwdowdowwdi2 = array(apply(sum, 3, rowSums), c(B*ni, no, no))
 
@@ -1451,53 +1458,30 @@ fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
 #' @return Covariance cov(wdowdo,wdiwdi) where all terms can be different
 #' @export
 fcCwdowdowdiwdi <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
+  mpdi2 = matrix(rep(mpdi, no2), nrow = B*ni)
+  mpdo2 = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  mpdo2 = t(matrix(mpdo2[, rep(1:ncol(mpdo2), each = ni),], no*no2,B*ni))
+
   Cwdowdowdiwdi = array(0, c(ni*B, no*no2, no*ni))
   seq = c(mpdi)
-  # for (b in 0:(no2-1)){
-  #   for (k in 1:no){
-  #     for (j in (b*no+1):(b*no+no)){
-  #       if (j == (b*no+k)){
-  #         Cwdowdowwdi2[,j,k] = 4 * mpdo[,j] * mpdi[,k] * Cdgodgi[,j]
-  #       } else {
-  #         Cwdowdowwdi2[,j,k] = mpdo[,j] * mpdi[,j-b*no] * Cdgodgi[,(b*no+k)] + mpdo[,(b*no+k)] * mpdi[,k] * Cdgodgi[,j]
-  #       }
-  #
-  #     }
-  #   }
-  # }
-  #
-  # for (k in 1:(no*ni)){
-  #   mpdi2wnAll[,,k] = seq[k]*mpdi
-  # }
-  #
-  # # Adjust expectations when there is a covariance term to consider
-  # for (k in 1:no*ni){
-  #   i = as.numeric(which(mpdi == seq[k], arr.ind = TRUE)[,"row"])
-  #   j = as.numeric(which(mpdi == seq[k], arr.ind = TRUE)[,"col"])
-  #   mpdi2wnAll[i,,k] = mpdiw[i,,j]
-  #   mpdi2wnAll[,j,k] = mpdin[,j,i]
-  # }
-  #
-  # mpdo = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
-  # mpdo = t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni))
-  #
-  # Cwdowdowwdi2 = array(0, c(ni*B, no*no2, no))
-  # for (b in 0:(no2-1)){
-  #   for (k in 1:no){
-  #     for (j in (b*no+1):(b*no+no)){
-  #       if (j == (b*no+k)){
-  #         Cwdowdowwdi2[,j,k] = 4 * mpdo[,j] * mpdi[,k] * Cdgodgi[,j]
-  #       } else {
-  #         Cwdowdowwdi2[,j,k] = mpdo[,j] * mpdi[,j-b*no] * Cdgodgi[,(b*no+k)] + mpdo[,(b*no+k)] * mpdi[,k] * Cdgodgi[,j]
-  #       }
-  #
-  #     }
-  #   }
-  # }
-  #
-  # # Sum covariances together to come back (B*ni x no x no) array. Iterations on sum are on one weight of next layer that changes.
-  # sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no))
-  # Cwdowdowwdi2 = array(apply(sum, 3, rowSums), c(B*ni, no, no))
+  for (k in 1:no*ni){
+    i = as.numeric(which(mpdi == seq[k], arr.ind = TRUE)[,"row"])
+    j = as.numeric(which(mpdi == seq[k], arr.ind = TRUE)[,"col"])
+    for (b in 0:(no2-1)){
+      for (c in (b*no+1):(b*no+no)){
+        if (c == (b*no+j)){
+          # When same weight*node from next layer (i.e. (wdo)^2), coming from same current layer combination or not
+          Cwdowdowdiwdi[,c,k] = 2*(mpdo[j,b+1] * mpdi[i,j] * Cdgodgi[,c] + mpdo2[,c] * mpdi2[,c] * Cdgodgi[i,j+b*no])
+        } else {
+          Cwdowdowdiwdi[,c,k] = mpdo[j,b+1] * mpdi[i,j] * Cdgodgi[,c] + mpdo2[,c] * mpdi2[,c] * Cdgodgi[i,j+b*no]
+        }
+      }
+    }
+  }
+
+  # Sum covariances together to come back (B*ni x no x no*ni) array. Iterations for sum are next layer weights that change.
+  sum = array(matrix(Cwdowdowdiwdi, nrow = B*ni*no), c(B*ni*no, no2, no*ni))
+  Cwdowdowdiwdi = array(apply(sum, 3, rowSums), c(B*ni, no, no*ni))
 
   return(Cwdowdowdiwdi)
 
