@@ -1293,7 +1293,7 @@ fcMeanDlayer2row <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
 
   # Rearrange to get (B*ni x ni) matrix (expectation of each node from current layer multiplied by each other)
   # Sum each weight combination related to the same node
-  md2 = matrix(apply(md, 3, rowSums), B*ni, no)
+  md2 = matrix(apply(md, 3, rowSums), B*ni, ni)
 
   # Rearrange to have "chunk" of batches (consecutive rows for same batch' nodes)
   if (B>1){
