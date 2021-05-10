@@ -69,10 +69,10 @@ fcDerivative4(
 \item{dlayer}{TRUE if layer from which derivatives will be in respect to}
 }
 \value{
-Mean vector of the derivatives
+Mean matrix of products of derivatives
 }
 \description{
 This function calculates mean of product of derivatives, when new product term involves product
 of two first order derivatives (wd\emph{wd) from the same layer multiplied to product
-of two first order derivatives (wd}wd) from next layer.
+of two first order derivatives (wd}wd) from next layer, when second next layer is second order derivatives (wdd).
 }
