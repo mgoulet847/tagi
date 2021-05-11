@@ -1021,8 +1021,7 @@ fcDerivative5 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
 
   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
   mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sdai, ni, no, B)
-  mdgo2 = matrix(rowSums(mdgo2), nrow(mdgo2), 1) # VALIDATE
-  Cdgodgi <- fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
+  Cdgodgi <- fcCovDlayer(matrix(1, B*no2, 1), mwo, Cdowdi, ni, no, no2, B)
 
   if (dlayer == FALSE){
     # # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
@@ -1043,7 +1042,7 @@ fcDerivative5 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
     # md = mpdi2wnAll * mdgoA
     # mddgi = md + Cwdowdowdiwdi
   } else {
-    Cwdowdowwdi2 <- fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
+    Cwdowdowwdi2 <- fcCwdowdowwdi22(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B)
     mddgi <- fcMeanDlayer2array(mpdi2w, mdgo, Cwdowdowwdi2, ni, no, B)
     mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
   }
@@ -1473,7 +1472,7 @@ fcCovwdo2wdiwdi <- function(mpdo, Cwdowdiwdi){
 
 #' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative)
 #'
-#' This function calculates covariance cov(wdowdo,wdiwdi) where the di terms are the same.
+#' This function calculates covariance cov(wdowdo,wdiwdi) where the di terms are the same, when next second layer involves only a product term (wddo2).
 #'
 #' @param mpdi Mean vector of the first order derivative product wd of current layer
 #' @param mpdo Mean vector of the first order derivative product wd of next layer
@@ -1505,6 +1504,58 @@ fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
   # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change.
   sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no))
   Cwdowdowwdi2 = array(apply(sum, 3, rowSums), c(B*ni, no, no))
+
+  return(Cwdowdowwdi2)
+
+}
+
+#' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative)
+#'
+#' This function calculates covariance cov(wdowdo,wdiwdi) where the di terms are the same when next second layer involves multiplied terms (wdo2wdo2).
+#'
+#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpdo Mean vector of the first order derivative product wd of next layer
+#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in second next layer
+#' @param B Batch size
+#' @return Covariance cov(wdowdo,wdiwdi) where the di terms are the same
+#' @export
+fcCwdowdowwdi22 <- function(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B){
+  mpdo = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+
+  # Replicate Cdgodgi matrix for each dimension of the array
+  CdgodgiA_moving = array(Cdgodgi, c(B*ni, no*no2, no*no2))
+  mpdiA_moving = array(mpdi, c(B*ni, no*no2, no*no2))
+  mpdoA_moving = array(t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni)), c(B*ni,no*no2, no*no2))
+  # Prepare "fixed" elements for iterations
+  CdgodgiA_fixed = array(matrix(rep(t(Cdgodgi), each = no*no2), nrow=B*ni, byrow = TRUE), c(B*ni,no*no2, no*no2))
+  mpdiA_fixed = array(matrix(rep(t(mpdi), each = no*no2), nrow=B*ni, byrow = TRUE), c(B*ni,no*no2, no*no2))
+  mpdoA_temp = matrix(mpdo[, rep(1:ncol(mpdo), each = ni*no*no2),], no*no2,B*no*ni*no2)
+  mpdoA_fixed = aperm(array(matrix(t(mpdoA_temp), nrow=B), c(no*no2,B*ni, no*no2)), c(2,1,3))
+  # Prepare mdgo2
+  mdgo2_temp1 = matrix(rep(mdgo2, each=no), ncol = no2)
+  mdgo2_temp2= array(array(t(mdgo2_temp1), c(no*no2,no2,B)), c(no*no2*no2,1,B))
+  mdgo2_temp3 = matrix(mdgo2_temp2[, rep(1:ncol(mdgo2_temp2), each = ni*no),], no*no2*no2,B*no*ni)
+  mdgo2_temp4=array(matrix(t(mdgo2_temp3), nrow=B), c(no,B*ni, no*no2*no2 ))
+  mdgo2A = array(aperm(mdgo2_temp4, c(2,1,3)), c(B*ni, no*no2, no*no2))
+  # Multiplier (multiply by 2 when start at same node and arrive at same node, no matter the weights)
+  multiplier = array(1, c(ni*B, no*no2, no))
+  for (j in 1:no){
+    for (b in 0:(no2-1)){
+      multiplier[,b*no+j,j] = 2*multiplier[,b*no+j,j]
+    }
+  }
+  multiplier = array(multiplier, c(ni*B, no*no2, no*no2))
+
+  Cwdowdowwdi2 = multiplier * mdgo2A * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+
+  # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change + across array dimensions (each (no)th array)
+  sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no*no2))
+  Cwdowdowwdi2 = matrix(apply(sum, 3, rowSums), nrow = B*ni*no*no)
+  Cwdowdowwdi2 = array(rowSums(Cwdowdowwdi2), c(B*ni, no, no))
 
   return(Cwdowdowwdi2)
 
