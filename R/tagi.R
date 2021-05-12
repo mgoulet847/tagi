@@ -1616,6 +1616,7 @@ fcCwdowdowwdi22 <- function(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B){
 #' @return Covariance cov(wdowdo,wdiwdi) where all terms can be different
 #' @export
 fcCwdowdowdiwdi <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
+  # mpdo_original = mpdo
   # mpdi2 = matrix(rep(mpdi, no2), nrow = B*ni)
   # mpdo2 = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
   # mpdo2 = t(matrix(mpdo2[, rep(1:ncol(mpdo2), each = ni),], no*no2,B*ni))
@@ -1636,36 +1637,52 @@ fcCwdowdowdiwdi <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
   #     }
   #   }
   # }
-
-  mpdo_original = mpdo
+  #
+  #
 
   mpdo = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
 
-  # Replicate Cdgodgi matrix for each dimension of the array
-  CdgodgiA_moving = array(Cdgodgi, c(B*ni, no*no2, no*ni))
+  # Prepare "moving" elements for iterations
+  CdgodgiA_moving = array(Cdgodgi, c(B*ni, no*no2, no*ni)) # Replicate Cdgodgi matrix for each dimension of the array
   mpdiA_moving = array(mpdi, c(B*ni, no*no2, no*ni))
   mpdoA_moving = array(t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni)), c(B*ni,no*no2, no*ni))
   # Prepare "fixed" elements for iterations
-  CdgodgiA_fixed = array(matrix(rep(t(Cdgodgi), each = no*no2), nrow=B*ni, byrow = TRUE), c(B*ni,no*no2, no*ni))
-  mpdiA_fixed = array(matrix(rep(t(mpdi), each = no*no2), nrow=B*ni, byrow = TRUE), c(B*ni,no*no2, no*ni))
-  mpdoA_temp = matrix(mpdo[, rep(1:ncol(mpdo), each = ni*no*no2),], no*no2,B*no*ni*no2)
-  mpdoA_fixed = aperm(array(matrix(t(mpdoA_temp), nrow=B), c(no*no2,B*ni, no*no2)), c(2,1,3))
-  # Prepare mdgo2
-  mdgo2_temp1 = matrix(rep(mdgo2, each=no), ncol = no2)
-  mdgo2_temp2= array(array(t(mdgo2_temp1), c(no*no2,no2,B)), c(no*no2*no2,1,B))
-  mdgo2_temp3 = matrix(mdgo2_temp2[, rep(1:ncol(mdgo2_temp2), each = ni*no),], no*no2*no2,B*no*ni)
-  mdgo2_temp4=array(matrix(t(mdgo2_temp3), nrow=B), c(no,B*ni, no*no2*no2 ))
-  mdgo2A = array(aperm(mdgo2_temp4, c(2,1,3)), c(B*ni, no*no2, no*no2))
-  # Multiplier (multiply by 2 when start at same node and arrive at same node, no matter the weights)
-  multiplier = array(1, c(ni*B, no*no2, no))
+  CdgodgiA_temp = matrix(Cdgodgi[,1], ncol = 1)
   for (j in 1:no){
-    for (b in 0:(no2-1)){
-      multiplier[,b*no+j,j] = 2*multiplier[,b*no+j,j]
+    for (i in 1:no2){
+      CdgodgiA_temp = cbind(CdgodgiA_temp, matrix(Cdgodgi[,j + i*no - no], ncol = 1))
     }
   }
-  multiplier = array(multiplier, c(ni*B, no*no2, no*no2))
+  CdgodgiA_temp2 = apply(array(CdgodgiA_temp[,-1], c(B*ni, no2, no)), 2, rbind)
+  CdgodgiA_fixed = array(rep(t(CdgodgiA_temp2), each = ni*no), c(B*ni, no*no2, ni*no)) # If B = 1
+  mpdiA_fixed = array(rep(mpdi, each=ni*no*no2), c(B*ni,no*no2, no*ni))
+  mpdoM = matrix(mpdo, ncol = B)
+  testA = matrix(mpdoM[1,], nrow = 1)
+  for (j in 1:no){
+    for (i in 1:no2){
+      testA = rbind(testA, matrix(mpdoM[j + i*no - no,], nrow = 1))
+    }
+  }
+  mpdoA = array(testA[-1,], c(no*no2,1,B))
+  mpdoA_temp = matrix(mpdoA[, rep(1:ncol(mpdoA), each = ni*no),], no*no2,B*no*ni)
+  mpdoA_temp2 = array(aperm(array(matrix(t(mpdoA_temp), nrow=B), c(no,B*ni, no*no2)), c(2,1,3)), c(B*ni, no*no2, no))
+  mpdoA_fixed = array(0, c(B*ni, no*no2, ni*no))
+  for (i in 1:no){
+    for (j in 1:ni){
+      mpdoA_fixed[,,j + i*ni - ni] = mpdoA_temp2[,,i]
+    }
+  }
+  # Multiplier (multiply by 2 when arrive at same node, no matter the weights)
+  multiplier = array(1, c(ni*B, no*no2, no*ni))
+  for (i in 1:no){
+    for (j in 1:ni){
+      for (b in 0:(no2-1)){
+        multiplier[,b*no+i,j + i*ni - ni] = matrix(2, ncol = 1)
+      }
+    }
+  }
 
-  Cwdowdowwdi2 = multiplier * mdgo2A * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+  Cwdowdowdiwdi = multiplier * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
 
 
   # Sum covariances together to come back (B*ni x no x no*ni) array. Iterations for sum are next layer weights that change.
