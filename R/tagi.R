@@ -1484,25 +1484,66 @@ fcCovwdo2wdiwdi <- function(mpdo, Cwdowdiwdi){
 #' @return Covariance cov(wdowdo,wdiwdi) where the di terms are the same
 #' @export
 fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
+  # mpdo = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  # mpdo = t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni))
+  #
+  # Cwdowdowwdi2 = array(0, c(ni*B, no*no2, no))
+  # for (b in 0:(no2-1)){
+  #   for (k in 1:no){
+  #     for (j in (b*no+1):(b*no+no)){
+  #       if (j == (b*no+k)){
+  #         Cwdowdowwdi2[,j,k] = 4 * mpdo[,j] * mpdi[,k] * Cdgodgi[,j]
+  #       } else {
+  #         Cwdowdowwdi2[,j,k] = mpdo[,j] * mpdi[,j-b*no] * Cdgodgi[,(b*no+k)] + mpdo[,(b*no+k)] * mpdi[,k] * Cdgodgi[,j]
+  #       }
+  #
+  #     }
+  #   }
+  # }
+  #
+  # # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change.
+  # sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no))
+  # Cwdowdowwdi2 = array(apply(sum, 3, rowSums), c(B*ni, no, no))
+
+
+
   mpdo = array(aperm(array(t(mpdo), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
-  mpdo = t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni))
 
-  Cwdowdowwdi2 = array(0, c(ni*B, no*no2, no))
-  for (b in 0:(no2-1)){
-    for (k in 1:no){
-      for (j in (b*no+1):(b*no+no)){
-        if (j == (b*no+k)){
-          Cwdowdowwdi2[,j,k] = 4 * mpdo[,j] * mpdi[,k] * Cdgodgi[,j]
-        } else {
-          Cwdowdowwdi2[,j,k] = mpdo[,j] * mpdi[,j-b*no] * Cdgodgi[,(b*no+k)] + mpdo[,(b*no+k)] * mpdi[,k] * Cdgodgi[,j]
-        }
-
-      }
+  # Replicate Cdgodgi matrix for each dimension of the array
+  CdgodgiA_moving = array(Cdgodgi, c(B*ni, no*no2, no))
+  mpdiA_moving = array(mpdi, c(B*ni, no*no2, no))
+  mpdoA_moving = array(t(matrix(mpdo[, rep(1:ncol(mpdo), each = ni),], no*no2,B*ni)), c(B*ni,no*no2, no))
+  # Prepare "fixed" elements for iterations
+  CdgodgiA_temp = matrix(Cdgodgi[,1], ncol = 1)
+  for (j in 1:no){
+    for (i in 1:no2){
+      CdgodgiA_temp = cbind(CdgodgiA_temp, matrix(Cdgodgi[,j + i*no - no], ncol = 1))
+    }
+  }
+  CdgodgiA_fixed = array(matrix(rep(t(CdgodgiA_temp[,-1]), each = no), nrow=B*ni, byrow = TRUE), c(B*ni,no*no2, no))
+  mpdiA_fixed = array(matrix(rep(t(mpdi), each = no*no2), nrow=B*ni, byrow = TRUE), c(B*ni,no*no2, no))
+  mpdoM = matrix(mpdo, ncol = B)
+  testA = matrix(mpdoM[1,], nrow = 1)
+  for (j in 1:no){
+    for (i in 1:no2){
+      testA = rbind(testA, matrix(mpdoM[j + i*no - no,], nrow = 1))
+    }
+  }
+  mpdoA = array(testA[-1,], c(no*no2,1,B))
+  mpdoA_temp = matrix(mpdoA[, rep(1:ncol(mpdoA), each = ni*no),], no*no2,B*no*ni)
+  mpdoA_fixed = array(aperm(array(matrix(t(mpdoA_temp), nrow=B), c(no,B*ni, no*no2)), c(2,1,3)), c(B*ni, no*no2, no))
+  # Multiplier (multiply by 2 when start at same node and arrive at same node, no matter the weights)
+  multiplier = array(1, c(B*ni, no*no2, no))
+  for (j in 1:no){
+    for (b in 0:(no2-1)){
+      multiplier[,b*no+j,j] = 2*multiplier[,b*no+j,j]
     }
   }
 
+  test = multiplier * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+
   # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change.
-  sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no))
+  sum = array(matrix(test, nrow = B*ni*no), c(B*ni*no, no2, no))
   Cwdowdowwdi2 = array(apply(sum, 3, rowSums), c(B*ni, no, no))
 
   return(Cwdowdowwdi2)
