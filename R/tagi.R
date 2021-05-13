@@ -956,7 +956,7 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
 fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, mdgo, mdgo2, Cdowdi, acto, acti, ni, no, no2, B, dlayer){
 
   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
-  mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sdai, ni, no, B)
+  mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
   Cdgodgi <- fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
 
   if (dlayer == FALSE){
@@ -1020,7 +1020,7 @@ fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
 fcDerivative5 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, mdgo, mdgo2, Cdowdi, acto, acti, ni, no, no2, B, dlayer){
 
   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
-  mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sdai, ni, no, B)
+  mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
   Cdgodgi <- fcCovDlayer(matrix(1, B*no2, 1), mwo, Cdowdi, ni, no, no2, B)
 
   if (dlayer == FALSE){
@@ -2471,20 +2471,28 @@ fcCombinaisonDnode <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
 #'
 #' @param mpdi Mean vector of the current product of derivative and weight
 #' @param mw Mean vector of the weights for the current layer
+#' @param Sw Covariance of the weights for the current layer
+#' @param mda Mean vector of the activation units' derivative from current layer
 #' @param Sda Covariance of the activation units' derivative from current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
 #' @return Mean array of combination of products of first order derivatives
 #' @export
-fcCombinaisonDweight <- function(mpdi, mw, Sda, ni, no, B){
+fcCombinaisonDweight <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
-  Sda = matrix(Sda, nrow(mw), ncol(mw))
+  Sw = matrix(rep(t(matrix(Sw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  mda = matrix(mda, nrow(mw), ncol(mw))
+  Sda = matrix(Sda, nrow(Sw), ncol(Sw))
 
   mpdi2w = array(0, c(ni*B, no, no))
   for (k in 1:no){
     for (j in 1:no){
-      var = mw[,k]*mw[,j]*Sda[,k]
+      if (j == k){
+        var = Sw[,j]*Sda[,j] + Sw[,j]*mda[,j]^2 + Sda[,j]*mw[,j]^2
+      } else {
+        var = mw[,k]*mw[,j]*Sda[,k]
+      }
       mpdi2w[,j,k] = mpdi[,k]*mpdi[,j] + var
     }
   }

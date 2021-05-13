@@ -4,12 +4,16 @@
 \alias{fcCombinaisonDweight}
 \title{Combination of Products of First Order Derivative (Iterations on Weights)}
 \usage{
-fcCombinaisonDweight(mpdi, mw, Sda, ni, no, B)
+fcCombinaisonDweight(mpdi, mw, Sw, mda, Sda, ni, no, B)
 }
 \arguments{
 \item{mpdi}{Mean vector of the current product of derivative and weight}
 
 \item{mw}{Mean vector of the weights for the current layer}
+
+\item{Sw}{Covariance of the weights for the current layer}
+
+\item{mda}{Mean vector of the activation units' derivative from current layer}
 
 \item{Sda}{Covariance of the activation units' derivative from current layer}
 
