@@ -1545,7 +1545,7 @@ fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
     }
   }
 
-  test = multiplier * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+  test = multiplier * (CdgodgiA_fixed * CdgodgiA_moving + mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
 
   # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change.
   sum = array(matrix(test, nrow = B*ni*no), c(B*ni*no, no2, no))
@@ -1597,7 +1597,7 @@ fcCwdowdowwdi2_3hl <- function(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B){
   }
   multiplier = array(multiplier, c(ni*B, no*no2, no*no2))
 
-  Cwdowdowwdi2 = multiplier * mdgo2A * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+  Cwdowdowwdi2 = multiplier * mdgo2A * (CdgodgiA_fixed * CdgodgiA_moving + mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
 
   # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change + across array dimensions (each (no)th array)
   sum = array(matrix(Cwdowdowwdi2, nrow = B*ni*no), c(B*ni*no, no2, no*no2))
@@ -1689,7 +1689,7 @@ fcCwdowdowdiwdi <- function(mpdi, mpdo, Cdgodgi, ni, no, no2, B){
     }
   }
 
-  Cwdowdowdiwdi = multiplier * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+  Cwdowdowdiwdi = multiplier * (CdgodgiA_fixed * CdgodgiA_moving + mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
 
 
   # Sum covariances together to come back (B*ni x no x no*ni) array. Iterations for sum are next layer weights that change.
@@ -1751,7 +1751,7 @@ fcCwdowdowdiwdi_4hl <- function(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B){
   }
   multiplier = array(multiplier, c(ni*B, no*no2, no*ni*no2))
 
-  Cwdowdowdiwdi = multiplier * mdgo2A * (mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
+  Cwdowdowdiwdi = multiplier * mdgo2A * (CdgodgiA_fixed * CdgodgiA_moving + mpdoA_moving * mpdiA_moving * CdgodgiA_fixed + mpdoA_fixed * mpdiA_fixed * CdgodgiA_moving)
 
   # Sum covariances together to come back (B*ni x no x no) array. Iterations for sum are next layer weights that change + across array dimensions (each (ni*no)th array)
   sum = array(matrix(Cwdowdowdiwdi, nrow = B*ni*no), c(B*ni*no, no2, ni*no*no2)) # Prepare to sum each (no)th columns in all matrices
