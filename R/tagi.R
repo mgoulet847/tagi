@@ -1830,9 +1830,11 @@ fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between Derivatives and Inputs
+#' Covariance between Derivatives and Hidden States
 #'
-#' This function calculates covariance between derivatives and inputs.
+#' This function calculates covariance between derivatives and hidden states.
+#' It is not related to the derivative calculation process.
+#' It could be used infer Z (hidden states) with the constraint that the derivative of g with respect to Z equals 0.
 #'
 #' @param mwo Mean vector of the weights for the next layer
 #' @param mw Mean vector of the weights for the current layer
@@ -1845,7 +1847,7 @@ fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
 #' @param no Number of units in next layer
 #' @param no2 Number of units in 2nd next layer
 #' @param B Batch size
-#' @return Covariance between derivative and input layers
+#' @return Covariance between derivative and hidden states
 #' @export
 covdx <- function(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B){
   mdgo2 = matrix(matrix(rep(mdgo2, no), nrow = no, byrow = TRUE), no*no2, B)

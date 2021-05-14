@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{covdx}
 \alias{covdx}
-\title{Covariance between Derivatives and Inputs}
+\title{Covariance between Derivatives and Hidden States}
 \usage{
 covdx(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B)
 }
@@ -30,8 +30,10 @@ covdx(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between derivative and input layers
+Covariance between derivative and hidden states
 }
 \description{
-This function calculates covariance between derivatives and inputs.
+This function calculates covariance between derivatives and hidden states.
+It is not related to the derivative calculation process.
+It could be used infer Z (hidden states) with the constraint that the derivative of g with respect to Z equals 0.
 }
