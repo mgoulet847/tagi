@@ -1895,8 +1895,8 @@ meanMz <- function(mp, ma, idxFmwa, idxFmwab){
   }
 
   mpb = matrix(mp[idxFmwab,], nrow = length(idxFmwab))
-  mp = matrix(mp[idxFmwa[[1]]], nrow = max(nrow(idxFmwa[[1]]),ncol(idxFmwa[[1]])))
-  ma = matrix(ma[idxFmwa[[2]]], nrow = max(nrow(idxFmwa[[2]]),ncol(idxFmwa[[2]])))
+  mp = matrix(mp[idxFmwa[[1]],], nrow = max(nrow(idxFmwa[[1]]),ncol(idxFmwa[[1]])))
+  ma = matrix(ma[idxFmwa[[2]],], nrow = max(nrow(idxFmwa[[2]]),ncol(idxFmwa[[2]])))
 
   mWa = matrix(apply(mp * ma, idxSum, sum), nrow = nrow(mpb), ncol = 1)
   mz = mWa + mpb
@@ -1935,14 +1935,14 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
   }
 
   Spb = matrix(Sp[idxFSwaFb,], nrow = length(idxFSwaFb))
-  Sp = matrix(Sp[idxFSwaF[[1]]], nrow = max(nrow(idxFSwaF[[1]]),ncol(idxFSwaF[[1]])))
-  ma = matrix(ma[idxFSwaF[[2]]], nrow = max(nrow(idxFSwaF[[2]]),ncol(idxFSwaF[[2]])))
+  Sp = matrix(Sp[idxFSwaF[[1]],], nrow = max(nrow(idxFSwaF[[1]]),ncol(idxFSwaF[[1]])))
+  ma = matrix(ma[idxFSwaF[[2]],], nrow = max(nrow(idxFSwaF[[2]]),ncol(idxFSwaF[[2]])))
 
   if (is.null(Sa)){
     Sz = apply(Sp * ma * ma, idxSum, sum)
   } else {
-    mp = matrix(mp[idxFSwaF[[1]]], nrow = max(nrow(idxFSwaF[[1]]),ncol(idxFSwaF[[1]])))
-    Sa = matrix(Sa[idxFSwaF[[2]]], nrow = max(nrow(idxFSwaF[[2]]),ncol(idxFSwaF[[2]])))
+    mp = matrix(mp[idxFSwaF[[1]],], nrow = max(nrow(idxFSwaF[[1]]),ncol(idxFSwaF[[1]])))
+    Sa = matrix(Sa[idxFSwaF[[2]],], nrow = max(nrow(idxFSwaF[[2]]),ncol(idxFSwaF[[2]])))
     Sz = apply(Sp * Sa + Sp * ma * ma + Sa * mp * mp, idxSum, sum)
   }
   Sz = Sz + Spb
