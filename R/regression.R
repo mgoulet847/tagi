@@ -64,10 +64,10 @@ regression <- function(NN, x, y, trainIdx, testIdx){
       xtest = out_split[[3]]
       ytest = out_split[[4]]
     } else {
-      xtrain = x[trainIdx[[s]][[1]],]
-      ytrain = matrix(y[trainIdx[[s]][[1]],], ncol = NN$ny)
-      xtest = x[testIdx[[s]][[1]],]
-      ytest = matrix(y[testIdx[[s]][[1]],], ncol = NN$ny)
+      xtrain = x[trainIdx[[s]],]
+      ytrain = matrix(y[trainIdx[[s]],], ncol = NN$ny)
+      xtest = x[testIdx[[s]],]
+      ytest = matrix(y[testIdx[[s]],], ncol = NN$ny)
     }
     out_normalize = normalize(xtrain, ytrain, xtest, ytest)
     xtrain = out_normalize[[1]]
