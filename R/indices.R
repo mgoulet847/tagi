@@ -174,23 +174,21 @@ parameters <- function(NN){
     if ((NN$collectDev >= 1) & (layer[j+1] == 1)){
       idxb[[j, 1]] = matrix(1:(nodes[j+1]), nrow = nodes[j+1], ncol = 1)
       idxw[[j, 1]] = matrix(1:(nodes[j+1] * nodes[j]), nrow = nodes[j+1] * nodes[j], ncol = 1)
-
-      if (!(is.null(idxw[[j, 1]]))){
-        numParamsPerLayer[1,j] = nrow(idxw[[j, 1]])
-      }
-
-      if (!(is.null(idxb[[j, 1]]))){
-        numParamsPerLayer[2,j] = nrow(idxb[[j, 1]])
-      }
-
-      if (!(is.null(numParams[[j, 1]]))){
-        totalNumParams = totalNumParams + numParams[[j, 1]]
-      }
-
     } else {
       idxbw[[j, 1]] = matrix(1:numParams[[j, 1]], 1, numParams[[j, 1]])
       idxb[[j, 1]] = matrix(idxbw[[j, 1]][1, 1:(nodes[j+1])], nrow = nodes[j+1], ncol = 1)
       idxw[[j, 1]] = matrix(idxbw[[j, 1]][1, ((nodes[j+1]) + 1):numParams[[j, 1]]], nrow = (numParams[[j, 1]] - nodes[j+1]), ncol = 1)
+    }
+    if (!(is.null(idxw[[j, 1]]))){
+      numParamsPerLayer[1,j] = nrow(idxw[[j, 1]])
+    }
+
+    if (!(is.null(idxb[[j, 1]]))){
+      numParamsPerLayer[2,j] = nrow(idxb[[j, 1]])
+    }
+
+    if (!(is.null(numParams[[j, 1]]))){
+      totalNumParams = totalNumParams + numParams[[j, 1]]
     }
   }
 
