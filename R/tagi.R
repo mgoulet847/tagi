@@ -905,21 +905,23 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
   Cddgodgik = rowSums(matrix(Cddgodgik, B*ni*no, no2))
   Cddgodgik = matrix(Cddgodgik, B*ni, no)
 
-  if (dlayer == FALSE){
-    # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
-    mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
-
-    Cwdowdiwdi <- fcCovwdowdiwdi(mpdi, Cddgodgik, ni, no, B)
-    mddgi <- fcMeanDlayer2row(mpdi, mpdi2n, mdgo, Cwdowdiwdi, ni, no, no2, B)
-  } else {
+  # if (dlayer == FALSE){
+  #   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
+  #   mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
+  #
+  #   Cwdowdiwdi <- fcCovwdowdiwdi(mpdi, Cddgodgik, ni, no, B)
+  #   mddgi <- fcMeanDlayer2row(mpdi, mpdi2n, mdgo, Cwdowdiwdi, ni, no, no2, B)
+  # } else {
     # (wd)^2 only
     mpdi2wn <- fcCombinaisonDweightNode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
     Cwdowdi2 <- fcCovwdowdi2(mpdi, Cddgodgik)
     mdgo = t(matrix(matrix(rep(t(matrix(mdgo, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
 
     mddgi = mdgo*mpdi2wn + Cwdowdi2
-    mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
-  }
+    if (dlayer == TRUE){
+      mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
+    }
+  # }
 
 
   return(mddgi)
@@ -956,36 +958,47 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
 fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, mdgo, mdgo2, Cdowdi, acto, acti, ni, no, no2, B, dlayer){
 
   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
-  mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
+  # mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
   Cdgodgi <- fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
 
-  if (dlayer == FALSE){
-    # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
-    mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
-    # All possible combinations
-    mpdi2wnAll <- fcCombinaisonDweightNodeAll(mpdi, mpdi2n, mpdi2w, ni, no, B)
+  # if (dlayer == FALSE){
+  #   # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
+  #   mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
+  #   # All possible combinations
+  #   mpdi2wnAll <- fcCombinaisonDweightNodeAll(mpdi, mpdi2n, mpdi2w, ni, no, B)
+  #
+  #   Cwdowdowdiwdi <- fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
+  #
+  #   mdgo = array(matrix(rep(rep(matrix(mdgo, ncol = no, byrow = TRUE), times = ni), each = ni), B*ni, no*no), c(B*ni, no, no))
+  #
+  #   mdgoA = array(0, c(B*ni, no, ni*no))
+  #   for (b in 0:(no-1)){
+  #     for (i in (b*ni+1):(b*ni+ni)){
+  #       mdgoA[,,i] = mdgo[,,b+1]
+  #     }
+  #   }
+  #   md = mpdi2wnAll * mdgoA
+  #   mddgi = md + Cwdowdowdiwdi
+  #
+  #   # Come back to Bni x ni matrix
+  #   mddgi = matrix(apply(mddgi, 3, rowSums), B*ni*ni, no)
+  #   mddgi = matrix(rowSums(mddgi), B*ni, ni)
+  # } else {
 
-    Cwdowdowdiwdi <- fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
-
-    mdgo = array(matrix(rep(rep(matrix(mdgo, ncol = no, byrow = TRUE), times = ni), each = ni), B*ni, no*no), c(B*ni, no, no))
-
-    mdgoA = array(0, c(B*ni, no, ni*no))
-    for (b in 0:(no-1)){
-      for (i in (b*ni+1):(b*ni+ni)){
-        mdgoA[,,i] = mdgo[,,b+1]
-      }
-    }
-    md = mpdi2wnAll * mdgoA
-    mddgi = md + Cwdowdowdiwdi
-
-    # Come back to Bni x ni matrix
-    mddgi = matrix(apply(mddgi, 3, rowSums), B*ni*ni, no)
-    mddgi = matrix(rowSums(mddgi), B*ni, ni)
-  } else {
+  # (wd)^2 only
+  mpdi2wn <- fcCombinaisonDweightNode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
     Cwdowdowwdi2 <- fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
-    mddgi <- fcMeanDlayer2array(mpdi2w, mdgo, Cwdowdowwdi2, ni, no, B)
-    mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
-  }
+    Cwdo2wdi2 <- matrix(0, B*ni, no)
+    for (j in 1:no){
+      Cwdo2wdi2[,j] = Cwdowdowwdi2[,j,j] # get only covariances between (wdo)^2 and (wdi)^2
+    }
+
+    mdgo = matrix(rep(matrix(rowSums(mdgo), nrow = B, byrow = TRUE), each = ni), B*ni, no)
+    mddgi = mdgo*mpdi2wn + Cwdo2wdi2
+    if (dlayer == TRUE){
+      mddgi = matrix(rowSums(mddgi), nrow(mddgi), 1)
+    }
+  # }
 
   return(mddgi)
 }
