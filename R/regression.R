@@ -63,6 +63,8 @@ regression <- function(NN, x, y, trainIdx, testIdx){
       ytrain = out_split[[2]]
       xtest = out_split[[3]]
       ytest = out_split[[4]]
+      idxTrain = out_split[[5]]
+      idxTest = out_split[[6]]
     } else {
       xtrain = x[trainIdx[[s]],]
       ytrain = matrix(y[trainIdx[[s]],], ncol = NN$ny)
@@ -123,6 +125,6 @@ regression <- function(NN, x, y, trainIdx, testIdx){
     cat(sprintf("Results for Run # %s, RMSE: %s and LL: %s", s, RMSElist[s], LLlist[s]))
   }
   metric = list("RMSElist" = RMSElist, "LLlist" = LLlist)
-  outputs <- list(mp, Sp, metric, trainTimelist, ynTest, SynTest)
+  outputs <- list(mp, Sp, metric, trainTimelist, ynTest, SynTest, idxTrain, idxTest)
   return(outputs)
 }

@@ -120,8 +120,8 @@ feedForward <- function(NN, x, mp, Sp){
 
     # Activation
     if (j < numLayers){
-      out_act = meanA(mz[[2,1]], mz[[2,1]], hiddenLayerActFunIdx)
-      ma[[2,1]] = out_act[[1]]
+      out_act = meanA(mz[[j,1]], mz[[j,1]], hiddenLayerActFunIdx)
+      ma[[j,1]] = out_act[[1]]
       J[[j,1]] = out_act[[2]]
       Sa[[j,1]] = covarianceSa(J[[j,1]], Sz[[j,1]])
     }
@@ -1928,7 +1928,7 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
   # *NOTE*: All indices have been built in the way that we bypass
   # the transition step such as Sa = F*Cwa*F' + F*Cb*F'
 
-  if (nrow(idxFSwaF[[1]]) == 1){
+  if (nrow(idxFSwaF[[1]]) == ncol(mp)){
     idxSum = 2 # Sum by column
   } else {
     idxSum = 1 # Sum by row
@@ -2266,11 +2266,11 @@ backwardParameterUpdate <- function(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx){
 #' @export
 backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
   dz = mzB - mzF
-  dz = matrix(dz[idx,], nrow = length(idx))
+  dz = matrix(dz[idx,], nrow = nrow(idx))
   dS = SzB - SzF
-  dS  = matrix(dS[idx,], nrow = length(idx))
+  dS  = matrix(dS[idx,], nrow = nrow(idx))
   SzF = 1 / SzF
-  SzF = matrix(SzF[idx,], nrow = length(idx))
+  SzF = matrix(SzF[idx,], nrow = nrow(idx))
   J   = Czz * SzF
   # Mean
   mzUd = mz + rowSums(J * dz)

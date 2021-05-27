@@ -54,12 +54,12 @@ split <- function(x, y, ratio){
   idxTrainEnd = round(ratio * numObs)
   idxTrain = idxobs[1:idxTrainEnd]
   idxTest = idxobs[(idxTrainEnd+1):numObs]
-  xtrain = x[idxTrain,]
-  ytrain = matrix(y[idxTrain,], nrow = length(y[idxTrain,]))
-  xtest = x[idxTest,]
-  ytest = matrix(y[idxTest,], nrow = length(y[idxTest,]))
+  xtrain = matrix(x[idxTrain,], nrow = idxTrainEnd)
+  ytrain = matrix(y[idxTrain,], nrow = idxTrainEnd)
+  xtest = matrix(x[idxTest,], nrow = (numObs-idxTrainEnd))
+  ytest = matrix(y[idxTest,], nrow = (numObs-idxTrainEnd))
 
-  outputs <- list(xtrain, ytrain, xtest, ytest)
+  outputs <- list(xtrain, ytrain, xtest, ytest, idxTrain, idxTest)
   return(outputs)
 }
 
