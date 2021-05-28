@@ -191,7 +191,7 @@ feedForwardPass <- function(NN, theta, states){
   Sdda = matrix(list(), nrow = numLayers, ncol = 1)
   mda[[1,1]] = rep(1, nrow(mz[[1,1]]))
   Sda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
-  mdda[[1,1]] = rep(1, nrow(mz[[1,1]]))
+  mdda[[1,1]] = rep(0, nrow(mz[[1,1]]))
   Sdda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
 
   # Hidden Layers
