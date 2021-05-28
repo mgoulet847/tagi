@@ -191,7 +191,7 @@ feedForwardPass <- function(NN, theta, states){
   Sdda = matrix(list(), nrow = numLayers, ncol = 1)
   mda[[1,1]] = rep(1, nrow(mz[[1,1]]))
   Sda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
-  mdda[[1,1]] = rep(1, nrow(mz[[1,1]]))
+  mdda[[1,1]] = rep(0, nrow(mz[[1,1]]))
   Sdda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
 
   # Hidden Layers
@@ -1363,7 +1363,7 @@ fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
 #' @return Mean of weights times derivatives products terms
 #' @export
 fcMeanDlayer2row <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
-  mdgo = array(matrix(rep(rep(matrix(mdgo, ncol = ni, byrow = TRUE), times = ni), each = ni), B*ni, no), c(B*ni, no, ni))
+  mdgo = array(matrix(rep(rep(matrix(mdgo, ncol = no, byrow = TRUE), times = ni), each = ni), B*ni, no), c(B*ni, no, ni))
   md = mpdi2 * mdgo
 
   md = md + Cwdowdiwdi
