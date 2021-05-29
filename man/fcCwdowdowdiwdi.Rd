@@ -4,7 +4,7 @@
 \alias{fcCwdowdowdiwdi}
 \title{Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Minimum 3 Hidden Layers)}
 \usage{
-fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
+fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, acti, ni, no, no2, B)
 }
 \arguments{
 \item{mpdi}{Mean vector of the first order derivative product wd of current layer}
@@ -12,6 +12,8 @@ fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
 \item{mpdo}{Mean vector of the first order derivative product wd of next layer}
 
 \item{Cdgodgi}{Covariance between weights times derivatives from consecutive layers}
+
+\item{acti}{Activation function index for current layer defined by \code{\link{activationFunIndex}}}
 
 \item{ni}{Number of units in current layer}
 
@@ -26,5 +28,5 @@ Covariance cov(wdowdo,wdiwdi) where all terms can be different
 }
 \description{
 This function calculates covariance cov(wdowdo,wdiwdi) where all terms can be different.
-It is used when there are at least 3 hidden layers.
+It is used when there are at least 3 hidden layers and second next layer is a product of only two terms (wdo2).
 }

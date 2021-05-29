@@ -4,7 +4,7 @@
 \alias{fcCwdowdowwdi2}
 \title{Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative)}
 \usage{
-fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
+fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, acti, ni, no, no2, B)
 }
 \arguments{
 \item{mpdi}{Mean vector of the first order derivative product wd of current layer}
@@ -12,6 +12,8 @@ fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, ni, no, no2, B)
 \item{mpdo}{Mean vector of the first order derivative product wd of next layer}
 
 \item{Cdgodgi}{Covariance between weights times derivatives from consecutive layers}
+
+\item{acti}{Activation function index for current layer defined by \code{\link{activationFunIndex}}}
 
 \item{ni}{Number of units in current layer}
 

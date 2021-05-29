@@ -4,7 +4,7 @@
 \alias{fcCwdowdowdiwdi_4hl}
 \title{Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Minimum 4 Hidden Layers)}
 \usage{
-fcCwdowdowdiwdi_4hl(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B)
+fcCwdowdowdiwdi_4hl(mpdi, mpdo, mdgo2, Cdgodgi, acti, ni, no, no2, B)
 }
 \arguments{
 \item{mpdi}{Mean vector of the first order derivative product wd of current layer}
@@ -14,6 +14,8 @@ fcCwdowdowdiwdi_4hl(mpdi, mpdo, mdgo2, Cdgodgi, ni, no, no2, B)
 \item{mdgo2}{Mean vector of derivatives in 2nd next layer}
 
 \item{Cdgodgi}{Covariance between weights times derivatives from consecutive layers}
+
+\item{acti}{Activation function index for current layer defined by \code{\link{activationFunIndex}}}
 
 \item{ni}{Number of units in current layer}
 
