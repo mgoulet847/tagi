@@ -450,7 +450,7 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
   } else {sv = matrix(NN$sv, nrow = NN$ny, ncol = 1)}
 
   # Update hidden states for the last hidden layer
-  R = matrix(sv^2, nrow = NN$batchSize, ncol = 1)
+  R = matrix(sv^2, nrow = nrow(Sz[[lHL + 1]]), ncol = 1)
   Szv = Sz[[lHL + 1]] + R
   out_forwardHiddenStateUpdate = forwardHiddenStateUpdate(mz[[lHL+1]], Sz[[lHL+1]], mz[[lHL+1]], Szv, Sz[[lHL+1]], y)
   mzUd[[lHL+1]] = out_forwardHiddenStateUpdate[[1]]
@@ -1906,17 +1906,13 @@ meanMz <- function(mp, ma, idxFmwa, idxFmwab){
   # *NOTE*: All indices have been built in the way that we bypass
   # the transition step such as F*mwa + F*b
 
-  if (nrow(idxFmwa[[1]]) == 1){
-    idxSum = 2 # Sum by column
-  } else {
-    idxSum = 1 # Sum by row
-  }
+  idxSum = 1 # Sum by row
 
   mpb = matrix(mp[idxFmwab,], nrow = length(idxFmwab))
-  mp = matrix(mp[idxFmwa[[1]],], nrow = max(nrow(idxFmwa[[1]]),ncol(idxFmwa[[1]])))
-  ma = matrix(ma[idxFmwa[[2]],], nrow = max(nrow(idxFmwa[[2]]),ncol(idxFmwa[[2]])))
+  mp = matrix(mp[idxFmwa[[1]],], nrow = nrow(idxFmwa[[1]]))
+  ma = matrix(ma[idxFmwa[[2]],], nrow = nrow(idxFmwa[[2]]))
 
-  mWa = matrix(apply(mp * ma, idxSum, sum), nrow = nrow(mpb), ncol = 1)
+  mWa = matrix(apply(mp * ma, idxSum, sum), nrow = nrow(mpb))
   mz = mWa + mpb
   return(mz)
 }
@@ -1946,21 +1942,17 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
   # *NOTE*: All indices have been built in the way that we bypass
   # the transition step such as Sa = F*Cwa*F' + F*Cb*F'
 
-  if (nrow(idxFSwaF[[1]]) == ncol(mp)){
-    idxSum = 2 # Sum by column
-  } else {
-    idxSum = 1 # Sum by row
-  }
+  idxSum = 1 # Sum by row
 
   Spb = matrix(Sp[idxFSwaFb,], nrow = length(idxFSwaFb))
-  Sp = matrix(Sp[idxFSwaF[[1]],], nrow = max(nrow(idxFSwaF[[1]]),ncol(idxFSwaF[[1]])))
-  ma = matrix(ma[idxFSwaF[[2]],], nrow = max(nrow(idxFSwaF[[2]]),ncol(idxFSwaF[[2]])))
+  Sp = matrix(Sp[idxFSwaF[[1]],], nrow = nrow(idxFSwaF[[1]]))
+  ma = matrix(ma[idxFSwaF[[2]],], nrow = nrow(idxFSwaF[[2]]))
 
   if (is.null(Sa)){
     Sz = apply(Sp * ma * ma, idxSum, sum)
   } else {
-    mp = matrix(mp[idxFSwaF[[1]],], nrow = max(nrow(idxFSwaF[[1]]),ncol(idxFSwaF[[1]])))
-    Sa = matrix(Sa[idxFSwaF[[2]],], nrow = max(nrow(idxFSwaF[[2]]),ncol(idxFSwaF[[2]])))
+    mp = matrix(mp[idxFSwaF[[1]],], nrow = nrow(idxFSwaF[[1]]))
+    Sa = matrix(Sa[idxFSwaF[[2]],], nrow = nrow(idxFSwaF[[2]]))
     Sz = apply(Sp * Sa + Sp * ma * ma + Sa * mp * mp, idxSum, sum)
   }
   Sz = Sz + Spb

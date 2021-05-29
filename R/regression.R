@@ -91,7 +91,7 @@ regression <- function(NN, x, y, trainIdx, testIdx){
     while (stop == 0){
       if (epoch > 1){
         idxtrain = sample(nrow(ytrain))
-        ytrain = matrix(ytrain[idxtrain,], nrow = length(ytrain[idxtrain,]))
+        ytrain = matrix(ytrain[idxtrain,], nrow = length(idxtrain))
         xtrain = xtrain[idxtrain,]
       }
       epoch = epoch + 1
@@ -109,7 +109,7 @@ regression <- function(NN, x, y, trainIdx, testIdx){
     out_network = network(NNtest, mp, Sp, xtest, NULL)
     ynTest = out_network[[3]]
     SynTest = out_network[[4]]
-    R = matrix(NNtest$sv^2, nrow = nrow(SynTest), ncol = 1)
+    R = matrix(NNtest$sv^2, nrow = nrow(SynTest), ncol = ncol(SynTest))
     SynTest = SynTest + R
     out_denormalize <- denormalize(ynTest, SynTest, mytrain, sytrain)
     ynTest = out_denormalize[[1]]
