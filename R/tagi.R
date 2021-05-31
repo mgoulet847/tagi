@@ -274,12 +274,14 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
   nodes = c(NN$nodes, NN$nodes[length(NN$nodes)])
   layer = NN$layer
   numParamsPerLayer_2 = NN$numParamsPerLayer_2
+  states_derivative = states
 
   # Derivative
   mdg = createDevCellarray(nodes, numLayers, B, rB)
   Sdg = mdg
   Cdgz = mdg
   mdge = mdg
+  Sdge = mdg
   mddg = mdg
   Sddg = mdg
 
@@ -299,114 +301,127 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
         mdg[[j,1]] = matrix(rowSums(mdgk), nrow(mdgk), 1)
         Sdg[[j,1]] = matrix(rowSums(Sdgk), nrow(Sdgk), 1)
         mdge[[j,1]] = mdgk
+        Sdge[[j,1]] = Sdgk
         Cdgk = covdx(0, mw[idxw], rep(0, NN$ny*B), 0, rep(1, NN$ny*B), Cdozi, Cdizi, nodes[j], nodes[j+1], 1, B)
         Cdgz[[j,1]] = matrix(rowSums(Cdgk), nrow(Cdgk), 1)
 
-        # For second and higher order derivative
-        if (NN$collectDev > 1){
-          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
-          mddgk = out_fcMeanVarDnode[[1]]
-          Sddgk = out_fcMeanVarDnode[[2]]
-          mddg[[j,1]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
-          Sddg[[j,1]] = matrix(rowSums(Sddgk), nrow(Sddgk), 1)
-
-          # Matrix of combination types (1 when second order derivative is used, >1 thereafter, 0 when not still used)
-          # Read from RIGHT to LEFT (column number corresponds to layer number)
-          # (e.g. in 2nd order derivative, only one product wd is of second order, then the other products are first order and multiplied with wd products of their layer.
-          # Terms before product' 2nd order derivative are of first order and NOT multiplied with wd products of their layer)
-          combinations_matrix = apply(upper.tri(diag(numLayers-1), diag = TRUE),1,cumsum)
-          mddg_combinations = matrix(list(createDevCellarray(nodes, numLayers, B, rB)), nrow = nrow(combinations_matrix), ncol = 1)
-
-          for (i in 1:nrow(combinations_matrix)){
-            # Cases which start with first order wd
-            if (combinations_matrix[i,j] == 0){
-              mddg_combinations[[i]][[j]] = mdg[[j,1]]
-            }
-            # Cases which start with second order wd
-            else if (combinations_matrix[i,j] == 1){
-              mddg_combinations[[i]][[j]] = mddg[[j,1]]
-            }
-          }
-        }
+        # # For second and higher order derivative
+        # if (NN$collectDev > 1){
+        #   out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
+        #   mddgk = out_fcMeanVarDnode[[1]]
+        #   Sddgk = out_fcMeanVarDnode[[2]]
+        #   mddg[[j,1]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
+        #   Sddg[[j,1]] = matrix(rowSums(Sddgk), nrow(Sddgk), 1)
+        #
+        #   # Matrix of combination types (1 when second order derivative is used, >1 thereafter, 0 when not still used)
+        #   # Read from RIGHT to LEFT (column number corresponds to layer number)
+        #   # (e.g. in 2nd order derivative, only one product wd is of second order, then the other products are first order and multiplied with wd products of their layer.
+        #   # Terms before product' 2nd order derivative are of first order and NOT multiplied with wd products of their layer)
+        #   combinations_matrix = apply(upper.tri(diag(numLayers-1), diag = TRUE),1,cumsum)
+        #   mddg_combinations = matrix(list(createDevCellarray(nodes, numLayers, B, rB)), nrow = nrow(combinations_matrix), ncol = 1)
+        #
+        #   for (i in 1:nrow(combinations_matrix)){
+        #     # Cases which start with first order wd
+        #     if (combinations_matrix[i,j] == 0){
+        #       mddg_combinations[[i]][[j]] = mdg[[j,1]]
+        #     }
+        #     # Cases which start with second order wd
+        #     else if (combinations_matrix[i,j] == 1){
+        #       mddg_combinations[[i]][[j]] = mddg[[j,1]]
+        #     }
+        #   }
+        # }
       } else if ((NN$collectDev > 0) & (j < (numLayers-1))){
         out_fcDerivative <- fcDerivative(mw[idxw], Sw[idxw], mw[idxwo], J[[j+1,1]], J[[j,1]],
                                       ma[[j+1,1]], Sa[[j+1,1]], ma[[j,1]], Sa[[j,1]],
                                       Sz[[j,1]], mda[[j,1]], Sda[[j,1]],
-                                      mdg[[j+1,1]], mdge[[j+1,1]], Sdg[[j+1,1]], mdg[[j+2,1]],
-                                      actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
+                                      mdg[[j+1,1]], mdge[[j+1,1]], Sdg[[j+1,1]], Sdge[[j+1,1]], mdg[[j+2,1]],
+                                      actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B,
+                                      (("actDerivative" %in% names(NN)) & (j ==1) ))
         mdgk = out_fcDerivative[[1]]
         Sdgk = out_fcDerivative[[2]]
         Cdgzk = out_fcDerivative[[3]]
+
+        mdge[[j,1]] = mdgk
+        Sdge[[j,1]] = Sdgk
         mdg[[j,1]] = matrix(rowSums(mdgk), nrow(mdgk), 1)
         Sdg[[j,1]] = matrix(rowSums(Sdgk), nrow(Sdgk), 1)
-        mdge[[j,1]] = mdgk
         Cdgz[[j,1]] = matrix(rowSums(Cdgzk), nrow(Cdgzk), 1)
 
-        # For second and higher order derivative
-        if (NN$collectDev > 1){
-
-          Caow = out_fcDerivative[[4]]
-          Caoai = out_fcDerivative[[5]]
-          Cdow = out_fcDerivative[[6]]
-          Cdodi = out_fcDerivative[[7]]
-          Cdowdi = out_fcDerivative[[8]]
-
-          # First order derivative of current layer (wd)
-          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mda[[j,1]], Sda[[j,1]], nodes[j], nodes[j+1], B)
-          mpdi = out_fcMeanVarDnode[[1]]
-
-          # First order derivative of next layer (wd)
-          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxwo], Sw[idxwo], mda[[j+1,1]], Sda[[j+1,1]], nodes[j+1], nodes[j+2], B)
-          mpdo = out_fcMeanVarDnode[[1]]
-
-          # Second order derivative of current layer (wdd)
-          out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
-          mpddi = out_fcMeanVarDnode[[1]]
-
-          for (i in 1:nrow(combinations_matrix)){
-            # Case where to multiply first order wd to previous first order wd
-            if (combinations_matrix[i,j] == 0){
-              mddg_combinations[[i]][[j]] = mdg[[j,1]]
-            }
-            # Case where to multiply second order wdd to previous first order wd
-            else if (combinations_matrix[i,j] == 1){
-              mddgk = fcDerivative2(mw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j,1]],
-                                                          mdda[[j,1]], mpddi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Caoai, Cdow,
-                                                          Cdodi, actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
-              mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
-            }
-            # Case where to multiply first order wd*wd to second order wdd
-            else if (combinations_matrix[i,j] == 2){
-              mddg_combinations[[i]][[j]] = fcDerivative3(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
-                                    mda[[j,1]], Sda[[j,1]], mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Caow, Caoai, Cdow,
-                                    Cdodi, actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
-            }
-            # Case where to multiply first order wd*wd to previous terms' product wd*wd (first one)
-            else if (combinations_matrix[i,j] == 3){
-              mddg_combinations[[i]][[j]] = fcDerivative4(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
-                                                          mda[[j,1]], Sda[[j,1]], mpdo, mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Cdowdi,
-                                                          actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
-            }
-            # Case where to multiply first order wd*wd to previous terms' product wd*wd (not first one)
-            else if (combinations_matrix[i,j] > 3){
-              mddg_combinations[[i]][[j]] = fcDerivative5(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
-                                                          mda[[j,1]], Sda[[j,1]], mpdo, mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Cdowdi,
-                                                          actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
-            }
-          }
-          # Only sum combinations that have a second order derivative so far to have g'' with respect to current layer j
-          mddg[[j,1]] = matrix(0, nrow(mddg_combinations[[1]][[j]]), 1)
-          for (i in 1:nrow(combinations_matrix)){
-            if (combinations_matrix[i,j] > 0){
-              mddg[[j,1]] = mddg[[j,1]] + matrix(rowSums(mddg_combinations[[i]][[j]]), nrow(mddg_combinations[[i]][[j]]), 1)
-            }
-          }
-        }
+        # # For second and higher order derivative
+        # if (NN$collectDev > 1){
+        #
+        #   Caow = out_fcDerivative[[4]]
+        #   Caoai = out_fcDerivative[[5]]
+        #   Cdow = out_fcDerivative[[6]]
+        #   Cdodi = out_fcDerivative[[7]]
+        #   Cdowdi = out_fcDerivative[[8]]
+        #
+        #   # First order derivative of current layer (wd)
+        #   out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mda[[j,1]], Sda[[j,1]], nodes[j], nodes[j+1], B)
+        #   mpdi = out_fcMeanVarDnode[[1]]
+        #
+        #   # First order derivative of next layer (wd)
+        #   out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxwo], Sw[idxwo], mda[[j+1,1]], Sda[[j+1,1]], nodes[j+1], nodes[j+2], B)
+        #   mpdo = out_fcMeanVarDnode[[1]]
+        #
+        #   # Second order derivative of current layer (wdd)
+        #   out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
+        #   mpddi = out_fcMeanVarDnode[[1]]
+        #
+        #   for (i in 1:nrow(combinations_matrix)){
+        #     # Case where to multiply first order wd to previous first order wd
+        #     if (combinations_matrix[i,j] == 0){
+        #       mddg_combinations[[i]][[j]] = mdg[[j,1]]
+        #     }
+        #     # Case where to multiply second order wdd to previous first order wd
+        #     else if (combinations_matrix[i,j] == 1){
+        #       mddgk = fcDerivative2(mw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j,1]],
+        #                                                   mdda[[j,1]], mpddi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Caoai, Cdow,
+        #                                                   Cdodi, actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B)
+        #       mddg_combinations[[i]][[j]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
+        #     }
+        #     # Case where to multiply first order wd*wd to second order wdd
+        #     else if (combinations_matrix[i,j] == 2){
+        #       mddg_combinations[[i]][[j]] = fcDerivative3(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
+        #                             mda[[j,1]], Sda[[j,1]], mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Caow, Caoai, Cdow,
+        #                             Cdodi, actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
+        #     }
+        #     # Case where to multiply first order wd*wd to previous terms' product wd*wd (first one)
+        #     else if (combinations_matrix[i,j] == 3){
+        #       mddg_combinations[[i]][[j]] = fcDerivative4(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
+        #                                                   mda[[j,1]], Sda[[j,1]], mpdo, mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Cdowdi,
+        #                                                   actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
+        #     }
+        #     # Case where to multiply first order wd*wd to previous terms' product wd*wd (not first one)
+        #     else if (combinations_matrix[i,j] > 3){
+        #       mddg_combinations[[i]][[j]] = fcDerivative5(mw[idxw], Sw[idxw], mw[idxwo], ma[[j+1,1]], ma[[j,1]], mda[[j+1,1]],
+        #                                                   mda[[j,1]], Sda[[j,1]], mpdo, mpdi, mddg_combinations[[i]][[j+1]], mddg_combinations[[i]][[j+2]], Cdowdi,
+        #                                                   actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
+        #     }
+        #   }
+        #   # Only sum combinations that have a second order derivative so far to have g'' with respect to current layer j
+        #   mddg[[j,1]] = matrix(0, nrow(mddg_combinations[[1]][[j]]), 1)
+        #   for (i in 1:nrow(combinations_matrix)){
+        #     if (combinations_matrix[i,j] > 0){
+        #       mddg[[j,1]] = mddg[[j,1]] + matrix(rowSums(mddg_combinations[[i]][[j]]), nrow(mddg_combinations[[i]][[j]]), 1)
+        #     }
+        #   }
+        # }
       }
     }
     idxwo = idxw
   }
-  outputs <- list(mdg, Sdg, Cdgz, mddg)
+  # For second and higher order derivative
+  if (NN$collectDev > 1){
+    states_derivative[[3, 1]][[1,1]] = mdg[[1,1]] # ma
+    states_derivative[[4, 1]][[1,1]] = Sdg[[1,1]] # Sa
+    states_derivative[[5, 1]][[1,1]] = mdg[[1,1]] # J
+    # states_derivative[[2, 1]][[1,1]] = Sdg[[1,1]] # Sz
+    Sda[[1,1]] = Sdg[[1,1]]
+    mda[[1,1]] = mdg[[1,1]]
+  }
+  outputs <- list(mdg, Sdg, Cdgz, mddg, states_derivative, mda, Sda)
   return(outputs)
 }
 
@@ -787,6 +802,7 @@ fcHiddenStateBackwardPassB1 <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no){
 #' @param mdgo Mean vector of derivatives in next layer
 #' @param mdgoe Mean derivatives at each node in next layer
 #' @param Sdgo Variance of derivatives in next layer
+#' @param Sdgoe Variance derivatives at each node in next layer
 #' @param mdgo2 Mean vector of derivatives in 2nd next layer
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
@@ -803,7 +819,7 @@ fcHiddenStateBackwardPassB1 <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no){
 #' @return Covariance between derivatives from current and next layers
 #' @return Covariance between derivatives from next layer and weights times derivatives from current layer
 #' @export
-fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai, mdgo, mdgoe, Sdgo, mdgo2, acto, acti, ni, no, no2, B){
+fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai, mdgo, mdgoe, Sdgo, Sdgoe, mdgo2, acto, acti, ni, no, no2, B, actD){
   out_fcMeanVarDnode <- fcMeanVarDnode(mw, Sw, mdai, Sdai, ni, no, B)
   mpdi = out_fcMeanVarDnode[[1]]
   Spdi = out_fcMeanVarDnode[[2]]
@@ -815,6 +831,13 @@ fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai
   Cdodi = out_fcCovdwddd[[2]]
   Cdowdi = fcCovdwd(mdai, mw, Cdow, Cdodi, ni, no, B)
   Cdgodgi = fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
+  if (actD == TRUE){
+    # When inputs are previously calculated derivatives, expectation and covariance at input layer are different
+    out_fcDlayer_actDerivative <- fcDlayer_actDerivative(mpdi, Spdi, mdgo, mdgoe, Sdgoe, mw, Sw, Cdgodgi, ni, no, no2, B)
+    mpdi <- out_fcDlayer_actDerivative[[1]]
+    Spdi <- out_fcDlayer_actDerivative[[2]]
+    Cdgodgi <- out_fcDlayer_actDerivative[[3]]
+  }
   out_fcMeanVarDlayer <- fcMeanVarDlayer(mpdi, Spdi, mdgo, mdgoe, Sdgo, Cdgodgi, ni, no, no2, B)
   mdgi = out_fcMeanVarDlayer[[1]]
   Sdgi = out_fcMeanVarDlayer[[2]]
@@ -1295,6 +1318,53 @@ fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
   Cdowdi = matrix(rep(Cdowdi, no2), nrow = nrow(Cdowdi))
   Cdgodgi = Cdowdi*m
   return(Cdgodgi)
+}
+
+#' Expectation and Covariance at Input Layer Using Derivative of Previous Order
+#'
+#' This function calculates the expectation of products of current layer and
+#' covariance between products of derivatives and
+#' weights from consecutive layers where the derivative from current layer is the derivative result of previous order.
+#'
+#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param Spdi Covariance of the first order derivative product wd of current layer
+#' @param mdgo Mean vector of derivatives in next layer
+#' @param mdgoe Mean derivatives at each node in next layer
+#' @param Sdgoe Covariance derivatives at each node in next layer
+#' @param mw Mean vector of the weights for the next layer
+#' @param Sw Covariance of the weights for the current layer
+#' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
+#' @param ni Number of units in current layer
+#' @param no Number of units in next layer
+#' @param no2 Number of units in 2nd next layer
+#' @param B Batch size
+#' @return Covariance between weights times derivatives from consecutive layers
+#' @export
+fcDlayer_actDerivative <- function(mpdi, Spdi, mdgo, mdgoe, Sdgoe, mw, Sw, Cdgodgi, ni, no, no2, B){
+  mdgo_t = t(matrix(matrix(rep(t(matrix(mdgo, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
+  mw_t = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  Sw_t = matrix(rep(t(matrix(Sw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
+  Cdgodgi_t = matrix(rowSums(matrix(Cdgodgi, B*ni*no, no2)), B*ni, no)
+
+  Cwdg = mdgo_t*Sw_t + mw_t*Cdgodgi_t
+
+  # Important: keep Spdi before mpdi since using the old mw*mda
+  Spdi = Spdi + Cwdg^2 + 2*Cwdg*mpdi
+  mpdi = mpdi + Cwdg
+
+
+  mdgoe_t = array(aperm(array(t(mdgoe), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  mdgoe_t = t(matrix(mdgoe_t[, rep(1:ncol(mdgoe_t), each = ni),], no*no2,B*ni))
+  Sdgoe_t = array(aperm(array(t(Sdgoe), c(no2,no,B)), perm=c(2, 1, 3)), c(no*no2,1,B))
+  Sdgoe_t = t(matrix(Sdgoe_t[, rep(1:ncol(Sdgoe_t), each = ni),], no*no2,B*ni))
+  mw_t = matrix(rep(mw_t, times = no2), B*ni, no*no2)
+  Sw_t = matrix(rep(Sw_t, times = no2), B*ni, no*no2)
+  mw2_t = mw_t^2 + Sw_t
+
+  Cmdgowdg = mw2_t*Sdgoe_t + 2*mw_t*mdgoe_t*Cdgodgi
+
+  outputs <- list(mpdi, Spdi, Cmdgowdg)
+  return(outputs)
 }
 
 #' Mean and Variance of Weights times Derivatives Products Terms

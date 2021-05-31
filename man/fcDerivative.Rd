@@ -20,13 +20,15 @@ fcDerivative(
   mdgo,
   mdgoe,
   Sdgo,
+  Sdgoe,
   mdgo2,
   acto,
   acti,
   ni,
   no,
   no2,
-  B
+  B,
+  actD
 )
 }
 \arguments{
@@ -59,6 +61,8 @@ fcDerivative(
 \item{mdgoe}{Mean derivatives at each node in next layer}
 
 \item{Sdgo}{Variance of derivatives in next layer}
+
+\item{Sdgoe}{Variance derivatives at each node in next layer}
 
 \item{mdgo2}{Mean vector of derivatives in 2nd next layer}
 

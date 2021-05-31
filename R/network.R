@@ -84,7 +84,14 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
       Sdgi = out_derivative[[2]]
       Cdgzi = out_derivative[[3]]
       mddgi = out_derivative[[4]]
-
+      if (NN$collectDev > 1){
+        NN$actDerivative = 1
+        states_derivative = out_derivative[[5]]
+        mda_derivative = out_derivative[[6]]
+        Sda_derivative = out_derivative[[7]]
+        out_derivative = derivative(NN, theta, states_derivative, mda_derivative, Sda_derivative, mdda, Sdda, dlayer)
+        mddgi = out_derivative[[1]]
+      }
       out_extractStates = extractStates(states)
       ma = out_extractStates[[3]]
       Sa = out_extractStates[[4]]
