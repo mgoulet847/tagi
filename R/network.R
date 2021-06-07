@@ -91,6 +91,7 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
         Sda_derivative = out_derivative[[7]]
         out_derivative = derivative(NN, theta, states_derivative, mda_derivative, Sda_derivative, mdda, Sdda, dlayer)
         mddgi = out_derivative[[1]]
+        NN$actDerivative = 0
       }
       out_extractStates = extractStates(states)
       ma = out_extractStates[[3]]
