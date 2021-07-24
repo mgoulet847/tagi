@@ -7,41 +7,33 @@
 feedForward(NN, x, mp, Sp)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
-\item{x}{Set of input data}
+\item{x}{Input data}
 
-\item{mp}{List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}}
+\item{mp}{Mean vectors of parameters for each layer \eqn{\mu_{\theta}}}
 
-\item{Sp}{List that contains covariance matrices of the
-parameters for each layer \eqn{\Sigma_{\theta}}}
+\item{Sp}{Covariance matrices of parameters for each layer \eqn{\Sigma_{\theta}}}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item \code{mz}: List that contains the mean vectors of the units
-for each layer \eqn{\mu_{Z}}
+\item Mean vectors of units for each layer \eqn{\mu_{Z}}
 }
 
 \itemize{
-\item \code{Sz}: List that contains the covariance matrices of the
-units for each layer \eqn{\Sigma_{Z}}
+\item Covariance matrices of units for each layer \eqn{\Sigma_{Z}}
 }
 
 \itemize{
-\item \code{Czw}: List that contains the covariance matrices between
-units and weights for each layer \eqn{\Sigma_{ZW}}
+\item Covariance matrices between units and weights for each layer \eqn{\Sigma_{ZW}}
 }
 
 \itemize{
-\item \code{Czb}: List that contains the covariance matrices between
-units and biases for each layer \eqn{\Sigma_{ZB}}
+\item Covariance matrices between units and biases for each layer \eqn{\Sigma_{ZB}}
 }
 
 \itemize{
-\item \code{Czz}: List that contains the covariance matrices between
-previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
+\item Covariance matrices between previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
 }
 }
 \description{

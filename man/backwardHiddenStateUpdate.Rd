@@ -7,32 +7,30 @@
 backwardHiddenStateUpdate(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx)
 }
 \arguments{
-\item{mz}{Mean vector of the units for the current layer \eqn{\mu_{Z}}}
+\item{mz}{Mean vector of units for the current layer \eqn{\mu_{Z}}}
 
-\item{Sz}{Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}}
+\item{Sz}{Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}}
 
-\item{mzF}{Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}}
+\item{mzF}{Mean vector of units for the next layer \eqn{\mu_{Z^{+}}}}
 
-\item{SzF}{Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}}
+\item{SzF}{Covariance matrix of units for the next layer \eqn{\Sigma_{Z^{+}}}}
 
-\item{SzB}{Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}}
+\item{SzB}{Covariance matrix of units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}}
 
-\item{Czz}{Covariance matrix between units of the previous and currents layers \eqn{\Sigma_{ZZ^{+}}}}
+\item{Czz}{Covariance matrix between units of previous and current layers \eqn{\Sigma_{ZZ^{+}}}}
 
-\item{mzB}{Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}}
+\item{mzB}{Mean vector of units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}}
 
-\item{idx}{List that contains the indices for the hidden state update step of
+\item{idx}{Indices for the hidden state update step of
 the current layer}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item Mean vector of the units for the current layer given \eqn{y} \eqn{\mu_{Z|y}}
+\item Mean vector of units for the current layer given \eqn{y} \eqn{\mu_{Z|y}}
 }
 
 \itemize{
-\item Covariance matrix of the units for the current layer given \eqn{y} \eqn{\Sigma_{Z|y}}
+\item Covariance matrix of units for the current layer given \eqn{y} \eqn{\Sigma_{Z|y}}
 }
 }
 \description{

@@ -14,8 +14,6 @@ split(x, y, ratio)
 \item{ratio}{Training ratio}
 }
 \value{
-A list that contains:
-
 \itemize{
 \item Training set of input variables
 }
@@ -33,5 +31,5 @@ A list that contains:
 }
 }
 \description{
-This function split data into training and test sets.
+This function splits data into training and test sets.
 }

@@ -7,15 +7,15 @@
 covarianceSz(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb)
 }
 \arguments{
-\item{mp}{Mean vector of the parameters for the current layer}
+\item{mp}{Mean vector of parameters for the current layer}
 
-\item{ma}{Mean vector of the activation units from previous layer}
+\item{ma}{Mean vector of activation units from previous layer}
 
-\item{Sp}{Covariance matrix of the parameters for the current layer}
+\item{Sp}{Covariance matrix of parameters for the current layer}
 
-\item{Sa}{Covariance matrix of the activation units from previous layer}
+\item{Sa}{Covariance matrix of activation units from previous layer}
 
-\item{idxFSwaF}{List that contains the indices for weights and for activation
+\item{idxFSwaF}{Indices for weights and for activation
 units for the current and previous layers respectively}
 
 \item{idxFSwaFb}{Indices for biases of the current layer}

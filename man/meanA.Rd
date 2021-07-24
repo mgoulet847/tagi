@@ -9,12 +9,12 @@ meanA(z, mz, funIdx)
 \arguments{
 \item{z}{Vector of units for the current layer}
 
-\item{mz}{Mean vector of the units for the current layer \eqn{\mu_{Z}}}
+\item{mz}{Mean vector of units for the current layer \eqn{\mu_{Z}}}
 
 \item{funIdx}{Activation function index defined by \code{\link{activationFunIndex}}}
 }
 \value{
-A list that contains the activation units mean vector \eqn{\mu_{A}} and the Jacobian
+A list which contains the activation units mean vector \eqn{\mu_{A}} and the Jacobian
 matrix evaluated at \eqn{\mu_{Z}}
 }
 \description{

@@ -16,22 +16,20 @@ normalize(xtrain, ytrain, xtest, ytest)
 \item{ytest}{Testing set of responses}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item The normalized training set of input variables
+\item Normalized training set of input variables
 }
 
 \itemize{
-\item The normalized training set of responses
+\item Normalized training set of responses
 }
 
 \itemize{
-\item The normalized testing set of input variables
+\item Normalized testing set of input variables
 }
 
 \itemize{
-\item The normalized testing set of responses
+\item Normalized testing set of responses
 }
 
 \itemize{
@@ -39,7 +37,7 @@ A list that contains:
 }
 
 \itemize{
-\item Variance vector of input variables from training set
+\item Covariance matrix of input variables from training set
 }
 
 \itemize{
@@ -47,7 +45,7 @@ A list that contains:
 }
 
 \itemize{
-\item Variance vector of responses from training set
+\item Covariance matrix of responses from training set
 }
 }
 \description{

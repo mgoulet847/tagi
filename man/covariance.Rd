@@ -7,46 +7,46 @@
 covariance(NN)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 }
 \value{
 NN with new elements:
 
 \itemize{
-\item \code{idxFmwa}: Lists of indices (weights and activation units) for
+\item Indices (weights and activation units) for
 deterministic matrix F *  \eqn{\mu_{WA}} for each layer
 }
 
 \itemize{
-\item \code{idxFmwab}: List of bias indices for deterministic matrix F *  \eqn{\mu_{B}} for
+\item Bias indices for deterministic matrix F *  \eqn{\mu_{B}} for
 each layer
 }
 
 \itemize{
-\item \code{idxFCzwa}: Lists of indices (weights and activation units) for
+\item Indices (weights and activation units) for
 deterministic matrix F *  \eqn{\Sigma_{ZWA}} for each layer
 }
 
 \itemize{
-\item \code{idxSzpUd}: List of indices for the parameter update step for each layer
+\item Indices for the parameter update step for each layer
 }
 
 \itemize{
-\item \code{idxSzzUd}: List of indices for the hidden state update step for each
+\item Indices for the hidden state update step for each
 layer
 }
 
 \itemize{
-\item \code{idxFCwwa}: Lists of indices (weights and activation units) for deterministic matrix F *  \eqn{\Sigma_{WA\theta}} for
+\item Indices (weights and activation units) for deterministic matrix F *  \eqn{\Sigma_{WA\theta}} for
 each layer
 }
 
 \itemize{
-\item \code{idxa}: List of indices for activation unit for each layer
+\item Indices for activation unit for each layer
 }
 
 \itemize{
-\item \code{idxFCb}: List of bias indices for deterministic matrix F *  \eqn{\Sigma_{B}} for
+\item Bias indices for deterministic matrix F *  \eqn{\Sigma_{B}} for
 each layer
 }
 }

@@ -7,36 +7,31 @@
 network(NN, mp, Sp, x, y)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
-\item{mp}{List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}}
+\item{mp}{Mean vector of parameters for each layer \eqn{\mu_{\theta}}}
 
-\item{Sp}{List that contains covariance matrices of the \eqn{\Sigma_{\theta}}
-parameters for each layer}
+\item{Sp}{Covariance matrix of parameters for each layer \eqn{\Sigma_{\theta}}}
 
-\item{x}{Set of input data}
+\item{x}{Input data}
 
-\item{y}{Set of corresponding responses}
+\item{y}{Response data}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item \code{mp}: List that contains the updated mean vectors of the parameters
-for each layer \eqn{\mu_{\theta}}
+\item Updated mean vector of parameters for each layer \eqn{\mu_{\theta}}
 }
 
 \itemize{
-\item \code{Sp}: List that contains the updated covariance matrices of the
-parameters for each layer \eqn{\Sigma_{\theta}}
+\item Updated covariance matrix of parameters for each layer \eqn{\Sigma_{\theta}}
 }
 
 \itemize{
-\item \code{zn}: Predicted responses
+\item Mean of predicted responses
 }
 
 \itemize{
-\item \code{Szn}: Variance vector of predicted responses
+\item Variance of the predicted responses
 }
 }
 \description{

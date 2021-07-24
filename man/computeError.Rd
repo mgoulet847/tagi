@@ -7,9 +7,9 @@
 computeError(y, ypred)
 }
 \arguments{
-\item{y}{A vector or a matrix of the real \eqn{y}'s}
+\item{y}{Response data}
 
-\item{ypred}{A vector or a matrix of the predicted \eqn{y}'s from the model}
+\item{ypred}{Mean of predicted responses}
 }
 \value{
 RMSE for the given data

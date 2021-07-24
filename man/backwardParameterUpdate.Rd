@@ -7,32 +7,30 @@
 backwardParameterUpdate(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx)
 }
 \arguments{
-\item{mp}{Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}}
+\item{mp}{Mean vector of parameters for the current layer \eqn{\mu_{\theta}}}
 
-\item{Sp}{Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}}
+\item{Sp}{Covariance matrix of parameters for the current layer \eqn{\Sigma_{\theta}}}
 
-\item{mzF}{Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}}
+\item{mzF}{Mean vector of units for the next layer \eqn{\mu_{Z^{+}}}}
 
-\item{SzF}{Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}}
+\item{SzF}{Covariance matrix of units for the next layer \eqn{\Sigma_{Z^{+}}}}
 
-\item{SzB}{Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}}
+\item{SzB}{Covariance matrix of units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}}
 
 \item{Czp}{Covariance matrix between units and parameters for the current layer \eqn{\Sigma_{\theta Z^{+}}}}
 
-\item{mzB}{Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}}
+\item{mzB}{Mean vector of units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}}
 
-\item{idx}{List that contains the indices for the parameter update step of
+\item{idx}{Indices for the parameter update step of
 the current layer}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item Mean vector of the parameters for the current layer given \eqn{y} \eqn{\mu_{\theta|y}}
+\item Mean vector of parameters for the current layer given \eqn{y} \eqn{\mu_{\theta|y}}
 }
 
 \itemize{
-\item Covariance matrix of the parameters for the current layer given \eqn{y} \eqn{\Sigma_{\theta|y}}
+\item Covariance matrix of parameters for the current layer given \eqn{y} \eqn{\Sigma_{\theta|y}}
 }
 }
 \description{

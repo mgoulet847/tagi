@@ -13,15 +13,15 @@ parameters(NN)
 NN with three new elements, each of size (number of layers -1) :
 
 \itemize{
-\item \code{idxb}: List of the weight indices for each layer
+\item Weight indices for each layer
 }
 
 \itemize{
-\item \code{idxw}: List of the bias indices for each layer
+\item Bias indices for each layer
 }
 
 \itemize{
-\item \code{idxwb}: List of the combined weight and bias indices for each layer
+\item Combined weight and bias indices for each layer
 }
 }
 \description{

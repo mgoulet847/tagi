@@ -34,5 +34,5 @@ An ID number which corresponds to:
 }
 }
 \description{
-This function assigns a number attached to the type of activation function.
+This function assigns an ID number depending on the type of activation function.
 }
