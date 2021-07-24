@@ -2,12 +2,12 @@
 % Please edit documentation in R/tagi.R
 \name{parameterBackwardPass}
 \alias{parameterBackwardPass}
-\title{Backpropagation (Parameters' Deltas)}
+\title{Backpropagation (parameters' deltas)}
 \usage{
 parameterBackwardPass(NN, theta, states, deltaM, deltaS)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
 \item{theta}{List of parameters}
 

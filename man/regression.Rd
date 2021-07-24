@@ -9,34 +9,37 @@ regression(NN, x, y, trainIdx, testIdx)
 \arguments{
 \item{NN}{Lists the structure of the neural network}
 
-\item{x}{Set of input data}
+\item{x}{Input data}
 
-\item{y}{Set of corresponding responses}
+\item{y}{Response data}
 
 \item{trainIdx}{Observations IDs that are assigned to the training set}
 
 \item{testIdx}{Observations IDs that are assigned to the testing set}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item \code{mp}: List that contains the updated mean vectors of the parameters
-for each layer \eqn{\mu_{\theta}}
+\item Mean vector of parameters for each layer \eqn{\mu_{\theta}}
 }
 
 \itemize{
-\item \code{Sp}: List that contains the updated covariance matrices of the
-parameters for each layer \eqn{\Sigma_{\theta}}
+\item Covariance matrix of parameters for each layer \eqn{\Sigma_{\theta}}
 }
 
 \itemize{
-\item \code{metric}: List that contains RMSE and LL metrics for each neural
-network models created
+\item RMSE and LL metrics for each network models created
 }
 
 \itemize{
-\item \code{time}: Training time of each neural network models created
+\item Training time of each neural network models created
+}
+
+\itemize{
+\item Mean of predicted responses
+}
+
+\itemize{
+\item Variance of the predicted responses
 }
 }
 \description{

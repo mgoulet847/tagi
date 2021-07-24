@@ -2,27 +2,35 @@
 % Please edit documentation in R/act.R
 \name{meanVarDev}
 \alias{meanVarDev}
-\title{Mean and Variance of Activated Units for Derivatives}
+\title{Mean and variance of activated units for derivatives}
 \usage{
 meanVarDev(mz, Sz, funIdx, bound)
 }
 \arguments{
-\item{mz}{Mean vector of the units for the current layer \eqn{\mu_{Z}}}
+\item{mz}{Mean vector of units for the current layer \eqn{\mu_{Z}}}
 
-\item{Sz}{Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}}
+\item{Sz}{Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}}
 
 \item{funIdx}{Activation function index defined by \code{\link{activationFunIndex}}}
 
-\item{bound}{TBD}
+\item{bound}{If layer is bound}
 }
 \value{
-The activation units' first derivative mean vector
+\itemize{
+\item Mean vector of activation units' first derivative
+}
 
-The activation units' first derivative variance vector
+\itemize{
+\item Covariance matrix of activation units' first derivative
+}
 
-The activation units' second derivative mean vector
+\itemize{
+\item Mean vector activation units' second derivative
+}
 
-The activation units' second derivative variance vector
+\itemize{
+\item Covariance matrix activation units' second derivative
+}
 }
 \description{
 This function calculates mean vector and covariance matrix of activation units'

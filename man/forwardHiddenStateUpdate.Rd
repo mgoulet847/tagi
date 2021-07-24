@@ -7,27 +7,25 @@
 forwardHiddenStateUpdate(mz, Sz, mzF, SzF, Cyz, y)
 }
 \arguments{
-\item{mz}{Mean vector of the units for the last hidden layer \eqn{\mu_{X^{(0)}}}}
+\item{mz}{Mean vector of units for the last hidden layer \eqn{\mu_{X^{(0)}}}}
 
-\item{Sz}{Covariance matrix of the units for the last hidden layer \eqn{\Sigma_{Z^{(0)}}}}
+\item{Sz}{Covariance matrix of units for the last hidden layer \eqn{\Sigma_{Z^{(0)}}}}
 
-\item{mzF}{Mean vector of the units for the output layer \eqn{\mu_{y}}}
+\item{mzF}{Mean vector of units for the output layer \eqn{\mu_{y}}}
 
-\item{SzF}{Covariance matrix of the units for the output layer \eqn{\Sigma_{y}}}
+\item{SzF}{Covariance matrix of tunits for the output layer \eqn{\Sigma_{y}}}
 
 \item{Cyz}{Covariance matrix between last hidden layer units and responses \eqn{\Sigma_{YZ^{(0)}}}}
 
 \item{y}{Response data}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item Mean vector of the last hidden layer units given \eqn{y} \eqn{\mu_{Z^{(0)}|y}}
+\item Mean vector of last hidden layer units given \eqn{y} \eqn{\mu_{Z^{(0)}|y}}
 }
 
 \itemize{
-\item Covariance matrix of the last hidden layer units given \eqn{y} \eqn{\Sigma_{Z^{(0)}|y}}
+\item Covariance matrix of last hidden layer units given \eqn{y} \eqn{\Sigma_{Z^{(0)}|y}}
 }
 }
 \description{

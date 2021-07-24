@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{globalParameterUpdate}
 \alias{globalParameterUpdate}
-\title{Backpropagation (Parameters Update)}
+\title{Backpropagation (parameters update)}
 \usage{
 globalParameterUpdate(theta, deltaTheta)
 }

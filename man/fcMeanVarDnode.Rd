@@ -2,18 +2,18 @@
 % Please edit documentation in R/tagi.R
 \name{fcMeanVarDnode}
 \alias{fcMeanVarDnode}
-\title{Mean and Covariance of Derivatives}
+\title{Mean and covariance of derivatives}
 \usage{
 fcMeanVarDnode(mw, Sw, mda, Sda, ni, no, B)
 }
 \arguments{
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mda}{Mean vector of the activation units' derivative from current layer}
+\item{mda}{Mean vector of activation units' derivative from current layer}
 
-\item{Sda}{Covariance of the activation units' derivative from current layer}
+\item{Sda}{Covariance of activation units' derivative from current layer}
 
 \item{ni}{Number of units in current layer}
 
@@ -22,9 +22,13 @@ fcMeanVarDnode(mw, Sw, mda, Sda, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Mean vector of the derivatives
+\itemize{
+\item Mean vector of derivatives
+}
 
-Covariance matrix of the derivatives
+\itemize{
+\item Covariance matrix of derivatives
+}
 }
 \description{
 This function calculates the mean vector and the covariance matrix for derivatives.

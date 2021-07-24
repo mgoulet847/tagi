@@ -2,12 +2,12 @@
 % Please edit documentation in R/indices.R
 \name{layerEncoder}
 \alias{layerEncoder}
-\title{Layer Encoder}
+\title{Layer encoder}
 \usage{
 layerEncoder(NN)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 }
 \value{
 NN with layer encoder

@@ -7,12 +7,11 @@
 loglik(y, ypred, Vpred)
 }
 \arguments{
-\item{y}{A vector or a matrix of the real \eqn{y}'s}
+\item{y}{Response data}
 
-\item{ypred}{A vector or a matrix of the predicted \eqn{y}'s form the model}
+\item{ypred}{Mean of predicted responses}
 
-\item{Vpred}{A vector or a matrix of the variance of the predicted \eqn{y}'s form
-the model}
+\item{Vpred}{Variance of the predicted responses}
 }
 \value{
 LL for the given data

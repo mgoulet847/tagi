@@ -2,26 +2,24 @@
 % Please edit documentation in R/tagi.R
 \name{innovationVector}
 \alias{innovationVector}
-\title{Last Hidden Layer States' Deltas Update}
+\title{Last hidden layer states' deltas update}
 \usage{
 innovationVector(SzF, dMz, dSz)
 }
 \arguments{
-\item{SzF}{Covariance matrix of the units for the next layer \eqn{\Sigma_{y}}}
+\item{SzF}{Covariance matrix of units for the next layer \eqn{\Sigma_{y}}}
 
-\item{dMz}{Delta of mean vector of the units for the next hidden layer \eqn{\mu_{Z}}}
+\item{dMz}{Delta of mean vector of units for the next hidden layer \eqn{\mu_{Z}}}
 
-\item{dSz}{Delta of covariance matrix of the units for the next hidden layer \eqn{\Sigma_{Z}}}
+\item{dSz}{Delta of covariance matrix of units for the next hidden layer \eqn{\Sigma_{Z}}}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item Delta of mean vector of the current hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item Delta of mean vector of current hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of the current hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+\item Delta of covariance matrix of current hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 }
 }
 \description{
@@ -34,7 +32,7 @@ distribution.
 
 \eqn{\boldsymbol{\mu_{{Z}|y}} = \boldsymbol{\mu_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
 
-\eqn{\boldsymbol{\Sigma_{{Z}|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})}\boldsymbol{J_{Z}^{T}}
+\eqn{\boldsymbol{\Sigma_{{Z}|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{Z}^{T}}}
 
 \eqn{\boldsymbol{J_{Z}} = \boldsymbol{\Sigma_{ZZ^{+}}} \boldsymbol{\Sigma_{Z^{+}}^{-1}}}
 }

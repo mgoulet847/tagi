@@ -7,12 +7,16 @@
 initialization(NN)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 }
 \value{
-NN NN with all required components
+\itemize{
+\item NN with all required components
+}
 
-states States of all required elements to perform TAGI
+\itemize{
+\item States of all required elements to perform TAGI
+}
 }
 \description{
 Verify and add components to the neural network structure.

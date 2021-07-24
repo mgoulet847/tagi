@@ -2,38 +2,36 @@
 % Please edit documentation in R/tagi.R
 \name{feedForwardPass}
 \alias{feedForwardPass}
-\title{Forward Uncertainty Propagation for Derivative Calculation}
+\title{Forward uncertainty propagation for derivative calculation}
 \usage{
 feedForwardPass(NN, theta, states)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
 \item{theta}{List of parameters}
 
 \item{states}{List of states}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item \code{states}: List that contains states
+\item Updated states
 }
 
 \itemize{
-\item \code{mda}: Mean vector of activation units' derivative
+\item Mean vectors of activation units' first derivative
 }
 
 \itemize{
-\item \code{Sda}: Covariance matrix of activation units' derivative
+\item Covariance matrices of activation units' first derivative
 }
 
 \itemize{
-\item \code{mdda}: Mean vector of activation units' second derivative
+\item Mean vectors of activation units' second derivative
 }
 
 \itemize{
-\item \code{Sdda}: Covariance matrix of activation units' second derivative
+\item Covariance matrices of activation units' second derivative
 }
 }
 \description{

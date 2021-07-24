@@ -2,35 +2,27 @@
 % Please edit documentation in R/tagi.R
 \name{initializeInputs}
 \alias{initializeInputs}
-\title{Input Initialization}
+\title{Input initialization}
 \usage{
 initializeInputs(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0, Sxs0, xsc)
 }
 \arguments{
 \item{states}{States of the neural network}
 
-\item{mz0}{TBD}
+\item{mz0}{Input data}
 
-\item{Sz0}{TBD}
+\item{Sz0}{Variance of input data}
 
-\item{ma0}{TBD}
+\item{ma0}{Activated input data}
 
-\item{Sa0}{TBD}
+\item{Sa0}{Variance of activated input data}
 
-\item{J0}{TBD}
+\item{J0}{Jacobian}
 
-\item{mdxs0}{TBD}
-
-\item{Sdxs0}{TBD}
-
-\item{mxs0}{TBD}
-
-\item{Sxs0}{TBD}
-
-\item{xsc}{TBD}
+\item{...}{Other parameters}
 }
 \value{
-\code{states}: States of the neural network
+States of the neural network
 }
 \description{
 Initializes neural network inputs.

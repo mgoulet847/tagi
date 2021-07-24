@@ -2,20 +2,20 @@
 % Please edit documentation in R/tagi.R
 \name{fcParameterBackwardPassB1}
 \alias{fcParameterBackwardPassB1}
-\title{Backpropagation (Parameters' Deltas) for Fully Connected Layers (One Observation)}
+\title{Backpropagation (parameters' deltas) for fully connected layers (one observation)}
 \usage{
 fcParameterBackwardPassB1(Sw, Sb, ma, deltaMr, deltaSr, ni, no)
 }
 \arguments{
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{Sb}{Covariance of the biaises for the current layer}
+\item{Sb}{Covariance of biaises for the current layer}
 
-\item{ma}{Mean vector of the activation units for the current layer}
+\item{ma}{Mean vector of activation units for the current layer}
 
-\item{deltaMr}{Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item{deltaMr}{Delta of mean vector of next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
 
-\item{deltaSr}{Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+\item{deltaSr}{Delta of covariance matrix of next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 
 \item{ni}{Number of units in current layer}
 
@@ -23,19 +23,19 @@ fcParameterBackwardPassB1(Sw, Sb, ma, deltaMr, deltaSr, ni, no)
 }
 \value{
 \itemize{
-\item Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
+\item Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+\item Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
 }
 
 \itemize{
-\item Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
+\item Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of biaises given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+\item Delta of covariance matrix of biaises given \eqn{y} \eqn{\Sigma_{\theta}|y}
 }
 }
 \description{

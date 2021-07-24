@@ -7,7 +7,7 @@
 initialization_net(NN)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 }
 \value{
 NN with all required components

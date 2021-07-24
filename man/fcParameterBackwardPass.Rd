@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcParameterBackwardPass}
 \alias{fcParameterBackwardPass}
-\title{Backpropagation (Parameters' Deltas) for Fully Connected Layers (Many Observations)}
+\title{Backpropagation (parameters' deltas) for fully connected layers (many observations)}
 \usage{
 fcParameterBackwardPass(
   deltaMw,
@@ -21,43 +21,47 @@ fcParameterBackwardPass(
 )
 }
 \arguments{
-\item{deltaMw}{Next layer delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
+\item{deltaMw}{next layer delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
 
-\item{deltaSw}{Next layer delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+\item{deltaSw}{next layer delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
 
-\item{deltaMb}{Next layer delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
+\item{deltaMb}{next layer delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
 
-\item{deltaSb}{Next layer delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+\item{deltaSb}{next layer delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{Sb}{Covariance of the biases for the current layer}
+\item{Sb}{Covariance of biases for the current layer}
 
-\item{ma}{Mean vector of the activation units for the current layer}
+\item{ma}{Mean vector of activation units for the current layer}
 
-\item{deltaMr}{Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item{deltaMr}{Delta of mean vector of next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
 
-\item{deltaSr}{Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+\item{deltaSr}{Delta of covariance matrix of next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 
 \item{ni}{Number of units in current layer}
 
 \item{no}{Number of units in next layer}
+
+\item{B}{Batch size}
+
+\item{rB}{Number of times batch size is repeated}
 }
 \value{
 \itemize{
-\item Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
+\item Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+\item Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
 }
 
 \itemize{
-\item Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
+\item Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+\item Delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}
 }
 }
 \description{

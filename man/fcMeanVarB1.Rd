@@ -2,31 +2,35 @@
 % Please edit documentation in R/tagi.R
 \name{fcMeanVarB1}
 \alias{fcMeanVarB1}
-\title{Mean and Covariance Vectors of Units (One Observation)}
+\title{Mean and covariance vectors of units (one observation)}
 \usage{
 fcMeanVarB1(mw, Sw, mb, Sb, ma, Sa, ni, no)
 }
 \arguments{
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mb}{Mean vector of the biases for the current layer}
+\item{mb}{Mean vector of biases for the current layer}
 
-\item{Sb}{Covariance of the biases for the current layer}
+\item{Sb}{Covariance of biases for the current layer}
 
-\item{ma}{Mean vector of the activation units from previous layer}
+\item{ma}{Mean vector of activation units from previous layer}
 
-\item{Sa}{Covariance of the activation units from previous layer}
+\item{Sa}{Covariance of activation units from previous layer}
 
 \item{ni}{Number of units in previous layer}
 
 \item{no}{Number of units in current layer}
 }
 \value{
-Mean vector of the units for the current layer \eqn{\mu_{Z}}
+\itemize{
+\item Mean vector of units for the current layer \eqn{\mu_{Z}}
+}
 
-Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+\itemize{
+\item Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
+}
 }
 \description{
 This function calculate the mean vector of units \eqn{\mu_{Z}} and the covariance matrix of the units \eqn{\Sigma_{Z}}for a given layer.

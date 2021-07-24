@@ -7,17 +7,17 @@
 meanMz(mp, ma, idxFmwa, idxFmwab)
 }
 \arguments{
-\item{mp}{Mean vector of the parameters for the current layer}
+\item{mp}{Mean vector of parameters for the current layer}
 
-\item{ma}{Mean vector of the activation units from previous layer}
+\item{ma}{Mean vector of activation units from previous layer}
 
-\item{idxFmwa}{List that contains the indices for weights and for activation
+\item{idxFmwa}{Indices for weights and for activation
 units for the current and previous layers respectively}
 
 \item{idxFmwab}{Indices for biases of the current layer}
 }
 \value{
-Mean vector of the units for the current layer \eqn{\mu_{Z}}
+Mean vector of units for the current layer \eqn{\mu_{Z}}
 }
 \description{
 This function calculate the mean vector of units \eqn{\mu_{Z}} for a given layer.

@@ -7,17 +7,15 @@
 initializeWeightBias(NN)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item List that contains initial mean vectors of the parameters for each layer
+\item Initial mean vectors of parameters for each layer
 }
 
 \itemize{
-\item List that contains initial covariance matrices of the parameters
+\item Initial covariance matrices of parameters
 for each layer
 }
 }

@@ -2,21 +2,19 @@
 % Please edit documentation in R/tagi.R
 \name{initializeStates}
 \alias{initializeStates}
-\title{States Initialization}
+\title{States initialization}
 \usage{
 initializeStates(nodes, B, rB, xsc)
 }
 \arguments{
-\item{nodes}{Vector that contains the number of nodes at each layer}
+\item{nodes}{Vector which contains the number of nodes at each layer}
 
 \item{B}{Batch size}
 
 \item{rB}{Number of times batch size is repeated}
-
-\item{xsc}{TBD}
 }
 \value{
-states: States of the neural network
+States of the neural network
 }
 \description{
 Initiliazes neural network states.
