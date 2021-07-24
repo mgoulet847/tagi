@@ -3,18 +3,16 @@
 #' This function trains neural network models to solve a regression problem.
 #'
 #' @param NN Lists the structure of the neural network
-#' @param x Set of input data
-#' @param y Set of corresponding responses
+#' @param x Input data
+#' @param y Response data
 #' @param trainIdx Observations IDs that are assigned to the training set
 #' @param testIdx Observations IDs that are assigned to the testing set
-#' @return A list that contains:
-#' @return - \code{mp}: List that contains the updated mean vectors of the parameters
-#' for each layer \eqn{\mu_{\theta}}
-#' @return - \code{Sp}: List that contains the updated covariance matrices of the
-#' parameters for each layer \eqn{\Sigma_{\theta}}
-#' @return - \code{metric}: List that contains RMSE and LL metrics for each neural
-#' network models created
-#' @return - \code{time}: Training time of each neural network models created
+#' @return - Mean vector of parameters for each layer \eqn{\mu_{\theta}}
+#' @return - Covariance matrix of parameters for each layer \eqn{\Sigma_{\theta}}
+#' @return - RMSE and LL metrics for each network models created
+#' @return - Training time of each neural network models created
+#' @return - Mean of predicted responses
+#' @return - Variance of the predicted responses
 #' @export
 regression <- function(NN, x, y, trainIdx, testIdx){
   # Initialization
@@ -63,8 +61,6 @@ regression <- function(NN, x, y, trainIdx, testIdx){
       ytrain = out_split[[2]]
       xtest = out_split[[3]]
       ytest = out_split[[4]]
-      idxTrain = out_split[[5]]
-      idxTest = out_split[[6]]
     } else {
       xtrain = x[trainIdx[[s]],]
       ytrain = matrix(y[trainIdx[[s]],], ncol = NN$ny)
@@ -125,6 +121,6 @@ regression <- function(NN, x, y, trainIdx, testIdx){
     cat(sprintf("Results for Run # %s, RMSE: %s and LL: %s", s, RMSElist[s], LLlist[s]))
   }
   metric = list("RMSElist" = RMSElist, "LLlist" = LLlist)
-  outputs <- list(mp, Sp, metric, trainTimelist, ynTest, SynTest, idxTrain, idxTest)
+  outputs <- list(mp, Sp, metric, trainTimelist, ynTest, SynTest)
   return(outputs)
 }

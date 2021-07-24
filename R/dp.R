@@ -8,15 +8,14 @@
 #' @param ytrain Training set of responses
 #' @param xtest Testing set of input variables
 #' @param ytest Testing set of responses
-#' @return A list that contains:
-#' @return - The normalized training set of input variables
-#' @return - The normalized training set of responses
-#' @return - The normalized testing set of input variables
-#' @return - The normalized testing set of responses
+#' @return - Normalized training set of input variables
+#' @return - Normalized training set of responses
+#' @return - Normalized testing set of input variables
+#' @return - Normalized testing set of responses
 #' @return - Mean vector of input variables from training set
-#' @return - Variance vector of input variables from training set
+#' @return - Covariance matrix of input variables from training set
 #' @return - Mean vector of responses from training set
-#' @return - Variance vector of responses from training set
+#' @return - Covariance matrix of responses from training set
 #' @export
 normalize <- function(xtrain, ytrain, xtest, ytest){
   mxtrain = colMeans(xtrain, na.rm=TRUE)
@@ -37,12 +36,11 @@ normalize <- function(xtrain, ytrain, xtest, ytest){
 
 #' Split data
 #'
-#' This function split data into training and test sets.
+#' This function splits data into training and test sets.
 #'
 #' @param x Input data
 #' @param y Response data
 #' @param ratio Training ratio
-#' @return A list that contains:
 #' @return - Training set of input variables
 #' @return - Training set of responses
 #' @return - Testing set of input variables
@@ -59,7 +57,7 @@ split <- function(x, y, ratio){
   xtest = matrix(x[idxTest,], nrow = (numObs-idxTrainEnd))
   ytest = matrix(y[idxTest,], nrow = (numObs-idxTrainEnd))
 
-  outputs <- list(xtrain, ytrain, xtest, ytest, idxTrain, idxTest)
+  outputs <- list(xtrain, ytrain, xtest, ytest)
   return(outputs)
 }
 
@@ -71,9 +69,8 @@ split <- function(x, y, ratio){
 #' @param syn Variance of the predicted responses
 #' @param myntrain Mean vector of responses from training set
 #' @param syntrain Variance vector of responses from training set
-#' @return A list that contains:
-#' @return - The denormalized predicted responses
-#' @return - The variance of denormalized predicted responses
+#' @return - Mean of denormalized predicted responses
+#' @return - Variance of denormalized predicted responses
 #' @export
 denormalize <- function(yn, syn, myntrain, syntrain){
   y = yn * syntrain + myntrain

@@ -1,25 +1,24 @@
-#' One iteration of the Tractable Approximate Gaussian Inference (TAGI) with Derivative Calculations
+#' One iteration of the TAGI with derivative calculations
 #'
 #' This function goes through one learning iteration of the neural network model
-#' using TAGI.
+#' using TAGI with derivative calculations.
 #'
-#' @param NN List that contains the structure of the neural network
+#' @param NN Lists the structure of the neural network
 #' @param theta List of parameters
-#' @param normStat TBD
+#' @param normStat Normalized statistics
 #' @param states List of states
-#' @param x Set of input data
-#' @param Sx Variance of x
-#' @param y Set of corresponding responses
+#' @param x Input data
+#' @param Sx Variance of input data
+#' @param y Response data
 #' @param dlayer Layer from which derivatives will be in respect to
-#' @return A list that contains:
-#' @return - \code{theta}: List of updated parameters
-#' @return - \code{normStat}: updated TBD
-#' @return - \code{mzl}: Predicted responses
-#' @return - \code{Szl}: Variance vector of predicted responses
-#' @return - \code{mdg}: Predicted derivatives
-#' @return - \code{Sdg}: Variance vector of derivatives
-#' @return - \code{Cdgz}: Covariance between derivatives and inputs
-#' @return - \code{mddg}: Predicted second derivatives
+#' @return - List of parameters
+#' @return - List of normalized statistics
+#' @return - Mean of predicted responses
+#' @return - Variance of predicted responses
+#' @return - Mean of first derivative of predicted responses
+#' @return - Variance of first derivative of predicted responses
+#' @return - Covariance between derivatives and inputs
+#' @return - Mean of second derivative of predicted responses
 #' @export
 batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
   # Initialization
@@ -106,9 +105,9 @@ batchDerivative <- function(NN, theta, normStat, states, x, Sx, y, dlayer){
 #'
 #' Verify and add components to the neural network structure.
 #'
-#' @param NN List that contains the structure of the neural network
-#' @return NN NN with all required components
-#' @return states States of all required elements to perform TAGI
+#' @param NN Lists the structure of the neural network
+#' @return - NN with all required components
+#' @return - States of all required elements to perform TAGI
 #' @export
 initialization <- function(NN){
   # Build indices

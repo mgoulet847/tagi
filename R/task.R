@@ -1,3 +1,17 @@
+#' Result of the TAGI with derivative calculations
+#'
+#' This function returns the resulting derivatives from the neural network model using TAGI.
+#'
+#' @param NN Lists the structure of the neural network
+#' @param xtrain Training set of input variables
+#' @param ytrain Training set of responses
+#' @param xtest Testing set of input variables
+#' @param ytest Testing set of responses
+#' @return - Mean of predicted responses
+#' @return - Variance of the predicted responses
+#' @return - Mean of first derivative of predicted responses
+#' @return - Mean of second derivative of predicted responses
+#' @export
 runBatchDerivative <- function(NN, xtrain, ytrain, xtest, ytest){
   # Initialization
   maxEpoch <- NN$maxEpoch

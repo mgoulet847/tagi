@@ -6,8 +6,8 @@
 #' two vectors (or matrices) with one containing the real \eqn{y}'s and the other the
 #' predicted \eqn{y}'s from the model.
 #'
-#' @param y A vector or a matrix of the real \eqn{y}'s
-#' @param ypred A vector or a matrix of the predicted \eqn{y}'s from the model
+#' @param y Response data
+#' @param ypred Mean of predicted responses
 #' @return RMSE for the given data
 #' @export
 computeError <- function(y, ypred){
@@ -21,10 +21,9 @@ computeError <- function(y, ypred){
 #' three vectors (or matrices) with one containing the real \eqn{y}'s, one with the
 #' predicted \eqn{y}'s from the model and the last one with the variance of the \eqn{y}'s.
 #'
-#' @param y A vector or a matrix of the real \eqn{y}'s
-#' @param ypred A vector or a matrix of the predicted \eqn{y}'s form the model
-#' @param Vpred A vector or a matrix of the variance of the predicted \eqn{y}'s form
-#' the model
+#' @param y Response data
+#' @param ypred Mean of predicted responses
+#' @param Vpred Variance of the predicted responses
 #' @return LL for the given data
 #' @export
 loglik <- function(y, ypred, Vpred){

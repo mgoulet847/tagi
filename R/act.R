@@ -1,6 +1,6 @@
-#' Assign ID to Activation Functions
+#' Assign ID to activation functions
 #'
-#' This function assigns a number attached to the type of activation function.
+#' This function assigns an ID number depending on the type of activation function.
 #'
 #' @param funName Type of activation function: "tanh", "sigm", "cdf", "relu" or
 #' "softplus"
@@ -26,15 +26,15 @@ activationFunIndex <- function(funName){
   return(funIdx)
 }
 
-#' Calculate Mean of Activated Units
+#' Calculate mean of activated units
 #'
 #' This function uses lineratization to estimate the activation units mean vector
 #' \eqn{\mu_{A}} and the Jacobian matrix evaluated at \eqn{\mu_{Z}}.
 #'
 #' @param z Vector of units for the current layer
-#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @param mz Mean vector of units for the current layer \eqn{\mu_{Z}}
 #' @param funIdx Activation function index defined by \code{\link{activationFunIndex}}
-#' @return A list that contains the activation units mean vector \eqn{\mu_{A}} and the Jacobian
+#' @return A list which contains the activation units mean vector \eqn{\mu_{A}} and the Jacobian
 #' matrix evaluated at \eqn{\mu_{Z}}
 #' @export
 meanA <- function(z, mz, funIdx){
@@ -66,31 +66,31 @@ meanA <- function(z, mz, funIdx){
   return(outputs)
 }
 
-#' Calculate Variance of Activated Units
+#' Calculate variance of activated units
 #'
 #' This function uses lineratization to estimate the covariance matrix of activation units \eqn{\Sigma_{A}}.
 #'
 #' @param J Jacobian matrix evaluated at \eqn{\mu_{Z}}
-#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
-#' @return The activation units variance vector \eqn{\Sigma_{A}}
+#' @param Sz Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
+#' @return The activation units covariance matrix \eqn{\Sigma_{A}}
 #' @export
 covarianceSa <- function(J, Sz){
   Sa = J * Sz * J
   return(Sa)
 }
 
-#' Mean, Jacobian and Variance of Activated Units
+#' Mean, Jacobian and variance of activated units
 #'
 #' This function returns mean vector \eqn{\mu_{A}}, Jacobian matrix evaluated at
 #' \eqn{\mu_{Z}} and covariance matrix of activation units \eqn{\Sigma_{A}}.
 #'
 #' @param z Vector of units for the current layer
-#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
-#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param mz Mean vector of units for the current layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 #' @param funIdx Activation function index defined by \code{\link{activationFunIndex}}
-#' @return The activation units mean vector \eqn{\mu_{A}}
-#' @return The activation units variance vector \eqn{\Sigma_{A}}
-#' @return Jacobian matrix evaluated at \eqn{\mu_{Z}}
+#' @return - Mean vector of activation units for the current layer \eqn{\mu_{A}}
+#' @return - Covariance matrix activation units for the current layer \eqn{\Sigma_{A}}
+#' @return - Jacobian matrix evaluated at \eqn{\mu_{Z}}
 #' @export
 meanVar <- function(z, mz, Sz, funIdx){
   out_meanA <- meanA(z, mz, funIdx)
@@ -101,19 +101,19 @@ meanVar <- function(z, mz, Sz, funIdx){
   return(outputs)
 }
 
-#' Mean and Variance of Activated Units for Derivatives
+#' Mean and variance of activated units for derivatives
 #'
 #' This function calculates mean vector and covariance matrix of activation units'
 #' derivatives.
 #'
-#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
-#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param mz Mean vector of units for the current layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 #' @param funIdx Activation function index defined by \code{\link{activationFunIndex}}
-#' @param bound TBD
-#' @return The activation units' first derivative mean vector
-#' @return The activation units' first derivative variance vector
-#' @return The activation units' second derivative mean vector
-#' @return The activation units' second derivative variance vector
+#' @param bound If layer is bound
+#' @return - Mean vector of activation units' first derivative
+#' @return - Covariance matrix of activation units' first derivative
+#' @return - Mean vector activation units' second derivative
+#' @return - Covariance matrix activation units' second derivative
 #' @export
 meanVarDev <- function(mz, Sz, funIdx, bound){
   if (funIdx == 1){ # tanh

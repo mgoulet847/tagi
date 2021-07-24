@@ -3,19 +3,15 @@
 #' This function goes through one learning iteration of the neural network model
 #' using TAGI.
 #'
-#' @param NN List that contains the structure of the neural network
-#' @param mp List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}
-#' @param Sp List that contains covariance matrices of the \eqn{\Sigma_{\theta}}
-#' parameters for each layer
-#' @param x Set of input data
-#' @param y Set of corresponding responses
-#' @return A list that contains:
-#' @return - \code{mp}: List that contains the updated mean vectors of the parameters
-#' for each layer \eqn{\mu_{\theta}}
-#' @return - \code{Sp}: List that contains the updated covariance matrices of the
-#' parameters for each layer \eqn{\Sigma_{\theta}}
-#' @return - \code{zn}: Predicted responses
-#' @return - \code{Szn}: Variance vector of predicted responses
+#' @param NN Lists the structure of the neural network
+#' @param mp Mean vector of parameters for each layer \eqn{\mu_{\theta}}
+#' @param Sp Covariance matrix of parameters for each layer \eqn{\Sigma_{\theta}}
+#' @param x Input data
+#' @param y Response data
+#' @return - Updated mean vector of parameters for each layer \eqn{\mu_{\theta}}
+#' @return - Updated covariance matrix of parameters for each layer \eqn{\Sigma_{\theta}}
+#' @return - Mean of predicted responses
+#' @return - Variance of the predicted responses
 #' @export
 network <- function(NN, mp, Sp, x, y){
   # Initialization
@@ -61,27 +57,20 @@ network <- function(NN, mp, Sp, x, y){
   return(outputs)
 }
 
-#' Forward Uncertainty Propagation
+#' Forward uncertainty propagation
 #'
 #' This function feeds the neural network forward from input data to
 #' responses.
 #'
-#' @param NN List that contains the structure of the neural network
-#' @param mp List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}
-#' @param Sp List that contains covariance matrices of the
-#' parameters for each layer \eqn{\Sigma_{\theta}}
-#' @param x Set of input data
-#' @return A list that contains:
-#' @return - \code{mz}: List that contains the mean vectors of the units
-#' for each layer \eqn{\mu_{Z}}
-#' @return - \code{Sz}: List that contains the covariance matrices of the
-#' units for each layer \eqn{\Sigma_{Z}}
-#' @return - \code{Czw}: List that contains the covariance matrices between
-#' units and weights for each layer \eqn{\Sigma_{ZW}}
-#' @return - \code{Czb}: List that contains the covariance matrices between
-#' units and biases for each layer \eqn{\Sigma_{ZB}}
-#' @return - \code{Czz}: List that contains the covariance matrices between
-#' previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
+#' @param NN Lists the structure of the neural network
+#' @param mp Mean vectors of parameters for each layer \eqn{\mu_{\theta}}
+#' @param Sp Covariance matrices of parameters for each layer \eqn{\Sigma_{\theta}}
+#' @param x Input data
+#' @return - Mean vectors of units for each layer \eqn{\mu_{Z}}
+#' @return - Covariance matrices of units for each layer \eqn{\Sigma_{Z}}
+#' @return - Covariance matrices between units and weights for each layer \eqn{\Sigma_{ZW}}
+#' @return - Covariance matrices between units and biases for each layer \eqn{\Sigma_{ZB}}
+#' @return - Covariance matrices between previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
 #' @export
 feedForward <- function(NN, x, mp, Sp){
 
@@ -94,7 +83,7 @@ feedForward <- function(NN, x, mp, Sp){
   ma[[1,1]] = x
   Sa = matrix(list(), nrow = numLayers, ncol = 1)
 
-  # Hidden states
+  # hidden states
   mz = matrix(list(), nrow = numLayers, ncol = 1)
   Czw = matrix(list(), nrow = numLayers, ncol = 1)
   Czb = matrix(list(), nrow = numLayers, ncol = 1)
@@ -102,17 +91,17 @@ feedForward <- function(NN, x, mp, Sp){
   Sz = matrix(list(), nrow = numLayers, ncol = 1)
   J = matrix(list(), nrow = numLayers, ncol = 1)
 
-  # Hidden Layers
+  # hidden layers
   for (j in 2:numLayers){
     mz[[j,1]] = meanMz(mp[[j-1,1]], ma[[j-1,1]], NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
-    # Covariance for z^(j)
+    # covariance for z^(j)
     Sz[[j,1]] = covarianceSz(mp[[j-1,1]], ma[[j-1,1]], Sp[[j-1,1]], Sa[[j-1,1]],NN$idxFmwa[j-1,], NN$idxFmwab[[j-1,1]])
     if (NN$trainMode == 1){
-      # Covariance between z^(j) and w^(j-1)
+      # covariance between z^(j) and w^(j-1)
       out = covarianceCzp(ma[[j-1,1]], Sp[[j-1,1]], NN$idxFCwwa[j-1,], NN$idxFCb[[j-1,1]])
       Czb[[j,1]] = out[[1]]
       Czw[[j,1]] = out[[2]]
-      # Covariance between z^(j+1) and z^(j)
+      # covariance between z^(j+1) and z^(j)
       if (!(is.null(Sz[[j-1,1]]))){
         Czz[[j,1]] = covarianceCzz(mp[[j-1,1]], Sz[[j-1,1]], J[[j-1,1]], NN$idxFCzwa[j-1,])
       }
@@ -143,20 +132,19 @@ feedForward <- function(NN, x, mp, Sp){
   return(outputs)
 }
 
-#' Forward Uncertainty Propagation for Derivative Calculation
+#' Forward uncertainty propagation for derivative calculation
 #'
 #' This function feeds the neural network forward from input data to
 #' responses and considers components required for derivative calculations.
 #'
-#' @param NN List that contains the structure of the neural network
+#' @param NN Lists the structure of the neural network
 #' @param theta List of parameters
 #' @param states List of states
-#' @return A list that contains:
-#' @return - \code{states}: List that contains states
-#' @return - \code{mda}: Mean vector of activation units' derivative
-#' @return - \code{Sda}: Covariance matrix of activation units' derivative
-#' @return - \code{mdda}: Mean vector of activation units' second derivative
-#' @return - \code{Sdda}: Covariance matrix of activation units' second derivative
+#' @return - Updated states
+#' @return - Mean vectors of activation units' first derivative
+#' @return - Covariance matrices of activation units' first derivative
+#' @return - Mean vectors of activation units' second derivative
+#' @return - Covariance matrices of activation units' second derivative
 #' @export
 feedForwardPass <- function(NN, theta, states){
 
@@ -184,7 +172,7 @@ feedForwardPass <- function(NN, theta, states){
   nodes = NN$nodes
   numParamsPerLayer_2 = NN$numParamsPerLayer_2
 
-  # Derivative
+  # derivative
   mda = matrix(list(), nrow = numLayers, ncol = 1)
   Sda = matrix(list(), nrow = numLayers, ncol = 1)
   mdda = matrix(list(), nrow = numLayers, ncol = 1)
@@ -194,7 +182,7 @@ feedForwardPass <- function(NN, theta, states){
   mdda[[1,1]] = rep(0, nrow(mz[[1,1]]))
   Sdda[[1,1]] = rep(0, nrow(Sz[[1,1]]))
 
-  # Hidden Layers
+  # hidden layers
   for (j in 2:numLayers){
     idxw = (numParamsPerLayer_2[1, j-1]+1):numParamsPerLayer_2[1, j]
     idxb = (numParamsPerLayer_2[2, j-1]+1):numParamsPerLayer_2[2, j]
@@ -223,7 +211,7 @@ feedForwardPass <- function(NN, theta, states){
       J[[j,1]]= matrix(1, nrow(mz[[j,1]]), ncol(mz[[j,1]]))
     }
 
-    # Derivative for FC
+    # derivative for FC
     if ((NN$collectDev > 0) & (actFunIdx[j] != 0)){
       out_meanVarDev = meanVarDev(mz[[j,1]], Sz[[j,1]], actFunIdx[j], actBound[j])
       mda[[j,1]] = out_meanVarDev[[1]]
@@ -237,23 +225,22 @@ feedForwardPass <- function(NN, theta, states){
   return(outputs)
 }
 
-#' Derivative Calculation
+#' Derivative calculation
 #'
 #' This function does derivative calculations.
 #'
-#' @param NN List that contains the structure of the neural network
+#' @param NN Lists the structure of the neural network
 #' @param theta List of parameters
 #' @param states List of states
-#' @param mda Mean vector of activation units' derivative
-#' @param Sda Covariance matrix of activation units' derivative
-#' @param mdda Mean vector of activation units' second derivative
-#' @param Sdda Covariance matrix of activation units' second derivative
-#' @param dlayer Layer from which derivatives will be in respect to
-#' @return A list that contains:
-#' @return - \code{mdg}: Mean vector of derivative of the output layer
-#' @return - \code{Sdg}: Variance of derivative of the output layer
-#' @return - \code{Cdgz}: Covariance of derivative of the output layer
-#' @return - \code{mddg}: Mean vector of second derivative of the output layer
+#' @param mda Mean vectors of activation units' first derivative
+#' @param Sda Covariance matrices of activation units' first derivative
+#' @param mdda Mean vectors of activation units' second derivative
+#' @param Sdda Covariance matrices of activation units' second derivative
+#' @param dlayer layer from which derivatives will be in respect to
+#' @return - Mean of first derivative of predicted responses
+#' @return - Variance of first derivative of predicted responses
+#' @return - Covariance between derivatives and inputs
+#' @return - Mean of second derivative of predicted responses
 #' @export
 derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
 
@@ -275,7 +262,7 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
   layer = NN$layer
   numParamsPerLayer_2 = NN$numParamsPerLayer_2
 
-  # Derivative
+  # derivative
   mdg = createDevCellarray(nodes, numLayers, B, rB)
   Sdg = mdg
   Cdgz = mdg
@@ -310,10 +297,10 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
           mddg[[j,1]] = matrix(rowSums(mddgk), nrow(mddgk), 1)
           Sddg[[j,1]] = matrix(rowSums(Sddgk), nrow(Sddgk), 1)
 
-          # Matrix of combination types (1 when second order derivative is used, >1 thereafter, 0 when not still used)
+          # Matrix of combination types (1 when second derivative is used, >1 thereafter, 0 when not still used)
           # Read from RIGHT to LEFT (column number corresponds to layer number)
-          # (e.g. in 2nd order derivative, only one product wd is of second order, then the other products are first order and multiplied with wd products of their layer.
-          # Terms before product' 2nd order derivative are of first order and NOT multiplied with wd products of their layer)
+          # (e.g. in second derivative, only one product wd is of second order, then the other products are first order and multiplied with wd products of their layer.
+          # terms before product' second derivative are of first order and NOT multiplied with wd products of their layer)
           combinations_matrix = apply(upper.tri(diag(numLayers-1), diag = TRUE),1,cumsum)
           mddg_combinations = matrix(list(createDevCellarray(nodes, numLayers, B, rB)), nrow = nrow(combinations_matrix), ncol = 1)
 
@@ -351,15 +338,15 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
           Cdodi = out_fcDerivative[[7]]
           Cdowdi = out_fcDerivative[[8]]
 
-          # First order derivative of current layer (wd)
+          # First derivative of current layer (wd)
           out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mda[[j,1]], Sda[[j,1]], nodes[j], nodes[j+1], B)
           mpdi = out_fcMeanVarDnode[[1]]
 
-          # First order derivative of next layer (wd)
+          # First derivative of next layer (wd)
           out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxwo], Sw[idxwo], mda[[j+1,1]], Sda[[j+1,1]], nodes[j+1], nodes[j+2], B)
           mpdo = out_fcMeanVarDnode[[1]]
 
-          # Second order derivative of current layer (wdd)
+          # Second derivative of current layer (wdd)
           out_fcMeanVarDnode <- fcMeanVarDnode(mw[idxw], Sw[idxw], mdda[[j,1]], Sdda[[j,1]], nodes[j], nodes[j+1], B)
           mpddi = out_fcMeanVarDnode[[1]]
 
@@ -394,7 +381,7 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
                                                           actFunIdx[j+1], actFunIdx[j], nodes[j], nodes[j+1], nodes[j+2], B, j == dlayer)
             }
           }
-          # Only sum combinations that have a second order derivative so far to have g'' with respect to current layer j
+          # Only sum combinations that have a second derivative so far to have g'' with respect to current layer j
           mddg[[j,1]] = matrix(0, nrow(mddg_combinations[[1]][[j]]), 1)
           for (i in 1:nrow(combinations_matrix)){
             if (combinations_matrix[i,j] > 0){
@@ -414,28 +401,19 @@ derivative <- function(NN, theta, states, mda, Sda, mdda, Sdda, dlayer){
 #'
 #' This function feeds the neural network backward from responses to input data.
 #'
-#' @param NN List that contains the structure of the neural network
-#' @param mp List that contains mean vectors of the parameters for each layer \eqn{\mu_{\theta}}
-#' @param Sp List that contains covariance matrices of the
-#' parameters for each layer \eqn{\Sigma_{\theta}}
-#' @param mz List that contains the mean vectors of the units
-#' for each layer \eqn{\mu_{Z}}
-#' @param Sz List that contains the covariance matrices of the
-#' units for each layer \eqn{\Sigma_{Z}}
-#' @param Czw List that contains the covariance matrices between
-#' units and weights for each layer \eqn{\Sigma_{ZW}}
-#' @param Czb List that contains the covariance matrices between
-#' units and biases for each layer \eqn{\Sigma_{ZB}}
-#' @param Czz List that contains the covariance matrices between units of the
-#' previous and current layers for each layer \eqn{\Sigma_{ZZ^{+}}}
+#' @param NN Lists the structure of the neural network
+#' @param mp Mean vectors of parameters for each layer \eqn{\mu_{\theta}}
+#' @param Sp Covariance matrices of parameters for each layer \eqn{\Sigma_{\theta}}
+#' @param mz Mean vectors of units for each layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrices of units for each layer \eqn{\Sigma_{Z}}
+#' @param Czw Covariance matrices between units and weights for each layer \eqn{\Sigma_{ZW}}
+#' @param Czb Covariance matrices between units and biases for each layer \eqn{\Sigma_{ZB}}
+#' @param Czz Covariance matrices between previous and current units for each layer \eqn{\Sigma_{ZZ^{+}}}
 #' @seealso \code{\link{backwardHiddenStateUpdate}},
 #' \code{\link{backwardParameterUpdate}}, \code{\link{forwardHiddenStateUpdate}}
-#' @param y A vector or a matrix of responses
-#' @return A list that contains:
-#' @return - List that contains the updated mean vectors of the parameters
-#' for each layer
-#' @return - List that contains the updated covariance matrices of the
-#' parameters for each layer
+#' @param y Response data
+#' @return - Updated mean vectors of parameters for each layer \eqn{\mu_{\theta}}
+#' @return - Updated covariance matrices of parameters for each layer \eqn{\Sigma_{\theta}}
 #' @export
 feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
   # Initialization
@@ -474,19 +452,18 @@ feedBackward <- function(NN, mp, Sp, mz, Sz, Czw, Czb, Czz, y){
   return(outputs)
 }
 
-#' Backpropagation (States' Deltas)
+#' Backpropagation (states' deltas)
 #'
 #' This function calculates states' deltas.
 #'
-#' @param NN List that contains the structure of the neural network
+#' @param NN Lists the structure of the neural network
 #' @param theta List of parameters
 #' @param states List of states
-#' @param y A vector or a matrix of responses
+#' @param y Response data
 #' @param Sy Variance of responses
-#' @param udIdx TBD
-#' @return A list that contains:
-#' @return - Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y}} at all layers
-#' @return - Delta of covariance matrix of units given \eqn{y} \eqn{\Sigma_{Z}|y}} at all layers
+#' @param udIdx Specific update IDs
+#' @return - Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y} at all layers
+#' @return - Delta of covariance matrix of units given \eqn{y} \eqn{\Sigma_{Z}|y} at all layers
 #' @export
 hiddenStateBackwardPass <- function(NN, theta, states, y, Sy, udIdx){
 
@@ -580,11 +557,11 @@ hiddenStateBackwardPass <- function(NN, theta, states, y, Sy, udIdx){
   return(outputs)
 }
 
-#' Backpropagation (Parameters' Deltas)
+#' Backpropagation (parameters' deltas)
 #'
 #' This function calculates parameter's deltas.
 #'
-#' @param NN List that contains the structure of the neural network
+#' @param NN Lists the structure of the neural network
 #' @param theta List of parameters
 #' @param states List of states
 #' @param deltaM Delta of mean vector of units given \eqn{y} \eqn{\mu_{Z}|y} at all layers
@@ -648,25 +625,23 @@ parameterBackwardPass <- function(NN, theta, states, deltaM, deltaS){
   return(deltaTheta)
 }
 
-#' Backpropagation (States' Deltas) for Fully Connected Layers (Many Observations)
+#' Backpropagation (states' deltas) for fully connected layers (many observations)
 #'
 #' This function calculates units' deltas at a given layer when using more than one
 #' observation at the time.
 #'
-#' @param Sz Covariance of the units from current layer
-#' @param Sxs TBD
+#' @param Sz Covariance of units from current layer
+#' @param Sxs Null by default (not used yet)
 #' @param J Jacobian of current layer
-#' @param mw Mean vector of the weights for the current layer
+#' @param mw Mean vector of weights for the current layer
 #' @param deltaM Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
 #' @param deltaS Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
-#' @return - Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
-#' @return - Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
-#' @return - TBD
-#' @return - TBD
+#' @return - Delta of mean vector of current layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @return - Delta of covariance matrix of current layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @export
 fcHiddenStateBackwardPass <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB){
   deltaMz = Sz
@@ -708,22 +683,20 @@ fcHiddenStateBackwardPass <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B,
 }
 
 
-#' Backpropagation (States' Deltas) for Fully Connected Layers (One Observation)
+#' Backpropagation (states' deltas) for fully connected layers (one observation)
 #'
 #' This function calculates units' deltas at a given layer when using one observation at the time.
 #'
 #' @param Sz Covariance of the units from current layer
-#' @param Sxs TBD
+#' @param Sxs Null by default (not used yet)
 #' @param J Jacobian of current layer
-#' @param mw Mean vector of the weights for the current layer
-#' @param deltaM Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
-#' @param deltaS Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param mw Mean vector of weights for the current layer
+#' @param deltaM Delta of mean vector of next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaS Delta of covariance matrix of next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @return - Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
-#' @return - Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
-#' @return - TBD
-#' @return - TBD
+#' @return - Delta of mean vector of current layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @return - Delta of covariance matrix of current layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @export
 fcHiddenStateBackwardPassB1 <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no){
   mw = matrix(mw, ni, no)
@@ -768,40 +741,40 @@ fcHiddenStateBackwardPassB1 <- function(Sz, Sxs, J, mw, deltaM, deltaS, ni, no){
   return(outputs)
 }
 
-#' Derivatives for Fully Connected layers
+#' Derivatives for fully connected layers
 #'
 #' This function calculates mean and variance of derivatives and covariance of derivative and input layers.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mwo Mean vector of the weights for the next layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mwo Mean vector of weights for the next layer
 #' @param Jo Jacobian of next layer
 #' @param J Jacobian of current layer
-#' @param mao Mean vector of the activation units from next layer
-#' @param Sao Covariance of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param Sai Covariance of the activation units from current layer
-#' @param Szi Covariance of the units from current layer
-#' @param mdai Mean vector of the activation units' derivative from current layer
-#' @param Sdai Covariance of the activation units' derivative from current layer
-#' @param mdgo Mean vector of derivatives in next layer
-#' @param mdgoe Mean derivatives at each node in next layer
-#' @param Sdgo Variance of derivatives in next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mao Mean vector of activation units from next layer
+#' @param Sao Covariance of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param Sai Covariance of activation units from current layer
+#' @param Szi Covariance of units from current layer
+#' @param mdai Mean vector of activation units' first derivative from current layer
+#' @param Sdai Covariance of activation units' first derivative from current layer
+#' @param mdgo Mean vector of product of derivatives in next layer
+#' @param mdgoe Mean of product of derivatives at each node in next layer
+#' @param Sdgo Variance of first derivatives in next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
-#' @return Mean vector of the derivatives
-#' @return Covariance matrix of the derivatives
-#' @return Covariance matrix of derivative and input layers
+#' @return Mean vector of first derivatives
+#' @return Covariance matrix of first derivatives
+#' @return Covariance matrix of first derivative and input layer
 #' @return Covariance between activation units and weights
 #' @return Covariance between activation units from current and next layers
-#' @return Covariance between derivatives and weights
-#' @return Covariance between derivatives from current and next layers
-#' @return Covariance between derivatives from next layer and weights times derivatives from current layer
+#' @return Covariance between first derivatives and weights
+#' @return Covariance between first derivatives from current and next layers
+#' @return Covariance between first derivatives from next layer and weights times derivatives from current layer
 #' @export
 fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai, mdgo, mdgoe, Sdgo, mdgo2, acto, acti, ni, no, no2, B){
   out_fcMeanVarDnode <- fcMeanVarDnode(mw, Sw, mdai, Sdai, ni, no, B)
@@ -831,28 +804,28 @@ fcDerivative <- function(mw, Sw, mwo, Jo, J, mao, Sao, mai, Sai, Szi, mdai, Sdai
   return(outputs)
 }
 
-#' Second Derivatives for Fully Connected layers
+#' Second derivatives for fully connected layers
 #'
-#' This function calculates mean of product of derivatives, when new product term involves second order derivatives (wdd).
+#' This function calculates mean of product of derivatives, when new product term involves second derivatives (wdd).
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param mwo Mean vector of the weights for the next layer
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param mdai Mean vector of the activation units' derivative from current layer
-#' @param mddai Mean vector of the activation units' second derivative from current layer
-#' @param mpddi Mean vector of the second order derivative product wdd of current layer
-#' @param mdgo Mean vector of derivatives in next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mw Mean vector of weights for the current layer
+#' @param mwo Mean vector of weights for the next layer
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param mdai Mean vector of activation units' first derivative from current layer
+#' @param mddai Mean vector of activation units' second derivative from current layer
+#' @param mpddi Mean vector of second derivative product wdd of current layer
+#' @param mdgo Mean vector of product of derivatives in next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
 #' @param Caoai Covariance between activation units from current and next layers
-#' @param Cdow Covariance between derivatives and weights
-#' @param Cdodi Covariance between derivatives from current and next layers
+#' @param Cdow Covariance between first derivatives and weights
+#' @param Cdodi Covariance between first derivatives from current and next layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
-#' @return Mean vector of the derivatives
+#' @return Mean of product terms for second derivative calculations
 #' @export
 fcDerivative2 <- function(mw, mwo, mao, mai, mdai, mddai, mpddi, mdgo, mdgo2, Caoai, Cdow, Cdodi, acti, ni, no, no2, B){
   out_fcCovdaddd <- fcCovdaddd(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B)
@@ -866,34 +839,34 @@ fcDerivative2 <- function(mw, mwo, mao, mai, mdai, mddai, mpddi, mdgo, mdgo2, Ca
   return(mddgi)
 }
 
-#' Products of First Order Derivatives Multiplied to Second Order Derivative for Fully Connected layers
+#' Products of first derivatives multiplied to second derivative for fully connected layers
 #'
 #' This function calculates mean of product of derivatives, when new product term involves product
-#' of two first order derivatives (wd*wd) from the same layer multiplied to second order derivatives (wdd) from next layer.
+#' of two first derivatives (wdwd) from the same layer multiplied to second derivatives (wdd) from next layer.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mwo Mean vector of the weights for the next layer
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param mdao Mean vector of the activation units' derivative from next layer
-#' @param mdai Mean vector of the activation units' derivative from current layer
-#' @param Sdai Covariance of the activation units' derivative from current layer
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mdgo Mean vector of derivatives in next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mwo Mean vector of weights for the next layer
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param mdao Mean vector of activation units' first derivative from next layer
+#' @param mdai Mean vector of activation units' first derivative from current layer
+#' @param Sdai Covariance of activation units' first derivative from current layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mdgo Mean vector of product of derivatives in next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
 #' @param Caow Covariance between activation units and weights
 #' @param Caoai Covariance between activation units from current and next layers
-#' @param Cdow Covariance between derivatives and weights
-#' @param Cdodi Covariance between derivatives from current and next layers
+#' @param Cdow Covariance between first derivatives and weights
+#' @param Cdodi Covariance between first derivatives from current and next layers
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
-#' @param dlayer TRUE if layer from which derivatives will be in respect to
-#' @return Mean matrix of products of derivatives
+#' @param dlayer TRUE if derivatives will be in respect to current layer
+#' @return Mean of product terms for second derivative calculations
 #' @export
 fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, mdgo2, Caow, Caoai, Cdow, Cdodi, acto, acti, ni, no, no2, B, dlayer){
 
@@ -906,7 +879,7 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
   Cddgodgik = matrix(Cddgodgik, B*ni, no)
 
   if (dlayer == FALSE){
-    # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
+    # Combination of products of first derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
     mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
 
     Cwdowdiwdi <- fcCovwdowdiwdi(mpdi, Cddgodgik, ni, no, B)
@@ -925,42 +898,42 @@ fcDerivative3 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdi, mdgo, m
   return(mddgi)
 }
 
-#' Products of First Order Derivatives Multiplied to Products of First Order Derivatives for Fully Connected layers
+#' Products of first derivatives multiplied to products of first derivatives for fully connected layers
 #'
 #' This function calculates mean of product of derivatives, when new product term involves product
-#' of two first order derivatives (wd*wd) from the same layer multiplied to product
-#' of two first order derivatives (wd*wd) from next layer, when second next layer is second order derivatives (wdd).
+#' of two first derivatives (wdwd) from the same layer multiplied to product
+#' of two first derivatives (wdwd) from next layer, when second next layer is second derivatives (wdd).
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mwo Mean vector of the weights for the next layer
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param mdao Mean vector of the activation units' derivative from next layer
-#' @param mdai Mean vector of the activation units' derivative from current layer
-#' @param Sdai Covariance of the activation units' derivative from current layer
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mdgo Mean vector of derivatives in next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
-#' @param Cdowdi Covariance between derivatives from next layer and weights times derivatives from current layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mwo Mean vector of weights for the next layer
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param mdao Mean vector of activation units' first derivative from next layer
+#' @param mdai Mean vector of activation units' first derivative from current layer
+#' @param Sdai Covariance of activation units' first derivative from current layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mdgo Mean vector of product of derivatives in next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
+#' @param Cdowdi Covariance between first derivatives from next layer and weights times derivatives from current layer
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
-#' @param dlayer TRUE if layer from which derivatives will be in respect to
-#' @return Mean matrix of products of derivatives
+#' @param dlayer TRUE if derivatives will be in respect to current layer
+#' @return Mean of product terms for second derivative calculations
 #' @export
 fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, mdgo, mdgo2, Cdowdi, acto, acti, ni, no, no2, B, dlayer){
 
-  # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
+  # Combination of products of first derivative of current layer (wd)*(wd) (iterations on weights on the same node)
   mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
   Cdgodgi <- fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
 
   if (dlayer == FALSE){
-    # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
+    # Combination of products of first derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
     mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
     # All possible combinations
     mpdi2wnAll <- fcCombinaisonDweightNodeAll(mpdi, mpdi2n, mpdi2w, ni, no, B)
@@ -989,42 +962,42 @@ fcDerivative4 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
 
   return(mddgi)
 }
-#' Products of First Order Derivatives Multiplied to Products of First Order Derivatives (Not Only Last Layer) for Fully Connected layers
+#' Products of first derivatives multiplied to products of first derivatives (not only last layer) for fully connected layers
 #'
 #' This function calculates mean of product of derivatives, when new product term involves product
-#' of two first order derivatives (wd*wd) from the same layer multiplied to product
-#' of two first order derivatives (wd*wd) from next and second next layers.
+#' of two first derivatives (wdwd) from the same layer multiplied to product
+#' of two first derivatives (wdwd) from next and second next layers.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mwo Mean vector of the weights for the next layer
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param mdao Mean vector of the activation units' derivative from next layer
-#' @param mdai Mean vector of the activation units' derivative from current layer
-#' @param Sdai Covariance of the activation units' derivative from current layer
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mdgo Mean vector of derivatives in next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mwo Mean vector of weights for the next layer
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param mdao Mean vector of activation units' first derivative from next layer
+#' @param mdai Mean vector of activation units' first derivative from current layer
+#' @param Sdai Covariance of activation units' first derivative from current layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mdgo Mean vector of product of derivatives in next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
 #' @param Cdowdi Covariance between derivatives from next layer and weights times derivatives from current layer
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
-#' @param dlayer TRUE if layer from which derivatives will be in respect to
-#' @return Mean matrix of products of derivatives
+#' @param dlayer TRUE if derivatives will be in respect to current layer
+#' @return Mean of product terms for second derivative calculations
 #' @export
 fcDerivative5 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, mdgo, mdgo2, Cdowdi, acto, acti, ni, no, no2, B, dlayer){
 
-  # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
+  # Combination of products of first derivative of current layer (wd)*(wd) (iterations on weights on the same node)
   mpdi2w <- fcCombinaisonDweight(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
   Cdgodgi <- fcCovDlayer(matrix(1, B*no2, 1), mwo, Cdowdi, ni, no, no2, B)
 
   if (dlayer == FALSE){
-    # Combination of products of first order derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
+    # Combination of products of first derivative of current layer (wd)*(wd) (iterations on nodes from same layer (with weights pointing to same next layer node))
     mpdi2n <- fcCombinaisonDnode(mpdi, mw, Sw, mdai, Sdai, ni, no, B)
     # All possible combinations
     mpdi2wnAll <- fcCombinaisonDweightNodeAll(mpdi, mpdi2n, mpdi2w, ni, no, B)
@@ -1056,19 +1029,19 @@ fcDerivative5 <- function(mw, Sw, mwo, mao, mai, mdao, mdai, Sdai, mpdo, mpdi, m
 }
 
 
-#' Mean and Covariance of Derivatives
+#' Mean and covariance of derivatives
 #'
 #' This function calculates the mean vector and the covariance matrix for derivatives.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mda Mean vector of the activation units' derivative from current layer
-#' @param Sda Covariance of the activation units' derivative from current layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mda Mean vector of activation units' derivative from current layer
+#' @param Sda Covariance of activation units' derivative from current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Mean vector of the derivatives
-#' @return Covariance matrix of the derivatives
+#' @return - Mean vector of derivatives
+#' @return - Covariance matrix of derivatives
 #' @export
 fcMeanVarDnode <- function(mw, Sw, mda, Sda, ni, no, B){
   mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
@@ -1082,21 +1055,21 @@ fcMeanVarDnode <- function(mw, Sw, mda, Sda, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between Activation Units and Weights
+#' Covariance between activation units and weights
 #'
 #' This function calculates covariance between activation units and weights and
 #' covariance between activation units from consecutive layers.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
 #' @param Jo Jacobian of next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param Sai Covariance of the activation units from current layer
+#' @param mai Mean vector of activation units from current layer
+#' @param Sai Covariance of activation units from current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Covariance between activation units and weights
-#' @return Covariance between activation units from current and next layers
+#' @return - Covariance between activation units and weights
+#' @return - Covariance between activation units from current and next layers
 #' @export
 fcCovawaa <- function(mw, Sw, Jo, mai, Sai, ni, no, B){
   Joloop = t(matrix(matrix(rep(t(matrix(Jo, no, B)), ni), nrow =no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1112,15 +1085,15 @@ fcCovawaa <- function(mw, Sw, Jo, mai, Sai, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between Derivatives and Weights
+#' Covariance between derivatives and weights
 #'
 #' This function calculates covariance between derivatives and weights and
 #' covariance between derivatives from consecutive layers.
 #'
-#' @param mao Mean vector of the activation units from next layer
-#' @param Sao Covariance of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param Sai Covariance of the activation units from current layer
+#' @param mao Mean vector of activation units from next layer
+#' @param Sao Covariance of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param Sai Covariance of activation units from current layer
 #' @param Caow Covariance between activation units and weights
 #' @param Caoai Covariance between activation units from current and next layers
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
@@ -1128,8 +1101,8 @@ fcCovawaa <- function(mw, Sw, Jo, mai, Sai, ni, no, B){
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Covariance between derivatives and weights
-#' @return Covariance between derivatives from current and next layers
+#' @return - Covariance between derivatives and weights
+#' @return - Covariance between derivatives from current and next layers
 #' @export
 fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
   mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1161,22 +1134,22 @@ fcCovdwddd <- function(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between Second and First Orders Derivatives from Consecutive Layers
+#' Covariance between first and second derivatives from consecutive layers
 #'
-#' This function calculates covariance between activation units and first order derivatives and
-#' covariance between second and first orders derivatives from consecutive layers.
+#' This function calculates covariance between activation units and first derivatives and
+#' covariance between first and second derivatives from consecutive layers.
 #'
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param mdai Mean vector of the activation units' derivative from current layer
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param mdai Mean vector of activation units' first derivative from current layer
 #' @param Caoai Covariance between activation units from current and next layers
 #' @param Cdodi Covariance between derivatives from current and next layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Covariance between first order derivatives from next layer and activation units from current layer
-#' @return Covariance between second and first orders derivatives from consecutive layers
+#' @return - Covariance between first derivatives from next layer and activation units from current layer
+#' @return - Covariance between first and second derivatives from consecutive layers
 #' @export
 fcCovdaddd <- function(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B){
   mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1201,16 +1174,16 @@ fcCovdaddd <- function(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between First and Second Orders Derivatives from Consecutive Layers
+#' Covariance between first and second derivatives from consecutive layers
 #'
-#' This function calculates covariance between weights and second order derivatives and
-#' covariance between first and second orders derivatives from consecutive layers.
+#' This function calculates covariance between weights and second derivatives and
+#' covariance between first and second derivatives from consecutive layers.
 #'
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param mdao Mean vector of the activation units' derivative from next layer
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param mdao Mean vector of activation units' first derivative from next layer
 #' @param Caoai Covariance between activation units from current and next layers
-#' @param Cdodi Covariance between derivatives from current and next layers
+#' @param Cdodi Covariance between first derivatives from current and next layers
 #' @param Caow Covariance between activation units and weights
 #' @param Cdow Covariance between derivatives and weights
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
@@ -1218,8 +1191,8 @@ fcCovdaddd <- function(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B){
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Covariance between first and second orders derivatives from consecutive layers
-#' @return Covariance between second order derivatives from next layer and weights
+#' @return - Covariance between first and second derivatives from consecutive layers
+#' @return - Covariance between second derivatives from next layer and weights
 #' @export
 fcCovaddddddw <- function(mao, mai, mdao, Caoai, Cdodi, Caow, Cdow, acto, acti, ni, no, B){
   mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1254,13 +1227,13 @@ fcCovaddddddw <- function(mao, mai, mdao, Caoai, Cdodi, Caow, Cdow, acto, acti, 
   return(outputs)
 }
 
-#' Covariance between Derivatives and Weights*Derivatives
+#' Covariance between derivatives and weights*derivatives
 #'
 #' This function calculates covariance between derivatives and weights and
 #' covariance between derivatives from consecutive layers.
 #'
 #' @param md Mean vector of derivatives
-#' @param mw Mean vector of the weights for the current layer
+#' @param mw Mean vector of weights for the current layer
 #' @param Cdow Covariance between derivatives and weights
 #' @param Cdodi Covariance between derivatives from current and next layers
 #' @param ni Number of units in current layer
@@ -1275,17 +1248,17 @@ fcCovdwd <- function(md, mw, Cdow, Cdodi, ni, no, B){
   return(Cdowdi)
 }
 
-#' Covariance between Products of Derivatives and Weights
+#' Covariance between products of derivatives and weights
 #'
 #' This function calculates covariance between products of derivatives and
 #' weights from consecutive layers.
 #'
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
-#' @param mwo Mean vector of the weights for the next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
+#' @param mwo Mean vector of weights for the next layer
 #' @param Cdowdi Covariance between derivatives and weights times derivatives
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
 #' @return Covariance between weights times derivatives from consecutive layers
 #' @export
@@ -1297,7 +1270,7 @@ fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
   return(Cdgodgi)
 }
 
-#' Mean and Variance of Weights times Derivatives Products Terms
+#' Mean and variance of weights times derivatives products terms
 #'
 #' This function calculates mean and variance of weights times derivatives products terms.
 #'
@@ -1309,10 +1282,10 @@ fcCovDlayer <- function(mdgo2, mwo, Cdowdi, ni, no, no2, B){
 #' @param Cxy Covariance between inputs and outputs
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
-#' @return Mean of weights times derivatives products terms
-#' @return Covariance between weights times derivatives products terms
+#' @return - Mean of weights times derivatives products terms
+#' @return - Covariance between weights times derivatives products terms
 #' @export
 fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
   my = t(matrix(matrix(rep(t(matrix(my, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1344,21 +1317,21 @@ fcMeanVarDlayer <- function(mx, Sx, my, mye, Sy, Cxy, ni, no, no2, B){
   return(outputs)
 }
 
-#' Mean of Weights times Derivatives Products Terms Squared (wdo x (wdi*wdi))
+#' Mean of weights times derivatives products terms squared (wdo x (wdi*wdi))
 #'
 #' This function calculates mean of weights times derivatives products terms when
 #' adding two of those products from current layer to already calculated expectation
-#' that ended with one such product of next layer (i.e. wdo x (wdi*wdi)). Mean terms
+#' that ended with one such product of next layer (i.e. wdo x (wdiwdi)). Mean terms
 #' are in array format. Once added, rows need to be
 #' summed to aggregate expectations by node*node combinations of current layer.
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mpdi2 Mean array of combination of products of first order derivatives
-#' @param mdgo Mean vector of derivatives in next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mpdi2 Mean array of combination of products of first derivatives
+#' @param mdgo Mean vector of product of derivatives in next layer
 #' @param Cwdowdiwdi Covariance cov(wdo,(wdi*wdi)) of weights times derivatives products terms when there is one product in next layer and two in current
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
 #' @return Mean of weights times derivatives products terms
 #' @export
@@ -1386,16 +1359,16 @@ fcMeanDlayer2row <- function(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B){
   return(md2)
 }
 
-#' Mean of Weights times Derivatives Products Terms ((wdo*wdo) x (wwdi^2))
+#' Mean of weights times derivatives products terms ((wdo*wdo) x (wwdi^2))
 #'
 #' This function calculates mean of weights times derivatives products terms when
 #' adding two of those products from current layer to already calculated expectation
-#' that ended with one such product of next layer (i.e. (wdo*wdo) x (wwdi^2)). Mean terms
+#' that ended with one such product of next layer (i.e. (wdowdo) x (wwdi^2)). Mean terms
 #' are in array format. Once added, rows need to be
 #' summed to aggregate expectations by node*weight combinations of current layer.
 #'
-#' @param mpdi2w Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)
-#' @param mdgo Mean of derivatives in next layer
+#' @param mpdi2w Combination of products of first derivative of current layer (wd)*(wd) (iterations on weights on the same node)
+#' @param mdgo Mean of product of derivatives in next layer
 #' @param Cwdowdowwdi2 Covariance cov(wdowdo,wdiwdi) of weights times derivatives products terms, where the di terms are the same
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
@@ -1420,12 +1393,12 @@ fcMeanDlayer2array <- function(mpdi2w, mdgo, Cwdowdowwdi2, ni, no, B){
   return(md)
 }
 
-#' Covariance between Next Layer Product and Current Layer Multiplied Products
+#' Covariance between next layer product and current layer multiplied products
 #'
-#' This function calculates covariance cov(wdo,wdi*wdi) of weights times derivatives
+#' This function calculates covariance cov(wdo,wdiwdi) of weights times derivatives
 #' products terms when there are one product in next layer and two in current.
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
 #' @param Cdgoddgik Covariance between weights times derivatives from consecutive layers
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
@@ -1445,12 +1418,12 @@ fcCovwdowdiwdi <- function(mpdi, Cdgoddgik, ni, no, B){
 }
 
 
-#' Covariance between Next Layer Product and Current Layer Squared Product
+#' Covariance between next layer product and current layer squared product
 #'
 #' This function calculates covariance cov(wdo,(wdi)^2) of weights times derivatives
 #' products terms when there are one product in next layer and two squared in current.
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
 #' @param Cdgoddgik Covariance between weights times derivatives from consecutive layers
 #' @return Covariance cov(wdo,(wdi)^2) of weights times derivatives products terms when there is one product in next layer and two squared in current
 #' @export
@@ -1459,13 +1432,13 @@ fcCovwdowdi2 <- function(mpdi, Cdgoddgik){
   return(Cwdowdi2)
 }
 
-#' Covariance between Products in (Same) Next and Current Layers
+#' Covariance between products in (same) next and current layers
 #'
-#' This function calculates covariance cov(wdo^2,wdi*wdi) of weights times derivatives
+#' This function calculates covariance cov(wdo^2,wdiwdi) of weights times derivatives
 #' products terms when there are two products in both next and current layers.
 #' The product fom next layer is the same squared.
 #'
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
 #' @param Cwdowdiwdi Covariance cov(wdo,wdi*wdi) of weights times derivatives products terms when there are one product in next layer and two in current
 #' @return Covariance cov(wdo^2,wdi*wdi) of weights times derivatives products terms when there are two products in both next and current layers
 #' @export
@@ -1475,12 +1448,12 @@ fcCovwdo2wdiwdi <- function(mpdo, Cwdowdiwdi){
   return(Cwdo2wdiwdi)
 }
 
-#' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative)
+#' Covariance between next layer multiplied products and current layer multiplied products (same derivative)
 #'
 #' This function calculates covariance cov(wdowdo,wdiwdi) where the di terms are the same, when next second layer involves only a product term (wddo2).
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
 #' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
@@ -1560,14 +1533,14 @@ fcCwdowdowwdi2 <- function(mpdi, mpdo, Cdgodgi, acti, ni, no, no2, B){
 
 }
 
-#' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative, Minimum 3 Hidden Layers)
+#' Covariance between next layer multiplied products and current layer multiplied products (same derivative, minimum 3 hidden layers)
 #'
 #' This function calculates covariance cov(wdowdo,wdiwdi) where the di terms are the same when next second layer involves multiplied terms (wdo2wdo2).
 #' It is used when there are at least 3 hidden layers.
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
 #' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
@@ -1617,13 +1590,13 @@ fcCwdowdowwdi2_3hl <- function(mpdi, mpdo, mdgo2, Cdgodgi, acti, ni, no, no2, B)
 
 }
 
-#' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Minimum 3 Hidden Layers)
+#' Covariance between next layer multiplied products and current layer multiplied products (minimum 3 hidden layers)
 #'
 #' This function calculates covariance cov(wdowdo,wdiwdi) where all terms can be different.
 #' It is used when there are at least 3 hidden layers and second next layer is a product of only two terms (wdo2).
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
 #' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
@@ -1713,14 +1686,14 @@ fcCwdowdowdiwdi <- function(mpdi, mpdo, Cdgodgi, acti, ni, no, no2, B){
 
 }
 
-#' Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Minimum 4 Hidden Layers)
+#' Covariance between next layer multiplied products and current layer multiplied products (minimum 4 hidden layers)
 #'
 #' This function calculates covariance cov(wdowdo,wdiwdi) where all terms can be different.
 #' It is used when there are at least 4 hidden layers.
 #'
-#' @param mpdi Mean vector of the first order derivative product wd of current layer
-#' @param mpdo Mean vector of the first order derivative product wd of next layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mpdo Mean vector of first derivative product wd of next layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
 #' @param Cdgodgi Covariance between weights times derivatives from consecutive layers
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
@@ -1780,20 +1753,20 @@ fcCwdowdowdiwdi_4hl <- function(mpdi, mpdo, mdgo2, Cdgodgi, acti, ni, no, no2, B
 
 }
 
-#' Covariance between Activation and Hidden Units
+#' Covariance between activation and hidden units
 #'
 #' This function calculates covariance between activation and hidden units.
 #'
 #'
 #' @param Jo Jacobian of next layer
 #' @param J Jacobian of current layer
-#' @param Sz Covariance of the units from current layer
-#' @param mw Mean vector of the weights for the current layer
+#' @param Sz Covariance of units from current layer
+#' @param mw Mean vector of weights for the current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Covariance between activation and hidden layers (same layer)
-#' @return Covariance between activation (next layer) and hidden (current layer) layers
+#' @return - Covariance between activation and hidden layers (same layer)
+#' @return - Covariance between activation (next) and hidden (current) layers
 #' @export
 fcCovaz <- function(Jo, J, Sz, mw, ni, no, B){
   Jo = t(matrix(matrix(rep(t(matrix(Jo, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1805,22 +1778,22 @@ fcCovaz <- function(Jo, J, Sz, mw, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between Derivatives and Hidden Units
+#' Covariance between derivatives and hidden Units
 #'
 #' This function calculates covariance between derivatives and hidden units.
 #'
 #'
-#' @param mao Mean vector of the activation units from next layer
-#' @param mai Mean vector of the activation units from current layer
-#' @param Caizi Covariance between activation and hidden layers (same layer)
-#' @param Caozi Covariance between activation (next layer) and hidden (current layer) layers
+#' @param mao Mean vector of activation units from next layer
+#' @param mai Mean vector of activation units from current layer
+#' @param Caizi covariance between activation and hidden layers (same layer)
+#' @param Caozi covariance between activation (next layer) and hidden (current) layers
 #' @param acto Activation function index for next layer defined by \code{\link{activationFunIndex}}
 #' @param acti Activation function index for current layer defined by \code{\link{activationFunIndex}}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Covariance between derivative (next layer) and hidden (current layer) layers
-#' @return Covariance between derivative and hidden layers (same layer)
+#' @return - Covariance between derivative (next) and hidden (current) layers
+#' @return - Covariance between derivative and hidden layers (same layer)
 #' @export
 fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
   mao = t(matrix(matrix(rep(t(matrix(mao, no, B)), ni), nrow = no*ni, ncol = B, byrow = TRUE), no, ni*B))
@@ -1848,22 +1821,22 @@ fcCovdz <- function(mao, mai, Caizi, Caozi, acto, acti, ni, no, B){
   return(outputs)
 }
 
-#' Covariance between Derivatives and Hidden States
+#' Covariance between derivatives and hidden states
 #'
 #' This function calculates covariance between derivatives and hidden states.
 #' It is not related to the derivative calculation process.
 #' It could be used infer Z (hidden states) with the constraint that the derivative of g with respect to Z equals 0.
 #'
-#' @param mwo Mean vector of the weights for the next layer
-#' @param mw Mean vector of the weights for the current layer
-#' @param mdgo2 Mean vector of derivatives in 2nd next layer
-#' @param mpdi TBD
-#' @param mdgoe Unit vector of length  (# response variables * B)
-#' @param Cdozi Covariance between derivative (next layer) and hidden (current layer) layers
-#' @param Cdizi between derivative and hidden layers (same layer)
+#' @param mwo Mean vector of weights for the next layer
+#' @param mw Mean vector of weights for the current layer
+#' @param mdgo2 Mean vector of product of derivatives in second next layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mdgoe Mean of product of derivatives at each node in next layer
+#' @param Cdozi Covariance between derivative (next) and hidden (current) layers
+#' @param Cdizi Covariance between derivative and hidden layers (same layer)
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @param no2 Number of units in 2nd next layer
+#' @param no2 Number of units in second next layer
 #' @param B Batch size
 #' @return Covariance between derivative and hidden states
 #' @export
@@ -1889,12 +1862,12 @@ covdx <- function(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B){
 #'
 #' This function calculate the mean vector of units \eqn{\mu_{Z}} for a given layer.
 #'
-#' @param mp Mean vector of the parameters for the current layer
-#' @param ma Mean vector of the activation units from previous layer
-#' @param idxFmwa List that contains the indices for weights and for activation
+#' @param mp Mean vector of parameters for the current layer
+#' @param ma Mean vector of activation units from previous layer
+#' @param idxFmwa Indices for weights and for activation
 #' units for the current and previous layers respectively
 #' @param idxFmwab Indices for biases of the current layer
-#' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
+#' @return Mean vector of units for the current layer \eqn{\mu_{Z}}
 #' @export
 meanMz <- function(mp, ma, idxFmwa, idxFmwab){
   # mp is the mean of parameters for the current layer
@@ -1921,11 +1894,11 @@ meanMz <- function(mp, ma, idxFmwa, idxFmwab){
 #'
 #' This function calculate the covariance matrix of the units \eqn{\Sigma_{Z}} for a given layer.
 #'
-#' @param mp Mean vector of the parameters for the current layer
-#' @param ma Mean vector of the activation units from previous layer
-#' @param Sp Covariance matrix of the parameters for the current layer
-#' @param Sa Covariance matrix of the activation units from previous layer
-#' @param idxFSwaF List that contains the indices for weights and for activation
+#' @param mp Mean vector of parameters for the current layer
+#' @param ma Mean vector of activation units from previous layer
+#' @param Sp Covariance matrix of parameters for the current layer
+#' @param Sa Covariance matrix of activation units from previous layer
+#' @param idxFSwaF Indices for weights and for activation
 #' units for the current and previous layers respectively
 #' @param idxFSwaFb Indices for biases of the current layer
 #' @return Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
@@ -1959,22 +1932,22 @@ covarianceSz <- function(mp, ma, Sp, Sa, idxFSwaF, idxFSwaFb){
   return(Sz)
 }
 
-#' Mean and Covariance Vectors of Units (Many Observations)
+#' Mean and covariance vectors of units (many observations)
 #'
 #' This function calculate the mean vector of units \eqn{\mu_{Z}} and the covariance matrix of the units \eqn{\Sigma_{Z}}for a given layer.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mb Mean vector of the biases for the current layer
-#' @param Sb Covariance of the biases for the current layer
-#' @param ma Mean vector of the activation units from previous layer
-#' @param Sa Covariance of the activation units from previous layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mb Mean vector of biases for the current layer
+#' @param Sb Covariance of biases for the current layer
+#' @param ma Mean vector of activation units from previous layer
+#' @param Sa Covariance of activation units from previous layer
 #' @param ni Number of units in previous layer
 #' @param no Number of units in current layer
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
-#' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
-#' @return Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @return - Mean vector of units for the current layer \eqn{\mu_{Z}}
+#' @return - Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 #' @export
 fcMeanVar <- function(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB){
   if (any(is.nan(mb))){
@@ -2002,20 +1975,20 @@ fcMeanVar <- function(mz, Sz, mw, Sw, mb, Sb, ma, Sa, ni, no, B, rB){
   return(outputs)
 }
 
-#' Mean and Covariance Vectors of Units (One Observation)
+#' Mean and covariance vectors of units (one observation)
 #'
 #' This function calculate the mean vector of units \eqn{\mu_{Z}} and the covariance matrix of the units \eqn{\Sigma_{Z}}for a given layer.
 #'
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mb Mean vector of the biases for the current layer
-#' @param Sb Covariance of the biases for the current layer
-#' @param ma Mean vector of the activation units from previous layer
-#' @param Sa Covariance of the activation units from previous layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mb Mean vector of biases for the current layer
+#' @param Sb Covariance of biases for the current layer
+#' @param ma Mean vector of activation units from previous layer
+#' @param Sa Covariance of activation units from previous layer
 #' @param ni Number of units in previous layer
 #' @param no Number of units in current layer
-#' @return Mean vector of the units for the current layer \eqn{\mu_{Z}}
-#' @return Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @return - Mean vector of units for the current layer \eqn{\mu_{Z}}
+#' @return - Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 #' @export
 fcMeanVarB1 <- function(mw, Sw, mb, Sb, ma, Sa, ni, no){
 
@@ -2045,25 +2018,27 @@ fcMeanVarB1 <- function(mw, Sw, mb, Sb, ma, Sa, ni, no){
   return(outputs)
 }
 
-#' Backpropagation (Parameters' Deltas) for Fully Connected Layers (Many Observations)
+#' Backpropagation (parameters' deltas) for fully connected layers (many observations)
 #'
 #' This function calculates parameters' deltas at a given layer when using more than one observation at the time.
 #'
-#' @param deltaMw Next layer delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
-#' @param deltaSw Next layer delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
-#' @param deltaMb Next layer delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
-#' @param deltaSb Next layer delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}
-#' @param Sw Covariance of the weights for the current layer
-#' @param Sb Covariance of the biases for the current layer
-#' @param ma Mean vector of the activation units for the current layer
-#' @param deltaMr Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
-#' @param deltaSr Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param deltaMw next layer delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @param deltaSw next layer delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
+#' @param deltaMb next layer delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @param deltaSb next layer delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}
+#' @param Sw Covariance of weights for the current layer
+#' @param Sb Covariance of biases for the current layer
+#' @param ma Mean vector of activation units for the current layer
+#' @param deltaMr Delta of mean vector of next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaSr Delta of covariance matrix of next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @return - Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
-#' @return - Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
-#' @return - Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
-#' @return - Delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+#' @param B Batch size
+#' @param rB Number of times batch size is repeated
+#' @return - Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @return - Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
+#' @return - Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @return - Delta of covariance matrix of biases given \eqn{y} \eqn{\Sigma_{\theta}|y}
 #' @export
 fcParameterBackwardPass <- function(deltaMw, deltaSw, deltaMb, deltaSb, Sw, Sb, ma, deltaMr, deltaSr, ni, no, B, rB){
   Cbz = matrix(rep(Sb, B), nrow = length(Sb))
@@ -2077,7 +2052,7 @@ fcParameterBackwardPass <- function(deltaMw, deltaSw, deltaMb, deltaSb, Sw, Sb, 
     deltaMrw = matrix(matrix(rep(deltaMr[,t], ni), nrow = ni, byrow = TRUE), ni*no, B)
     deltaSrw = matrix(matrix(rep(deltaSr[,t], ni), nrow = ni, byrow = TRUE), ni*no, B)
 
-    # Weights
+    # weights
     Cwz = Sw*maloop
     deltaMrw = Cwz*deltaMrw
     deltaSrw = (Cwz^2)*deltaSrw
@@ -2105,21 +2080,21 @@ fcParameterBackwardPass <- function(deltaMw, deltaSw, deltaMb, deltaSb, Sw, Sb, 
 }
 
 
-#' Backpropagation (Parameters' Deltas) for Fully Connected Layers (One Observation)
+#' Backpropagation (parameters' deltas) for fully connected layers (one observation)
 #'
 #' This function calculates parameters' deltas at a given layer when using one observation at the time.
 #'
-#' @param Sw Covariance of the weights for the current layer
-#' @param Sb Covariance of the biaises for the current layer
-#' @param ma Mean vector of the activation units for the current layer
-#' @param deltaMr Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}
-#' @param deltaSr Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
+#' @param Sw Covariance of weights for the current layer
+#' @param Sb Covariance of biaises for the current layer
+#' @param ma Mean vector of activation units for the current layer
+#' @param deltaMr Delta of mean vector of next layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @param deltaSr Delta of covariance matrix of next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
-#' @return - Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}}
-#' @return - Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}}
-#' @return - Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}}
-#' @return - Delta of covariance matrix of biaises given \eqn{y} \eqn{\Sigma_{\theta}|y}}
+#' @return - Delta of mean vector of weights given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @return - Delta of covariance matrix of weights given \eqn{y} \eqn{\Sigma_{\theta}|y}
+#' @return - Delta of mean vector of biases given \eqn{y} \eqn{\mu_{\theta}|y}
+#' @return - Delta of covariance matrix of biaises given \eqn{y} \eqn{\Sigma_{\theta}|y}
 #' @export
 fcParameterBackwardPassB1 <- function(Sw, Sb, ma, deltaMr, deltaSr, ni, no){
   Cbz = Sb
@@ -2129,7 +2104,7 @@ fcParameterBackwardPassB1 <- function(Sw, Sb, ma, deltaMr, deltaSr, ni, no){
   deltaSrw = matrix(rep(deltaSr, ni), nrow = ncol(deltaSr)*ni, byrow = TRUE)
   deltaSrw = matrix(deltaSrw, ncol = 1)
 
-  # Weights
+  # weights
   Cwz = Sw*maloop
   deltaMrw = Cwz*deltaMrw
   deltaSrw = (Cwz^2)*deltaSrw
@@ -2158,12 +2133,11 @@ fcParameterBackwardPassB1 <- function(Sw, Sb, ma, deltaMr, deltaSr, ni, no){
 #' This function calculate the covariance matrices between units and parameters
 #' \eqn{\Sigma_{ZW}} and \eqn{\Sigma_{ZB}} for a given layer.
 #'
-#' @param ma Mean vector of the activation units from previous layer \eqn{\mu_{A}}
-#' @param Sp Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}
-#' @param idxFCwwa List that contains the indices for weights and for activation
+#' @param ma Mean vector of activation units from previous layer \eqn{\mu_{A}}
+#' @param Sp Covariance matrix of parameters for the current layer \eqn{\Sigma_{\theta}}
+#' @param idxFCwwa Indices for weights and for activation
 #' units for the current and previous layers respectively
 #' @param idxFCb Indices for biases of the current layer
-#' @return A list that contains:
 #' @return - Covariance matrix between units and biases for the current layer \eqn{\Sigma_{ZB}}
 #' @return - Covariance matrix between units and weights for the current layer \eqn{\Sigma_{ZW}}
 #' @export
@@ -2192,12 +2166,12 @@ covarianceCzp <- function(ma, Sp, idxFCwwa, idxFCb) {
 #' This function calculate the covariance matrix between units of the previous
 #' and current layers \eqn{\Sigma_{ZZ^{+}}} for a given layer.
 #'
-#' @param mp Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}
-#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
+#' @param mp Mean vector of parameters for the current layer \eqn{\mu_{\theta}}
+#' @param Sz Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
 #' @param J Jacobian matrix evaluated at \eqn{\mu_{Z}}
-#' @param idxCawa List that contains the indices for weights and for activation
+#' @param idxCawa Indices for weights and for activation
 #' units for the current and previous layers respectively
-#' @return Covariance matrix between units of the previous and current layers \eqn{\Sigma_{ZZ^{+}}}
+#' @return Covariance matrix between units of previous and current layers \eqn{\Sigma_{ZZ^{+}}}
 #' @export
 covarianceCzz <- function(mp, Sz, J, idxCawa) {
 
@@ -2217,22 +2191,21 @@ covarianceCzz <- function(mp, Sz, J, idxCawa) {
 #' \eqn{\mu_{\theta|y}} and \eqn{\Sigma_{\theta|y}} from the \eqn{\theta|y}
 #' distribution for a given layer.
 #'
-#' @param mp Mean vector of the parameters for the current layer \eqn{\mu_{\theta}}
-#' @param Sp Covariance matrix of the parameters for the current layer \eqn{\Sigma_{\theta}}
-#' @param mzF Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}
-#' @param SzF Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}
-#' @param SzB Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}
+#' @param mp Mean vector of parameters for the current layer \eqn{\mu_{\theta}}
+#' @param Sp Covariance matrix of parameters for the current layer \eqn{\Sigma_{\theta}}
+#' @param mzF Mean vector of units for the next layer \eqn{\mu_{Z^{+}}}
+#' @param SzF Covariance matrix of units for the next layer \eqn{\Sigma_{Z^{+}}}
+#' @param SzB Covariance matrix of units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}
 #' @param Czp Covariance matrix between units and parameters for the current layer \eqn{\Sigma_{\theta Z^{+}}}
-#' @param mzB Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}
-#' @param idx List that contains the indices for the parameter update step of
+#' @param mzB Mean vector of units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}
+#' @param idx Indices for the parameter update step of
 #' the current layer
 #' @details \eqn{f(\boldsymbol{\theta}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{\theta};\boldsymbol{\mu_{\theta|y}},\boldsymbol{\Sigma_{\theta|y}})} where
 #' @details \eqn{\boldsymbol{\mu_{\theta|y}} =\boldsymbol{\mu_{\theta}} + \boldsymbol{J_{\theta}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
 #' @details \eqn{\boldsymbol{\Sigma_{\theta|y}} = \boldsymbol{\Sigma_{\theta}} + \boldsymbol{J_{\theta}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{\theta}^{T}}}
 #' @details \eqn{\boldsymbol{J_{\theta}} = \boldsymbol{\Sigma_{\theta Z^{+}}}\boldsymbol{\Sigma^{-1}_{Z^{+}}}}
-#' @return A list that contains:
-#' @return - Mean vector of the parameters for the current layer given \eqn{y} \eqn{\mu_{\theta|y}}
-#' @return - Covariance matrix of the parameters for the current layer given \eqn{y} \eqn{\Sigma_{\theta|y}}
+#' @return - Mean vector of parameters for the current layer given \eqn{y} \eqn{\mu_{\theta|y}}
+#' @return - Covariance matrix of parameters for the current layer given \eqn{y} \eqn{\Sigma_{\theta|y}}
 #' @export
 backwardParameterUpdate <- function(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx){
   dz = mzB - mzF
@@ -2257,22 +2230,21 @@ backwardParameterUpdate <- function(mp, Sp, mzF, SzF, SzB, Czp, mzB, idx){
 #' \eqn{\mu_{Z|y}} and \eqn{\Sigma_{Z|y}} from the \eqn{Z|y}
 #' distribution for a given layer.
 #'
-#' @param mz Mean vector of the units for the current layer \eqn{\mu_{Z}}
-#' @param Sz Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}
-#' @param mzF Mean vector of the units for the next layer \eqn{\mu_{Z^{+}}}
-#' @param SzF Covariance matrix of the units for the next layer \eqn{\Sigma_{Z^{+}}}
-#' @param SzB Covariance matrix of the units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}
-#' @param Czz Covariance matrix between units of the previous and currents layers \eqn{\Sigma_{ZZ^{+}}}
-#' @param mzB Mean vector of the units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}
-#' @param idx List that contains the indices for the hidden state update step of
+#' @param mz Mean vector of units for the current layer \eqn{\mu_{Z}}
+#' @param Sz Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}
+#' @param mzF Mean vector of units for the next layer \eqn{\mu_{Z^{+}}}
+#' @param SzF Covariance matrix of units for the next layer \eqn{\Sigma_{Z^{+}}}
+#' @param SzB Covariance matrix of units for the next layer given \eqn{y} \eqn{\Sigma_{Z^{+}|y}}
+#' @param Czz Covariance matrix between units of previous and current layers \eqn{\Sigma_{ZZ^{+}}}
+#' @param mzB Mean vector of units for the next layer given \eqn{y} \eqn{\mu_{Z^{+}|y}}
+#' @param idx Indices for the hidden state update step of
 #' the current layer
 #' @details \eqn{f(\boldsymbol{z}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z};\boldsymbol{\mu_{Z|y}},\boldsymbol{\Sigma_{Z|y}})} where
 #' @details \eqn{\boldsymbol{\mu_{Z|y}} = \boldsymbol{\mu_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
 #' @details \eqn{\boldsymbol{\Sigma_{Z|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{Z}^{T}}}
 #' @details \eqn{\boldsymbol{J_{Z}} = \boldsymbol{\Sigma_{Z Z^{+}}}\boldsymbol{\Sigma^{-1}_{Z^{+}}}}
-#' @return A list that contains:
-#' @return - Mean vector of the units for the current layer given \eqn{y} \eqn{\mu_{Z|y}}
-#' @return - Covariance matrix of the units for the current layer given \eqn{y} \eqn{\Sigma_{Z|y}}
+#' @return - Mean vector of units for the current layer given \eqn{y} \eqn{\mu_{Z|y}}
+#' @return - Covariance matrix of units for the current layer given \eqn{y} \eqn{\Sigma_{Z|y}}
 #' @export
 backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
   dz = mzB - mzF
@@ -2284,29 +2256,28 @@ backwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, SzB, Czz, mzB, idx){
   J   = Czz * SzF
   # Mean
   mzUd = mz + rowSums(J * dz)
-  # Covariance
+  # covariance
   SzUd = Sz + rowSums(J * dS * J)
 
   outputs <- list(mzUd, SzUd)
   return(outputs)
 }
 
-#' Last Hidden Layer States' Deltas Update
+#' Last hidden layer states' deltas update
 #'
 #' This function updates hidden layer units' deltas using next hidden layer' deltas. It updates
 #' \eqn{\mu_{Z|y}} and \eqn{\Sigma_{Z|y}} from the \eqn{Z|y}
 #' distribution.
 #'
-#' @param SzF Covariance matrix of the units for the next layer \eqn{\Sigma_{y}}
-#' @param dMz Delta of mean vector of the units for the next hidden layer \eqn{\mu_{Z}}
-#' @param dSz Delta of covariance matrix of the units for the next hidden layer \eqn{\Sigma_{Z}}
+#' @param SzF Covariance matrix of units for the next layer \eqn{\Sigma_{y}}
+#' @param dMz Delta of mean vector of units for the next hidden layer \eqn{\mu_{Z}}
+#' @param dSz Delta of covariance matrix of units for the next hidden layer \eqn{\Sigma_{Z}}
 #' @details \eqn{f(\boldsymbol{z}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z};\boldsymbol{\mu_{Z|y}},\boldsymbol{\Sigma_{Z^|y}})} where
 #' @details \eqn{\boldsymbol{\mu_{{Z}|y}} = \boldsymbol{\mu_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\mu_{Z^{+}|y}} - \boldsymbol{\mu_{Z^{+}}})}
-#' @details \eqn{\boldsymbol{\Sigma_{{Z}|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})}\boldsymbol{J_{Z}^{T}}
+#' @details \eqn{\boldsymbol{\Sigma_{{Z}|y}} = \boldsymbol{\Sigma_{Z}} + \boldsymbol{J_{Z}}(\boldsymbol{\Sigma_{Z^{+}|y}} - \boldsymbol{\Sigma_{Z^{+}}})\boldsymbol{J_{Z}^{T}}}
 #' @details \eqn{\boldsymbol{J_{Z}} = \boldsymbol{\Sigma_{ZZ^{+}}} \boldsymbol{\Sigma_{Z^{+}}^{-1}}}
-#' @return A list that contains:
-#' @return - Delta of mean vector of the current hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}}
-#' @return - Delta of covariance matrix of the current hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+#' @return - Delta of mean vector of current hidden layer units given \eqn{y} \eqn{\mu_{Z}|y}
+#' @return - Delta of covariance matrix of current hidden layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 #' @export
 innovationVector <- function(SzF, dMz, dSz){
   iSzF = 1 / SzF
@@ -2325,18 +2296,17 @@ innovationVector <- function(SzF, dMz, dSz){
 #' \eqn{\mu_{Z^{(0)}|y}} and \eqn{\Sigma_{Z^{(0)}|y}} from the \eqn{Z^{(0)}|y}
 #' distribution.
 #'
-#' @param mz Mean vector of the units for the last hidden layer \eqn{\mu_{X^{(0)}}}
-#' @param Sz Covariance matrix of the units for the last hidden layer \eqn{\Sigma_{Z^{(0)}}}
-#' @param mzF Mean vector of the units for the output layer \eqn{\mu_{y}}
-#' @param SzF Covariance matrix of the units for the output layer \eqn{\Sigma_{y}}
+#' @param mz Mean vector of units for the last hidden layer \eqn{\mu_{X^{(0)}}}
+#' @param Sz Covariance matrix of units for the last hidden layer \eqn{\Sigma_{Z^{(0)}}}
+#' @param mzF Mean vector of units for the output layer \eqn{\mu_{y}}
+#' @param SzF Covariance matrix of tunits for the output layer \eqn{\Sigma_{y}}
 #' @param Cyz Covariance matrix between last hidden layer units and responses \eqn{\Sigma_{YZ^{(0)}}}
 #' @param y Response data
 #' @details \eqn{f(\boldsymbol{z}^{(0)}|\boldsymbol{y}) = \mathcal{N}(\boldsymbol{z}^{(0)};\boldsymbol{\mu_{Z^{(0)}|y}},\boldsymbol{\Sigma_{Z^{(0)}|y}})} where
 #' @details \eqn{\boldsymbol{\mu_{{Z}^{(0)}|y}} = \boldsymbol{\mu_{Z^{(0)}}} + \boldsymbol{\Sigma_{YZ^{(0)}}^{T}}\boldsymbol{\Sigma^{-1}_{Y}}(\boldsymbol{y} - \boldsymbol{\mu_{Y}})}
 #' @details \eqn{\boldsymbol{\Sigma_{{Z}^{(0)}|y}} = \boldsymbol{\Sigma_{Z^{(0)}}} - \boldsymbol{\Sigma_{YZ^{(0)}}^{T}}\boldsymbol{\Sigma^{-1}_{Y}}\boldsymbol{\Sigma_{YZ^{(0)}}}}
-#' @return A list that contains:
-#' @return - Mean vector of the last hidden layer units given \eqn{y} \eqn{\mu_{Z^{(0)}|y}}
-#' @return - Covariance matrix of the last hidden layer units given \eqn{y} \eqn{\Sigma_{Z^{(0)}|y}}
+#' @return - Mean vector of last hidden layer units given \eqn{y} \eqn{\mu_{Z^{(0)}|y}}
+#' @return - Covariance matrix of last hidden layer units given \eqn{y} \eqn{\Sigma_{Z^{(0)}|y}}
 #' @export
 forwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
   dz = y - mzF
@@ -2345,7 +2315,7 @@ forwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
   K = Cyz * SzF
   # Mean
   mzUd = mz + K * dz
-  # Covariance
+  # covariance
   SzUd = Sz - K * Cyz
 
   #Outputs
@@ -2353,7 +2323,7 @@ forwardHiddenStateUpdate <- function(mz, Sz, mzF, SzF, Cyz, y){
   return(out)
 }
 
-#' Backpropagation (Parameters Update)
+#' Backpropagation (parameters update)
 #'
 #' This function updates parameters.
 #'
@@ -2434,21 +2404,21 @@ buildCzz <- function(Czz, currentHiddenUnit, prevHiddenUnit, batchSize){
   return(Czz)
 }
 
-#' Combination of Products of First Order Derivative (Iterations on Nodes)
+#' Combination of products of first derivative (iterations on nodes)
 #'
-#' This function calculates mean of combination of products of first order derivatives (wd)*(wd).
+#' This function calculates mean of combination of products of first derivatives (wd)*(wd).
 #' Each node is multiplied to another node in the same layer (including itself).
 #' Their weights are both pointing to the same node in the next layer.
 #'
-#' @param mpdi Mean vector of the current product of derivative and weight
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mda Mean vector of the activation units' derivative from current layer
-#' @param Sda Covariance of the activation units' derivative from current layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mda Mean vector of activation units' first derivative from current layer
+#' @param Sda Covariance of activation units' first derivative from current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Mean array of combination of products of first order derivatives
+#' @return Mean array of combination of products of first derivatives
 #' @export
 fcCombinaisonDnode <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
@@ -2475,21 +2445,21 @@ fcCombinaisonDnode <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   return(mpdi2)
 }
 
-#' Combination of Products of First Order Derivative (Iterations on Weights)
+#' Combination of products of first derivative (iterations on weights)
 #'
-#' This function calculates mean of combination of products of first order derivatives (wd)*(wd).
+#' This function calculates mean of combination of products of first derivatives (wd)*(wd).
 #' Each weight is multiplied to another weight (including itself) from the same node.
 #' Each node is multiplied to the same node (in the same layer).
 #'
-#' @param mpdi Mean vector of the current product of derivative and weight
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mda Mean vector of the activation units' derivative from current layer
-#' @param Sda Covariance of the activation units' derivative from current layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mda Mean vector of activation units' first derivative from current layer
+#' @param Sda Covariance of the activation units' first derivative from current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Mean array of combination of products of first order derivatives
+#' @return Mean array of combination of products of first derivatives
 #' @export
 fcCombinaisonDweight <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
@@ -2512,20 +2482,20 @@ fcCombinaisonDweight <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   return(mpdi2w)
 }
 
-#' Combination of Squared Products of First Order Derivative
+#' Combination of squared products of first derivative
 #'
-#' This function calculates mean of squared products of first order derivatives (wd)^2.
+#' This function calculates mean of squared products of first derivatives (wd)^2.
 #' Every products (weight times node) from current layer are considered which results in a (B*ni x no)-matrix.
 #'
-#' @param mpdi Mean vector of the current product of derivative and weight
-#' @param mw Mean vector of the weights for the current layer
-#' @param Sw Covariance of the weights for the current layer
-#' @param mda Mean vector of the activation units' derivative from current layer
-#' @param Sda Covariance of the activation units' derivative from current layer
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mda Mean vector of activation units' first derivative from current layer
+#' @param Sda Covariance of activation units' first derivative from current layer
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Mean matrix of squared products of first order derivatives
+#' @return Mean matrix of squared products of first derivatives
 #' @export
 fcCombinaisonDweightNode <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   mw = matrix(rep(t(matrix(mw, ni, no)), B), nrow = ni*B, ncol = no, byrow = TRUE)
@@ -2538,22 +2508,22 @@ fcCombinaisonDweightNode <- function(mpdi, mw, Sw, mda, Sda, ni, no, B){
   return(mpdi2wn)
 }
 
-#' All Possible Combinations of Products of First Order Derivatives
+#' All possible combinations of products of first derivatives
 #'
-#' This function calculates mean of products of first order derivatives wd*wd.
+#' This function calculates mean of products of first derivatives wd*wd.
 #' Since both weight and node are iterated over all products, every products
 #' (weight times node) from current layer are considered which results in a
 #' (Bni x no x noni)-array. I.e. each dimension of the array represents a single
 #' product being multiplied to all other possible products from current layer.
 #' Order is as followed: w11d1, w12d2, w13d3, ..., w1nidni, w21d1, w22d2, ..., w2nidni, ... wno1d1, ..., wnonidni
 #'
-#' @param mpdi Mean matrix of the current product of derivative and weight
-#' @param mpdin Mean array of combination of products of first order derivatives (iterations on nodes)
-#' @param mpdiw Mean array of combination of products of first order derivatives (iterations on weights)
+#' @param mpdi Mean vector of first derivative product wd of current layer
+#' @param mpdin Mean array of combination of products of first derivatives (iterations on nodes)
+#' @param mpdiw Mean array of combination of products of first derivatives (iterations on weights)
 #' @param ni Number of units in current layer
 #' @param no Number of units in next layer
 #' @param B Batch size
-#' @return Mean array of combination of products of first order derivatives
+#' @return Mean array of combination of products of first derivatives
 #' @export
 fcCombinaisonDweightNodeAll <- function(mpdi, mpdin, mpdiw, ni, no, B){
   mpdi2wnAll = array(0, c(ni*B, no, no*ni))
@@ -2577,10 +2547,9 @@ fcCombinaisonDweightNodeAll <- function(mpdi, mpdin, mpdiw, ni, no, B){
 #'
 #' This function initializes the first weights and biases of the neural network.
 #'
-#' @param NN List that contains the structure of the neural network
-#' @return A list that contains:
-#' @return - List that contains initial mean vectors of the parameters for each layer
-#' @return - List that contains initial covariance matrices of the parameters
+#' @param NN Lists the structure of the neural network
+#' @return - Initial mean vectors of parameters for each layer
+#' @return - Initial covariance matrices of parameters
 #' for each layer
 #' @export
 initializeWeightBias <- function(NN){
@@ -2603,14 +2572,14 @@ initializeWeightBias <- function(NN){
     # Bias mean
     bwloop_1 = stats::rnorm(ncol(Sbwloop_1)) * sqrt(Sbwloop_1)
 
-    # Weight variance
+    # weight variance
     if (NN$hiddenLayerActivation == "relu" || NN$hiddenLayerActivation == "softplus" || NN$hiddenLayerActivation == "sigm"){
       Sbwloop_2 = factor4Wp[j-1] * (1/nodes[j-1]) * matrix(1L, nrow = 1, ncol = length(idxw[[j-1, 1]]))
     } else {
       Sbwloop_2 = factor4Wp[j-1] * (2/nodes[j-1] + nodes[j]) * matrix(1L, nrow = 1, ncol = length(idxw[[j-1, 1]]))
     }
 
-    # Weight mean
+    # weight mean
     if (NN$dropWeight == 0){
       bwloop_2 = stats::rnorm(ncol(Sbwloop_2)) * sqrt(Sbwloop_2)
     } else {
@@ -2629,8 +2598,8 @@ initializeWeightBias <- function(NN){
 #'
 #' This function initializes the first weights and biases of the neural network.
 #'
-#' @param NN List that contains the structure of the neural network
-#' @return theta: List that contains all parameters required in the neural network to perform derivative calculations
+#' @param NN Lists the structure of the neural network
+#' @return All parameters required in the neural network to perform derivative calculations
 #' @export
 initializeWeightBiasD <- function(NN){
   # Initialization
@@ -2690,15 +2659,14 @@ initializeWeightBiasD <- function(NN){
   return(theta)
 }
 
-#' States Initialization
+#' States initialization
 #'
 #' Initiliazes neural network states.
 #'
-#' @param nodes Vector that contains the number of nodes at each layer
+#' @param nodes Vector which contains the number of nodes at each layer
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
-#' @param xsc TBD
-#' @return states: States of the neural network
+#' @return States of the neural network
 #' @export
 initializeStates <- function(nodes, B, rB, xsc){
   # Normal network
@@ -2723,22 +2691,18 @@ initializeStates <- function(nodes, B, rB, xsc){
   return(states)
 }
 
-#' Input Initialization
+#' Input initialization
 #'
 #' Initializes neural network inputs.
 #'
 #' @param states States of the neural network
-#' @param mz0 TBD
-#' @param Sz0 TBD
-#' @param ma0 TBD
-#' @param Sa0 TBD
-#' @param J0 TBD
-#' @param mdxs0 TBD
-#' @param Sdxs0 TBD
-#' @param mxs0 TBD
-#' @param Sxs0 TBD
-#' @param xsc TBD
-#' @return \code{states}: States of the neural network
+#' @param mz0 Input data
+#' @param Sz0 Variance of input data
+#' @param ma0 Activated input data
+#' @param Sa0 Variance of activated input data
+#' @param J0 Jacobian
+#' @param ... Other parameters
+#' @return States of the neural network
 #' @export
 initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0, Sxs0, xsc){
   out_extractStates = extractStates(states)
@@ -2800,12 +2764,12 @@ initializeInputs <- function(states, mz0, Sz0, ma0, Sa0, J0, mdxs0, Sdxs0, mxs0,
   return(states)
 }
 
-#' Initialization (Matrix of Lists)
+#' Initialization (matrix of lists)
 #'
 #' Initializes a matrix containing lists.
 #'
 #' @param numLayers Number of layers in the neural network
-#' @return x: Matrix containing empty lists
+#' @return Matrix containing empty lists
 #' @export
 createInitCellwithArray <- function(numLayers){
   x = matrix(list(), nrow = numLayers, ncol = 1)
@@ -2815,11 +2779,11 @@ createInitCellwithArray <- function(numLayers){
   return(x)
 }
 
-#' States Initialization (Zero-Matrices)
+#' States initialization (zero-matrices)
 #'
 #' Initiliazes neural network states at 0.
 #'
-#' @param nodes Vector that contains the number of nodes at each layer
+#' @param nodes Vector which contains the number of nodes at each layer
 #' @param numLayers Number of layers in the neural network
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
@@ -2833,11 +2797,11 @@ createStateCellarray <- function(nodes, numLayers, B, rB){
   return(z)
 }
 
-#' States Initialization (UnitMatrices)
+#' States initialization (unit matrices)
 #'
 #' Initiliazes neural network derivative states at 1.
 #'
-#' @param nodes Vector that contains the number of nodes at each layer
+#' @param nodes Vector which contains the number of nodes at each layer
 #' @param numLayers Number of layers in the neural network
 #' @param B Batch size
 #' @param rB Number of times batch size is repeated
@@ -2851,26 +2815,19 @@ createDevCellarray <- function(nodes, numLayers, B, rB){
   return(d)
 }
 
-#' Concatenate Parameters
+#' Concatenate parameters
 #'
 #' Combines in a single column vector each parameter for all layers.
 #'
-#' @param mw TBD
-#' @param Sw TBD
-#' @param mb TBD
-#' @param Sb TBD
-#' @param mwx TBD
-#' @param Swx TBD
-#' @param mbx TBD
-#' @param Sbx TBD
-#' @return mw TBD in vector format
-#' @return Sw TBD in vector format
-#' @return mb TBD in vector format
-#' @return Sb TBD in vector format
-#' @return mwx TBD in vector format
-#' @return Swx TBD in vector format
-#' @return mbx TBD in vector format
-#' @return Sbx TBD in vector format
+#' @param mw Mean of weights for the current layer
+#' @param Sw Covariance of weights for the current layer
+#' @param mb Mean of biases for the current layer
+#' @param Sb Covariance of biases for the current layer
+#' @param ... Other parameters
+#' @return - Mean vector of weights for the current layer
+#' @return - Covariance vector of weights for the current layer
+#' @return - Mean vector of biases for the current layer
+#' @return - Covariance vector of biases for the current layer
 #' @export
 catParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   var <- list(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
@@ -2894,20 +2851,17 @@ catParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   return(outputs)
 }
 
-#' Compress States
+#' Compress states
 #'
 #' Put together states into a list of states.
 #'
-#' @param mz TBD
-#' @param Sz TBD
-#' @param ma TBD
-#' @param Sa TBD
-#' @param J TBD
-#' @param mdxs TBD
-#' @param Sdxs TBD
-#' @param mxs TBD
-#' @param Sxs TBD
-#' @return states: List of states
+#' @param mz Mean of units for each layer
+#' @param Sz Covariance of units for each layer
+#' @param ma Mean of activated units for each layer
+#' @param Sa Covariance of activated units for each layer
+#' @param J Jacobian
+#' @param ... Other parameters
+#' @return List of states
 #' @export
 compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
   states = matrix(list(), nrow = 9, ncol = 1)
@@ -2923,20 +2877,16 @@ compressStates <- function(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs){
   return(states)
 }
 
-#' Extract States
+#' Extract states
 #'
 #' Extract states from list of states.
 #'
 #' @param states List of states
-#' @return mz TBD
-#' @return Sz TBD
-#' @return ma TBD
-#' @return Sa TBD
-#' @return J TBD
-#' @return mdxs TBD
-#' @return Sdxs TBD
-#' @return mxs TBD
-#' @return Sxs TBD
+#' @return - Mean of units for each layer
+#' @return - Covariance of units for each layer
+#' @return - Mean of activated units for each layer
+#' @return - Covariance of activated units for each layer
+#' @return - Jacobian
 #' @export
 extractStates <- function(states){
   mz = states[[1, 1]]
@@ -2952,19 +2902,16 @@ extractStates <- function(states){
   return(outputs)
 }
 
-#' Compress Parameters
+#' Compress parameters
 #'
 #' Put together parameters into a list of parameters.
 #'
-#' @param mw TBD
-#' @param Sw TBD
-#' @param mb TBD
-#' @param Sb TBD
-#' @param mwx TBD
-#' @param Swx TBD
-#' @param mbx TBD
-#' @param Sbx TBD
-#' @return theta: List of parameters
+#' @param mw Mean vector of weights for the current layer
+#' @param Sw Covariance vector of weights for the current layer
+#' @param mb Mean vector of biases for the current layer
+#' @param Sb Covariance vector of biases for the current layer
+#' @param ... Other parameters
+#' @return List of parameters
 #' @export
 compressParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   theta = matrix(list(), nrow = 8, ncol = 1)
@@ -2979,19 +2926,15 @@ compressParameters <- function(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx){
   return(theta)
 }
 
-#' Extract Parameters
+#' Extract parameters
 #'
 #' Extract parameters from list of parameters.
 #'
 #' @param theta List of parameters
-#' @return mw: TBD
-#' @return Sw: TBD
-#' @return mb: TBD
-#' @return Sb: TBD
-#' @return mwx: TBD
-#' @return Swx: TBD
-#' @return mbx: TBD
-#' @return Sbx: TBD
+#' @return - Mean vector of weights for the current layer
+#' @return - Covariance vector of weights for the current layer
+#' @return - Mean vector of biases for the current layer
+#' @return - Covariance vector of biases for the current layer
 #' @export
 extractParameters <- function(theta){
   mw = theta[[1, 1]]
@@ -3006,14 +2949,14 @@ extractParameters <- function(theta){
   return(outputs)
 }
 
-#' Compress Normalized Statistics TBD
-#'
-#' Put together normalized statistics into a list.
-#'
-#' @param mra TBD
-#' @param Sra TBD
-#' @return normStat: TBD
-#' @export
+# Compress normalized statistics
+#
+# Put together normalized statistics into a list.
+#
+# @param mra Mean vector of normalized units for the current layer
+# @param Sra TBD
+# @return normStat: TBD
+# @export
 compressNormStat <- function(mra, Sra){
   normStat = matrix(list(), nrow = 2, ncol = 1)
   normStat[[1, 1]] = mra
@@ -3021,14 +2964,14 @@ compressNormStat <- function(mra, Sra){
   return(normStat)
 }
 
-#' Initialization (TBD)
-#'
-#' Initializes a matrix containing lists of 0 for TBD.
-#'
+# Initialization of normalized statistics
+#
+# Initializes a matrix containing lists of 0 for TBD.
+#
 
-#' @param NN List that contains the structure of the neural network
-#' @return normStat: TBD
-#' @export
+# @param NN Lists the structure of the neural network
+# @return normStat: TBD
+# @export
 createInitNormStat <- function(NN){
   mra = matrix(list(), nrow = length(NN$nodes) - 1, ncol = 1)
   Sra = matrix(list(), nrow = length(NN$nodes) - 1, ncol = 1)
