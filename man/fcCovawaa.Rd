@@ -2,20 +2,20 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovawaa}
 \alias{fcCovawaa}
-\title{Covariance between Activation Units and Weights}
+\title{Covariance between activation units and weights}
 \usage{
 fcCovawaa(mw, Sw, Jo, mai, Sai, ni, no, B)
 }
 \arguments{
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
 \item{Jo}{Jacobian of next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{Sai}{Covariance of the activation units from current layer}
+\item{Sai}{Covariance of activation units from current layer}
 
 \item{ni}{Number of units in current layer}
 
@@ -24,9 +24,13 @@ fcCovawaa(mw, Sw, Jo, mai, Sai, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between activation units and weights
+\itemize{
+\item Covariance between activation units and weights
+}
 
-Covariance between activation units from current and next layers
+\itemize{
+\item Covariance between activation units from current and next layers
+}
 }
 \description{
 This function calculates covariance between activation units and weights and

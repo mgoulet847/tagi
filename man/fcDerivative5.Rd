@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcDerivative5}
 \alias{fcDerivative5}
-\title{Products of First Order Derivatives Multiplied to Products of First Order Derivatives (Not Only Last Layer) for Fully Connected layers}
+\title{Products of first derivatives multiplied to products of first derivatives (not only last layer) for fully connected layers}
 \usage{
 fcDerivative5(
   mw,
@@ -28,29 +28,29 @@ fcDerivative5(
 )
 }
 \arguments{
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mwo}{Mean vector of the weights for the next layer}
+\item{mwo}{Mean vector of weights for the next layer}
 
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{mdao}{Mean vector of the activation units' derivative from next layer}
+\item{mdao}{Mean vector of activation units' first derivative from next layer}
 
-\item{mdai}{Mean vector of the activation units' derivative from current layer}
+\item{mdai}{Mean vector of activation units' first derivative from current layer}
 
-\item{Sdai}{Covariance of the activation units' derivative from current layer}
+\item{Sdai}{Covariance of activation units' first derivative from current layer}
 
-\item{mpdo}{Mean vector of the first order derivative product wd of next layer}
+\item{mpdo}{Mean vector of first derivative product wd of next layer}
 
-\item{mpdi}{Mean vector of the first order derivative product wd of current layer}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mdgo}{Mean vector of derivatives in next layer}
+\item{mdgo}{Mean vector of product of derivatives in next layer}
 
-\item{mdgo2}{Mean vector of derivatives in 2nd next layer}
+\item{mdgo2}{Mean vector of product of derivatives in second next layer}
 
 \item{Cdowdi}{Covariance between derivatives from next layer and weights times derivatives from current layer}
 
@@ -62,17 +62,17 @@ fcDerivative5(
 
 \item{no}{Number of units in next layer}
 
-\item{no2}{Number of units in 2nd next layer}
+\item{no2}{Number of units in second next layer}
 
 \item{B}{Batch size}
 
-\item{dlayer}{TRUE if layer from which derivatives will be in respect to}
+\item{dlayer}{TRUE if derivatives will be in respect to current layer}
 }
 \value{
-Mean matrix of products of derivatives
+Mean of product terms for second derivative calculations
 }
 \description{
 This function calculates mean of product of derivatives, when new product term involves product
-of two first order derivatives (wd\emph{wd) from the same layer multiplied to product
-of two first order derivatives (wd}wd) from next and second next layers.
+of two first derivatives (wdwd) from the same layer multiplied to product
+of two first derivatives (wdwd) from next and second next layers.
 }

@@ -2,18 +2,18 @@
 % Please edit documentation in R/tagi.R
 \name{fcHiddenStateBackwardPass}
 \alias{fcHiddenStateBackwardPass}
-\title{Backpropagation (States' Deltas) for Fully Connected Layers (Many Observations)}
+\title{Backpropagation (states' deltas) for fully connected layers (many observations)}
 \usage{
 fcHiddenStateBackwardPass(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB)
 }
 \arguments{
-\item{Sz}{Covariance of the units from current layer}
+\item{Sz}{Covariance of units from current layer}
 
-\item{Sxs}{TBD}
+\item{Sxs}{Null by default (not used yet)}
 
 \item{J}{Jacobian of current layer}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
 \item{deltaM}{Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
 
@@ -29,19 +29,11 @@ fcHiddenStateBackwardPass(Sz, Sxs, J, mw, deltaM, deltaS, ni, no, B, rB)
 }
 \value{
 \itemize{
-\item Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item Delta of mean vector of current layer units given \eqn{y} \eqn{\mu_{Z}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
-}
-
-\itemize{
-\item TBD
-}
-
-\itemize{
-\item TBD
+\item Delta of covariance matrix of current layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 }
 }
 \description{

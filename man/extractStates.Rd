@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{extractStates}
 \alias{extractStates}
-\title{Extract States}
+\title{Extract states}
 \usage{
 extractStates(states)
 }
@@ -10,23 +10,25 @@ extractStates(states)
 \item{states}{List of states}
 }
 \value{
-mz TBD
+\itemize{
+\item Mean of units for each layer
+}
 
-Sz TBD
+\itemize{
+\item Covariance of units for each layer
+}
 
-ma TBD
+\itemize{
+\item Mean of activated units for each layer
+}
 
-Sa TBD
+\itemize{
+\item Covariance of activated units for each layer
+}
 
-J TBD
-
-mdxs TBD
-
-Sdxs TBD
-
-mxs TBD
-
-Sxs TBD
+\itemize{
+\item Jacobian
+}
 }
 \description{
 Extract states from list of states.

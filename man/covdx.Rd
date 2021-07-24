@@ -2,30 +2,30 @@
 % Please edit documentation in R/tagi.R
 \name{covdx}
 \alias{covdx}
-\title{Covariance between Derivatives and Hidden States}
+\title{Covariance between derivatives and hidden states}
 \usage{
 covdx(mwo, mw, mdgo2, mpdi, mdgoe, Cdozi, Cdizi, ni, no, no2, B)
 }
 \arguments{
-\item{mwo}{Mean vector of the weights for the next layer}
+\item{mwo}{Mean vector of weights for the next layer}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{mdgo2}{Mean vector of derivatives in 2nd next layer}
+\item{mdgo2}{Mean vector of product of derivatives in second next layer}
 
-\item{mpdi}{TBD}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mdgoe}{Unit vector of length  (# response variables * B)}
+\item{mdgoe}{Mean of product of derivatives at each node in next layer}
 
-\item{Cdozi}{Covariance between derivative (next layer) and hidden (current layer) layers}
+\item{Cdozi}{Covariance between derivative (next) and hidden (current) layers}
 
-\item{Cdizi}{between derivative and hidden layers (same layer)}
+\item{Cdizi}{Covariance between derivative and hidden layers (same layer)}
 
 \item{ni}{Number of units in current layer}
 
 \item{no}{Number of units in next layer}
 
-\item{no2}{Number of units in 2nd next layer}
+\item{no2}{Number of units in second next layer}
 
 \item{B}{Batch size}
 }

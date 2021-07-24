@@ -2,31 +2,25 @@
 % Please edit documentation in R/tagi.R
 \name{compressStates}
 \alias{compressStates}
-\title{Compress States}
+\title{Compress states}
 \usage{
 compressStates(mz, Sz, ma, Sa, J, mdxs, Sdxs, mxs, Sxs)
 }
 \arguments{
-\item{mz}{TBD}
+\item{mz}{Mean of units for each layer}
 
-\item{Sz}{TBD}
+\item{Sz}{Covariance of units for each layer}
 
-\item{ma}{TBD}
+\item{ma}{Mean of activated units for each layer}
 
-\item{Sa}{TBD}
+\item{Sa}{Covariance of activated units for each layer}
 
-\item{J}{TBD}
+\item{J}{Jacobian}
 
-\item{mdxs}{TBD}
-
-\item{Sdxs}{TBD}
-
-\item{mxs}{TBD}
-
-\item{Sxs}{TBD}
+\item{...}{Other parameters}
 }
 \value{
-states: List of states
+List of states
 }
 \description{
 Put together states into a list of states.

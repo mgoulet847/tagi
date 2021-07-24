@@ -2,14 +2,14 @@
 % Please edit documentation in R/tagi.R
 \name{fcCwdowdowdiwdi}
 \alias{fcCwdowdowdiwdi}
-\title{Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Minimum 3 Hidden Layers)}
+\title{Covariance between next layer multiplied products and current layer multiplied products (minimum 3 hidden layers)}
 \usage{
 fcCwdowdowdiwdi(mpdi, mpdo, Cdgodgi, acti, ni, no, no2, B)
 }
 \arguments{
-\item{mpdi}{Mean vector of the first order derivative product wd of current layer}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mpdo}{Mean vector of the first order derivative product wd of next layer}
+\item{mpdo}{Mean vector of first derivative product wd of next layer}
 
 \item{Cdgodgi}{Covariance between weights times derivatives from consecutive layers}
 

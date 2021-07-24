@@ -2,14 +2,14 @@
 % Please edit documentation in R/tagi.R
 \name{fcCwdowdowwdi2}
 \alias{fcCwdowdowwdi2}
-\title{Covariance between Next Layer Multiplied Products and Current Layer Multiplied Products (Same Derivative)}
+\title{Covariance between next layer multiplied products and current layer multiplied products (same derivative)}
 \usage{
 fcCwdowdowwdi2(mpdi, mpdo, Cdgodgi, acti, ni, no, no2, B)
 }
 \arguments{
-\item{mpdi}{Mean vector of the first order derivative product wd of current layer}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mpdo}{Mean vector of the first order derivative product wd of next layer}
+\item{mpdo}{Mean vector of first derivative product wd of next layer}
 
 \item{Cdgodgi}{Covariance between weights times derivatives from consecutive layers}
 

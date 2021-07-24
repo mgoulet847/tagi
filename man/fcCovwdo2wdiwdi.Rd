@@ -2,12 +2,12 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovwdo2wdiwdi}
 \alias{fcCovwdo2wdiwdi}
-\title{Covariance between Products in (Same) Next and Current Layers}
+\title{Covariance between products in (same) next and current layers}
 \usage{
 fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi)
 }
 \arguments{
-\item{mpdo}{Mean vector of the first order derivative product wd of next layer}
+\item{mpdo}{Mean vector of first derivative product wd of next layer}
 
 \item{Cwdowdiwdi}{Covariance cov(wdo,wdi*wdi) of weights times derivatives products terms when there are one product in next layer and two in current}
 }
@@ -15,7 +15,7 @@ fcCovwdo2wdiwdi(mpdo, Cwdowdiwdi)
 Covariance cov(wdo^2,wdi*wdi) of weights times derivatives products terms when there are two products in both next and current layers
 }
 \description{
-This function calculates covariance cov(wdo^2,wdi*wdi) of weights times derivatives
+This function calculates covariance cov(wdo^2,wdiwdi) of weights times derivatives
 products terms when there are two products in both next and current layers.
 The product fom next layer is the same squared.
 }

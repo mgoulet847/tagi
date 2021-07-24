@@ -2,16 +2,16 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovdaddd}
 \alias{fcCovdaddd}
-\title{Covariance between Second and First Orders Derivatives from Consecutive Layers}
+\title{Covariance between first and second derivatives from consecutive layers}
 \usage{
 fcCovdaddd(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B)
 }
 \arguments{
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{mdai}{Mean vector of the activation units' derivative from current layer}
+\item{mdai}{Mean vector of activation units' first derivative from current layer}
 
 \item{Caoai}{Covariance between activation units from current and next layers}
 
@@ -26,11 +26,15 @@ fcCovdaddd(mao, mai, mdai, Caoai, Cdodi, acti, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between first order derivatives from next layer and activation units from current layer
+\itemize{
+\item Covariance between first derivatives from next layer and activation units from current layer
+}
 
-Covariance between second and first orders derivatives from consecutive layers
+\itemize{
+\item Covariance between first and second derivatives from consecutive layers
+}
 }
 \description{
-This function calculates covariance between activation units and first order derivatives and
-covariance between second and first orders derivatives from consecutive layers.
+This function calculates covariance between activation units and first derivatives and
+covariance between first and second derivatives from consecutive layers.
 }

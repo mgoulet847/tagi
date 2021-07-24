@@ -2,44 +2,42 @@
 % Please edit documentation in R/tagi.R
 \name{derivative}
 \alias{derivative}
-\title{Derivative Calculation}
+\title{Derivative calculation}
 \usage{
 derivative(NN, theta, states, mda, Sda, mdda, Sdda, dlayer)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
 \item{theta}{List of parameters}
 
 \item{states}{List of states}
 
-\item{mda}{Mean vector of activation units' derivative}
+\item{mda}{Mean vectors of activation units' first derivative}
 
-\item{Sda}{Covariance matrix of activation units' derivative}
+\item{Sda}{Covariance matrices of activation units' first derivative}
 
-\item{mdda}{Mean vector of activation units' second derivative}
+\item{mdda}{Mean vectors of activation units' second derivative}
 
-\item{Sdda}{Covariance matrix of activation units' second derivative}
+\item{Sdda}{Covariance matrices of activation units' second derivative}
 
-\item{dlayer}{Layer from which derivatives will be in respect to}
+\item{dlayer}{layer from which derivatives will be in respect to}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item \code{mdg}: Mean vector of derivative of the output layer
+\item Mean of first derivative of predicted responses
 }
 
 \itemize{
-\item \code{Sdg}: Variance of derivative of the output layer
+\item Variance of first derivative of predicted responses
 }
 
 \itemize{
-\item \code{Cdgz}: Covariance of derivative of the output layer
+\item Covariance between derivatives and inputs
 }
 
 \itemize{
-\item \code{mddg}: Mean vector of second derivative of the output layer
+\item Mean of second derivative of predicted responses
 }
 }
 \description{

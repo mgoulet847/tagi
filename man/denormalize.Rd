@@ -16,14 +16,12 @@ denormalize(yn, syn, myntrain, syntrain)
 \item{syntrain}{Variance vector of responses from training set}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item The denormalized predicted responses
+\item Mean of denormalized predicted responses
 }
 
 \itemize{
-\item The variance of denormalized predicted responses
+\item Variance of denormalized predicted responses
 }
 }
 \description{

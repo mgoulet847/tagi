@@ -2,14 +2,14 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovDlayer}
 \alias{fcCovDlayer}
-\title{Covariance between Products of Derivatives and Weights}
+\title{Covariance between products of derivatives and weights}
 \usage{
 fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
 }
 \arguments{
-\item{mdgo2}{Mean vector of derivatives in 2nd next layer}
+\item{mdgo2}{Mean vector of product of derivatives in second next layer}
 
-\item{mwo}{Mean vector of the weights for the next layer}
+\item{mwo}{Mean vector of weights for the next layer}
 
 \item{Cdowdi}{Covariance between derivatives and weights times derivatives}
 
@@ -17,7 +17,7 @@ fcCovDlayer(mdgo2, mwo, Cdowdi, ni, no, no2, B)
 
 \item{no}{Number of units in next layer}
 
-\item{no2}{Number of units in 2nd next layer}
+\item{no2}{Number of units in second next layer}
 
 \item{B}{Batch size}
 }

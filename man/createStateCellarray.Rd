@@ -2,12 +2,12 @@
 % Please edit documentation in R/tagi.R
 \name{createStateCellarray}
 \alias{createStateCellarray}
-\title{States Initialization (Zero-Matrices)}
+\title{States initialization (zero-matrices)}
 \usage{
 createStateCellarray(nodes, numLayers, B, rB)
 }
 \arguments{
-\item{nodes}{Vector that contains the number of nodes at each layer}
+\item{nodes}{Vector which contains the number of nodes at each layer}
 
 \item{numLayers}{Number of layers in the neural network}
 

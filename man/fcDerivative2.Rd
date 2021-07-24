@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcDerivative2}
 \alias{fcDerivative2}
-\title{Second Derivatives for Fully Connected layers}
+\title{Second derivatives for fully connected layers}
 \usage{
 fcDerivative2(
   mw,
@@ -25,29 +25,29 @@ fcDerivative2(
 )
 }
 \arguments{
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{mwo}{Mean vector of the weights for the next layer}
+\item{mwo}{Mean vector of weights for the next layer}
 
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{mdai}{Mean vector of the activation units' derivative from current layer}
+\item{mdai}{Mean vector of activation units' first derivative from current layer}
 
-\item{mddai}{Mean vector of the activation units' second derivative from current layer}
+\item{mddai}{Mean vector of activation units' second derivative from current layer}
 
-\item{mpddi}{Mean vector of the second order derivative product wdd of current layer}
+\item{mpddi}{Mean vector of second derivative product wdd of current layer}
 
-\item{mdgo}{Mean vector of derivatives in next layer}
+\item{mdgo}{Mean vector of product of derivatives in next layer}
 
-\item{mdgo2}{Mean vector of derivatives in 2nd next layer}
+\item{mdgo2}{Mean vector of product of derivatives in second next layer}
 
 \item{Caoai}{Covariance between activation units from current and next layers}
 
-\item{Cdow}{Covariance between derivatives and weights}
+\item{Cdow}{Covariance between first derivatives and weights}
 
-\item{Cdodi}{Covariance between derivatives from current and next layers}
+\item{Cdodi}{Covariance between first derivatives from current and next layers}
 
 \item{acti}{Activation function index for current layer defined by \code{\link{activationFunIndex}}}
 
@@ -55,13 +55,13 @@ fcDerivative2(
 
 \item{no}{Number of units in next layer}
 
-\item{no2}{Number of units in 2nd next layer}
+\item{no2}{Number of units in second next layer}
 
 \item{B}{Batch size}
 }
 \value{
-Mean vector of the derivatives
+Mean of product terms for second derivative calculations
 }
 \description{
-This function calculates mean of product of derivatives, when new product term involves second order derivatives (wdd).
+This function calculates mean of product of derivatives, when new product term involves second derivatives (wdd).
 }

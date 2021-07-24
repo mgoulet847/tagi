@@ -2,63 +2,61 @@
 % Please edit documentation in R/network.R
 \name{batchDerivative}
 \alias{batchDerivative}
-\title{One iteration of the Tractable Approximate Gaussian Inference (TAGI) with Derivative Calculations}
+\title{One iteration of the TAGI with derivative calculations}
 \usage{
 batchDerivative(NN, theta, normStat, states, x, Sx, y, dlayer)
 }
 \arguments{
-\item{NN}{List that contains the structure of the neural network}
+\item{NN}{Lists the structure of the neural network}
 
 \item{theta}{List of parameters}
 
-\item{normStat}{TBD}
+\item{normStat}{Normalized statistics}
 
 \item{states}{List of states}
 
-\item{x}{Set of input data}
+\item{x}{Input data}
 
-\item{Sx}{Variance of x}
+\item{Sx}{Variance of input data}
 
-\item{y}{Set of corresponding responses}
+\item{y}{Response data}
 
 \item{dlayer}{Layer from which derivatives will be in respect to}
 }
 \value{
-A list that contains:
-
 \itemize{
-\item \code{theta}: List of updated parameters
+\item List of parameters
 }
 
 \itemize{
-\item \code{normStat}: updated TBD
+\item List of normalized statistics
 }
 
 \itemize{
-\item \code{mzl}: Predicted responses
+\item Mean of predicted responses
 }
 
 \itemize{
-\item \code{Szl}: Variance vector of predicted responses
+\item Variance of predicted responses
 }
 
 \itemize{
-\item \code{mdg}: Predicted derivatives
+\item Mean of first derivative of predicted responses
 }
 
 \itemize{
-\item \code{Sdg}: Variance vector of derivatives
+\item Variance of first derivative of predicted responses
 }
 
 \itemize{
-\item \code{Cdgz}: Covariance between derivatives and inputs
+\item Covariance between derivatives and inputs
 }
 
 \itemize{
-\item \code{mddg}: Predicted second derivatives
+\item Mean of second derivative of predicted responses
 }
 }
 \description{
 This function goes through one learning iteration of the neural network model
-using TAGI.
+using TAGI with derivative calculations.
 }

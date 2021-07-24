@@ -2,17 +2,17 @@
 % Please edit documentation in R/act.R
 \name{covarianceSa}
 \alias{covarianceSa}
-\title{Calculate Variance of Activated Units}
+\title{Calculate variance of activated units}
 \usage{
 covarianceSa(J, Sz)
 }
 \arguments{
 \item{J}{Jacobian matrix evaluated at \eqn{\mu_{Z}}}
 
-\item{Sz}{Covariance matrix of the units for the current layer \eqn{\Sigma_{Z}}}
+\item{Sz}{Covariance matrix of units for the current layer \eqn{\Sigma_{Z}}}
 }
 \value{
-The activation units variance vector \eqn{\Sigma_{A}}
+The activation units covariance matrix \eqn{\Sigma_{A}}
 }
 \description{
 This function uses lineratization to estimate the covariance matrix of activation units \eqn{\Sigma_{A}}.

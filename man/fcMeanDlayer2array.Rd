@@ -2,14 +2,14 @@
 % Please edit documentation in R/tagi.R
 \name{fcMeanDlayer2array}
 \alias{fcMeanDlayer2array}
-\title{Mean of Weights times Derivatives Products Terms ((wdo*wdo) x (wwdi^2))}
+\title{Mean of weights times derivatives products terms ((wdo*wdo) x (wwdi^2))}
 \usage{
 fcMeanDlayer2array(mpdi2w, mdgo, Cwdowdowwdi2, ni, no, B)
 }
 \arguments{
-\item{mpdi2w}{Combination of products of first order derivative of current layer (wd)*(wd) (iterations on weights on the same node)}
+\item{mpdi2w}{Combination of products of first derivative of current layer (wd)*(wd) (iterations on weights on the same node)}
 
-\item{mdgo}{Mean of derivatives in next layer}
+\item{mdgo}{Mean of product of derivatives in next layer}
 
 \item{Cwdowdowwdi2}{Covariance cov(wdowdo,wdiwdi) of weights times derivatives products terms, where the di terms are the same}
 
@@ -25,7 +25,7 @@ Mean of weights times derivatives products terms
 \description{
 This function calculates mean of weights times derivatives products terms when
 adding two of those products from current layer to already calculated expectation
-that ended with one such product of next layer (i.e. (wdo\emph{wdo) x (wwdi^2)). Mean terms
+that ended with one such product of next layer (i.e. (wdowdo) x (wwdi^2)). Mean terms
 are in array format. Once added, rows need to be
-summed to aggregate expectations by node}weight combinations of current layer.
+summed to aggregate expectations by node*weight combinations of current layer.
 }

@@ -2,12 +2,12 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovwdowdi2}
 \alias{fcCovwdowdi2}
-\title{Covariance between Next Layer Product and Current Layer Squared Product}
+\title{Covariance between next layer product and current layer squared product}
 \usage{
 fcCovwdowdi2(mpdi, Cdgoddgik)
 }
 \arguments{
-\item{mpdi}{Mean vector of the first order derivative product wd of current layer}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
 \item{Cdgoddgik}{Covariance between weights times derivatives from consecutive layers}
 }

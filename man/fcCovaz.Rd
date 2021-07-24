@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovaz}
 \alias{fcCovaz}
-\title{Covariance between Activation and Hidden Units}
+\title{Covariance between activation and hidden units}
 \usage{
 fcCovaz(Jo, J, Sz, mw, ni, no, B)
 }
@@ -11,9 +11,9 @@ fcCovaz(Jo, J, Sz, mw, ni, no, B)
 
 \item{J}{Jacobian of current layer}
 
-\item{Sz}{Covariance of the units from current layer}
+\item{Sz}{Covariance of units from current layer}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
 \item{ni}{Number of units in current layer}
 
@@ -22,9 +22,13 @@ fcCovaz(Jo, J, Sz, mw, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between activation and hidden layers (same layer)
+\itemize{
+\item Covariance between activation and hidden layers (same layer)
+}
 
-Covariance between activation (next layer) and hidden (current layer) layers
+\itemize{
+\item Covariance between activation (next) and hidden (current) layers
+}
 }
 \description{
 This function calculates covariance between activation and hidden units.

@@ -2,43 +2,37 @@
 % Please edit documentation in R/tagi.R
 \name{catParameters}
 \alias{catParameters}
-\title{Concatenate Parameters}
+\title{Concatenate parameters}
 \usage{
 catParameters(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
 }
 \arguments{
-\item{mw}{TBD}
+\item{mw}{Mean of weights for the current layer}
 
-\item{Sw}{TBD}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mb}{TBD}
+\item{mb}{Mean of biases for the current layer}
 
-\item{Sb}{TBD}
+\item{Sb}{Covariance of biases for the current layer}
 
-\item{mwx}{TBD}
-
-\item{Swx}{TBD}
-
-\item{mbx}{TBD}
-
-\item{Sbx}{TBD}
+\item{...}{Other parameters}
 }
 \value{
-mw TBD in vector format
+\itemize{
+\item Mean vector of weights for the current layer
+}
 
-Sw TBD in vector format
+\itemize{
+\item Covariance vector of weights for the current layer
+}
 
-mb TBD in vector format
+\itemize{
+\item Mean vector of biases for the current layer
+}
 
-Sb TBD in vector format
-
-mwx TBD in vector format
-
-Swx TBD in vector format
-
-mbx TBD in vector format
-
-Sbx TBD in vector format
+\itemize{
+\item Covariance vector of biases for the current layer
+}
 }
 \description{
 Combines in a single column vector each parameter for all layers.

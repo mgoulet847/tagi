@@ -2,14 +2,14 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovdwd}
 \alias{fcCovdwd}
-\title{Covariance between Derivatives and Weights*Derivatives}
+\title{Covariance between derivatives and weights*derivatives}
 \usage{
 fcCovdwd(md, mw, Cdow, Cdodi, ni, no, B)
 }
 \arguments{
 \item{md}{Mean vector of derivatives}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
 \item{Cdow}{Covariance between derivatives and weights}
 

@@ -2,22 +2,22 @@
 % Please edit documentation in R/tagi.R
 \name{fcHiddenStateBackwardPassB1}
 \alias{fcHiddenStateBackwardPassB1}
-\title{Backpropagation (States' Deltas) for Fully Connected Layers (One Observation)}
+\title{Backpropagation (states' deltas) for fully connected layers (one observation)}
 \usage{
 fcHiddenStateBackwardPassB1(Sz, Sxs, J, mw, deltaM, deltaS, ni, no)
 }
 \arguments{
 \item{Sz}{Covariance of the units from current layer}
 
-\item{Sxs}{TBD}
+\item{Sxs}{Null by default (not used yet)}
 
 \item{J}{Jacobian of current layer}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{deltaM}{Delta of mean vector of the next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item{deltaM}{Delta of mean vector of next layer units given \eqn{y} \eqn{\mu_{Z}|y}}
 
-\item{deltaS}{Delta of covariance matrix of the next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
+\item{deltaS}{Delta of covariance matrix of next layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
 
 \item{ni}{Number of units in current layer}
 
@@ -25,19 +25,11 @@ fcHiddenStateBackwardPassB1(Sz, Sxs, J, mw, deltaM, deltaS, ni, no)
 }
 \value{
 \itemize{
-\item Delta of mean vector of the layer units given \eqn{y} \eqn{\mu_{Z}|y}}
+\item Delta of mean vector of current layer units given \eqn{y} \eqn{\mu_{Z}|y}
 }
 
 \itemize{
-\item Delta of covariance matrix of the layer units given \eqn{y} \eqn{\Sigma_{Z}|y}}
-}
-
-\itemize{
-\item TBD
-}
-
-\itemize{
-\item TBD
+\item Delta of covariance matrix of current layer units given \eqn{y} \eqn{\Sigma_{Z}|y}
 }
 }
 \description{

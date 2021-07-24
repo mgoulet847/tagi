@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{fcDerivative}
 \alias{fcDerivative}
-\title{Derivatives for Fully Connected layers}
+\title{Derivatives for fully connected layers}
 \usage{
 fcDerivative(
   mw,
@@ -30,37 +30,37 @@ fcDerivative(
 )
 }
 \arguments{
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mwo}{Mean vector of the weights for the next layer}
+\item{mwo}{Mean vector of weights for the next layer}
 
 \item{Jo}{Jacobian of next layer}
 
 \item{J}{Jacobian of current layer}
 
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{Sao}{Covariance of the activation units from next layer}
+\item{Sao}{Covariance of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{Sai}{Covariance of the activation units from current layer}
+\item{Sai}{Covariance of activation units from current layer}
 
-\item{Szi}{Covariance of the units from current layer}
+\item{Szi}{Covariance of units from current layer}
 
-\item{mdai}{Mean vector of the activation units' derivative from current layer}
+\item{mdai}{Mean vector of activation units' first derivative from current layer}
 
-\item{Sdai}{Covariance of the activation units' derivative from current layer}
+\item{Sdai}{Covariance of activation units' first derivative from current layer}
 
-\item{mdgo}{Mean vector of derivatives in next layer}
+\item{mdgo}{Mean vector of product of derivatives in next layer}
 
-\item{mdgoe}{Mean derivatives at each node in next layer}
+\item{mdgoe}{Mean of product of derivatives at each node in next layer}
 
-\item{Sdgo}{Variance of derivatives in next layer}
+\item{Sdgo}{Variance of first derivatives in next layer}
 
-\item{mdgo2}{Mean vector of derivatives in 2nd next layer}
+\item{mdgo2}{Mean vector of product of derivatives in second next layer}
 
 \item{acto}{Activation function index for next layer defined by \code{\link{activationFunIndex}}}
 
@@ -70,26 +70,26 @@ fcDerivative(
 
 \item{no}{Number of units in next layer}
 
-\item{no2}{Number of units in 2nd next layer}
+\item{no2}{Number of units in second next layer}
 
 \item{B}{Batch size}
 }
 \value{
-Mean vector of the derivatives
+Mean vector of first derivatives
 
-Covariance matrix of the derivatives
+Covariance matrix of first derivatives
 
-Covariance matrix of derivative and input layers
+Covariance matrix of first derivative and input layer
 
 Covariance between activation units and weights
 
 Covariance between activation units from current and next layers
 
-Covariance between derivatives and weights
+Covariance between first derivatives and weights
 
-Covariance between derivatives from current and next layers
+Covariance between first derivatives from current and next layers
 
-Covariance between derivatives from next layer and weights times derivatives from current layer
+Covariance between first derivatives from next layer and weights times derivatives from current layer
 }
 \description{
 This function calculates mean and variance of derivatives and covariance of derivative and input layers.

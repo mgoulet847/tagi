@@ -2,20 +2,20 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovaddddddw}
 \alias{fcCovaddddddw}
-\title{Covariance between First and Second Orders Derivatives from Consecutive Layers}
+\title{Covariance between first and second derivatives from consecutive layers}
 \usage{
 fcCovaddddddw(mao, mai, mdao, Caoai, Cdodi, Caow, Cdow, acto, acti, ni, no, B)
 }
 \arguments{
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{mdao}{Mean vector of the activation units' derivative from next layer}
+\item{mdao}{Mean vector of activation units' first derivative from next layer}
 
 \item{Caoai}{Covariance between activation units from current and next layers}
 
-\item{Cdodi}{Covariance between derivatives from current and next layers}
+\item{Cdodi}{Covariance between first derivatives from current and next layers}
 
 \item{Caow}{Covariance between activation units and weights}
 
@@ -32,11 +32,15 @@ fcCovaddddddw(mao, mai, mdao, Caoai, Cdodi, Caow, Cdow, acto, acti, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between first and second orders derivatives from consecutive layers
+\itemize{
+\item Covariance between first and second derivatives from consecutive layers
+}
 
-Covariance between second order derivatives from next layer and weights
+\itemize{
+\item Covariance between second derivatives from next layer and weights
+}
 }
 \description{
-This function calculates covariance between weights and second order derivatives and
-covariance between first and second orders derivatives from consecutive layers.
+This function calculates covariance between weights and second derivatives and
+covariance between first and second derivatives from consecutive layers.
 }

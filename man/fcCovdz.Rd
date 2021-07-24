@@ -2,18 +2,18 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovdz}
 \alias{fcCovdz}
-\title{Covariance between Derivatives and Hidden Units}
+\title{Covariance between derivatives and hidden Units}
 \usage{
 fcCovdz(mao, mai, Caizi, Caozi, acto, acti, ni, no, B)
 }
 \arguments{
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{Caizi}{Covariance between activation and hidden layers (same layer)}
+\item{Caizi}{covariance between activation and hidden layers (same layer)}
 
-\item{Caozi}{Covariance between activation (next layer) and hidden (current layer) layers}
+\item{Caozi}{covariance between activation (next layer) and hidden (current) layers}
 
 \item{acto}{Activation function index for next layer defined by \code{\link{activationFunIndex}}}
 
@@ -26,9 +26,13 @@ fcCovdz(mao, mai, Caizi, Caozi, acto, acti, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between derivative (next layer) and hidden (current layer) layers
+\itemize{
+\item Covariance between derivative (next) and hidden (current) layers
+}
 
-Covariance between derivative and hidden layers (same layer)
+\itemize{
+\item Covariance between derivative and hidden layers (same layer)
+}
 }
 \description{
 This function calculates covariance between derivatives and hidden units.

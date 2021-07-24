@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{createInitCellwithArray}
 \alias{createInitCellwithArray}
-\title{Initialization (Matrix of Lists)}
+\title{Initialization (matrix of lists)}
 \usage{
 createInitCellwithArray(numLayers)
 }
@@ -10,7 +10,7 @@ createInitCellwithArray(numLayers)
 \item{numLayers}{Number of layers in the neural network}
 }
 \value{
-x: Matrix containing empty lists
+Matrix containing empty lists
 }
 \description{
 Initializes a matrix containing lists.

@@ -2,20 +2,20 @@
 % Please edit documentation in R/tagi.R
 \name{fcCombinaisonDnode}
 \alias{fcCombinaisonDnode}
-\title{Combination of Products of First Order Derivative (Iterations on Nodes)}
+\title{Combination of products of first derivative (iterations on nodes)}
 \usage{
 fcCombinaisonDnode(mpdi, mw, Sw, mda, Sda, ni, no, B)
 }
 \arguments{
-\item{mpdi}{Mean vector of the current product of derivative and weight}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mda}{Mean vector of the activation units' derivative from current layer}
+\item{mda}{Mean vector of activation units' first derivative from current layer}
 
-\item{Sda}{Covariance of the activation units' derivative from current layer}
+\item{Sda}{Covariance of activation units' first derivative from current layer}
 
 \item{ni}{Number of units in current layer}
 
@@ -24,10 +24,10 @@ fcCombinaisonDnode(mpdi, mw, Sw, mda, Sda, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Mean array of combination of products of first order derivatives
+Mean array of combination of products of first derivatives
 }
 \description{
-This function calculates mean of combination of products of first order derivatives (wd)*(wd).
+This function calculates mean of combination of products of first derivatives (wd)*(wd).
 Each node is multiplied to another node in the same layer (including itself).
 Their weights are both pointing to the same node in the next layer.
 }

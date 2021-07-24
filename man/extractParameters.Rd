@@ -2,7 +2,7 @@
 % Please edit documentation in R/tagi.R
 \name{extractParameters}
 \alias{extractParameters}
-\title{Extract Parameters}
+\title{Extract parameters}
 \usage{
 extractParameters(theta)
 }
@@ -10,21 +10,21 @@ extractParameters(theta)
 \item{theta}{List of parameters}
 }
 \value{
-mw: TBD
+\itemize{
+\item Mean vector of weights for the current layer
+}
 
-Sw: TBD
+\itemize{
+\item Covariance vector of weights for the current layer
+}
 
-mb: TBD
+\itemize{
+\item Mean vector of biases for the current layer
+}
 
-Sb: TBD
-
-mwx: TBD
-
-Swx: TBD
-
-mbx: TBD
-
-Sbx: TBD
+\itemize{
+\item Covariance vector of biases for the current layer
+}
 }
 \description{
 Extract parameters from list of parameters.

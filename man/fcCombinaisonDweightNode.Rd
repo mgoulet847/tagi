@@ -2,20 +2,20 @@
 % Please edit documentation in R/tagi.R
 \name{fcCombinaisonDweightNode}
 \alias{fcCombinaisonDweightNode}
-\title{Combination of Squared Products of First Order Derivative}
+\title{Combination of squared products of first derivative}
 \usage{
 fcCombinaisonDweightNode(mpdi, mw, Sw, mda, Sda, ni, no, B)
 }
 \arguments{
-\item{mpdi}{Mean vector of the current product of derivative and weight}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mw}{Mean vector of the weights for the current layer}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{Covariance of the weights for the current layer}
+\item{Sw}{Covariance of weights for the current layer}
 
-\item{mda}{Mean vector of the activation units' derivative from current layer}
+\item{mda}{Mean vector of activation units' first derivative from current layer}
 
-\item{Sda}{Covariance of the activation units' derivative from current layer}
+\item{Sda}{Covariance of activation units' first derivative from current layer}
 
 \item{ni}{Number of units in current layer}
 
@@ -24,9 +24,9 @@ fcCombinaisonDweightNode(mpdi, mw, Sw, mda, Sda, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Mean matrix of squared products of first order derivatives
+Mean matrix of squared products of first derivatives
 }
 \description{
-This function calculates mean of squared products of first order derivatives (wd)^2.
+This function calculates mean of squared products of first derivatives (wd)^2.
 Every products (weight times node) from current layer are considered which results in a (B*ni x no)-matrix.
 }

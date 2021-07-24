@@ -2,18 +2,18 @@
 % Please edit documentation in R/tagi.R
 \name{fcCovdwddd}
 \alias{fcCovdwddd}
-\title{Covariance between Derivatives and Weights}
+\title{Covariance between derivatives and weights}
 \usage{
 fcCovdwddd(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B)
 }
 \arguments{
-\item{mao}{Mean vector of the activation units from next layer}
+\item{mao}{Mean vector of activation units from next layer}
 
-\item{Sao}{Covariance of the activation units from next layer}
+\item{Sao}{Covariance of activation units from next layer}
 
-\item{mai}{Mean vector of the activation units from current layer}
+\item{mai}{Mean vector of activation units from current layer}
 
-\item{Sai}{Covariance of the activation units from current layer}
+\item{Sai}{Covariance of activation units from current layer}
 
 \item{Caow}{Covariance between activation units and weights}
 
@@ -30,9 +30,13 @@ fcCovdwddd(mao, Sao, mai, Sai, Caow, Caoai, acto, acti, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Covariance between derivatives and weights
+\itemize{
+\item Covariance between derivatives and weights
+}
 
-Covariance between derivatives from current and next layers
+\itemize{
+\item Covariance between derivatives from current and next layers
+}
 }
 \description{
 This function calculates covariance between derivatives and weights and

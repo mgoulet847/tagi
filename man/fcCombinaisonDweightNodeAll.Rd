@@ -2,16 +2,16 @@
 % Please edit documentation in R/tagi.R
 \name{fcCombinaisonDweightNodeAll}
 \alias{fcCombinaisonDweightNodeAll}
-\title{All Possible Combinations of Products of First Order Derivatives}
+\title{All possible combinations of products of first derivatives}
 \usage{
 fcCombinaisonDweightNodeAll(mpdi, mpdin, mpdiw, ni, no, B)
 }
 \arguments{
-\item{mpdi}{Mean matrix of the current product of derivative and weight}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mpdin}{Mean array of combination of products of first order derivatives (iterations on nodes)}
+\item{mpdin}{Mean array of combination of products of first derivatives (iterations on nodes)}
 
-\item{mpdiw}{Mean array of combination of products of first order derivatives (iterations on weights)}
+\item{mpdiw}{Mean array of combination of products of first derivatives (iterations on weights)}
 
 \item{ni}{Number of units in current layer}
 
@@ -20,10 +20,10 @@ fcCombinaisonDweightNodeAll(mpdi, mpdin, mpdiw, ni, no, B)
 \item{B}{Batch size}
 }
 \value{
-Mean array of combination of products of first order derivatives
+Mean array of combination of products of first derivatives
 }
 \description{
-This function calculates mean of products of first order derivatives wd*wd.
+This function calculates mean of products of first derivatives wd*wd.
 Since both weight and node are iterated over all products, every products
 (weight times node) from current layer are considered which results in a
 (Bni x no x noni)-array. I.e. each dimension of the array represents a single

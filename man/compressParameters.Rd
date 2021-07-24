@@ -2,29 +2,23 @@
 % Please edit documentation in R/tagi.R
 \name{compressParameters}
 \alias{compressParameters}
-\title{Compress Parameters}
+\title{Compress parameters}
 \usage{
 compressParameters(mw, Sw, mb, Sb, mwx, Swx, mbx, Sbx)
 }
 \arguments{
-\item{mw}{TBD}
+\item{mw}{Mean vector of weights for the current layer}
 
-\item{Sw}{TBD}
+\item{Sw}{Covariance vector of weights for the current layer}
 
-\item{mb}{TBD}
+\item{mb}{Mean vector of biases for the current layer}
 
-\item{Sb}{TBD}
+\item{Sb}{Covariance vector of biases for the current layer}
 
-\item{mwx}{TBD}
-
-\item{Swx}{TBD}
-
-\item{mbx}{TBD}
-
-\item{Sbx}{TBD}
+\item{...}{Other parameters}
 }
 \value{
-theta: List of parameters
+List of parameters
 }
 \description{
 Put together parameters into a list of parameters.

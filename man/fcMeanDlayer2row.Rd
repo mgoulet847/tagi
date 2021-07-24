@@ -2,16 +2,16 @@
 % Please edit documentation in R/tagi.R
 \name{fcMeanDlayer2row}
 \alias{fcMeanDlayer2row}
-\title{Mean of Weights times Derivatives Products Terms Squared (wdo x (wdi*wdi))}
+\title{Mean of weights times derivatives products terms squared (wdo x (wdi*wdi))}
 \usage{
 fcMeanDlayer2row(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B)
 }
 \arguments{
-\item{mpdi}{Mean vector of the first order derivative product wd of current layer}
+\item{mpdi}{Mean vector of first derivative product wd of current layer}
 
-\item{mpdi2}{Mean array of combination of products of first order derivatives}
+\item{mpdi2}{Mean array of combination of products of first derivatives}
 
-\item{mdgo}{Mean vector of derivatives in next layer}
+\item{mdgo}{Mean vector of product of derivatives in next layer}
 
 \item{Cwdowdiwdi}{Covariance cov(wdo,(wdi*wdi)) of weights times derivatives products terms when there is one product in next layer and two in current}
 
@@ -19,7 +19,7 @@ fcMeanDlayer2row(mpdi, mpdi2, mdgo, Cwdowdiwdi, ni, no, no2, B)
 
 \item{no}{Number of units in next layer}
 
-\item{no2}{Number of units in 2nd next layer}
+\item{no2}{Number of units in second next layer}
 
 \item{B}{Batch size}
 }
@@ -29,7 +29,7 @@ Mean of weights times derivatives products terms
 \description{
 This function calculates mean of weights times derivatives products terms when
 adding two of those products from current layer to already calculated expectation
-that ended with one such product of next layer (i.e. wdo x (wdi\emph{wdi)). Mean terms
+that ended with one such product of next layer (i.e. wdo x (wdiwdi)). Mean terms
 are in array format. Once added, rows need to be
-summed to aggregate expectations by node}node combinations of current layer.
+summed to aggregate expectations by node*node combinations of current layer.
 }
