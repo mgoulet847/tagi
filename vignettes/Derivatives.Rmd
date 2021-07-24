@@ -1,0 +1,109 @@
+---
+title: "Derivatives"
+author: "Magali-Chen Goulet"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Derivatives}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Introduction
+------------
+
+The purpose of this vignette is to show you how to obtain derivative using **tagi** in the 1D Toy 
+Example from (Hernández-Lobato & Adams, 2015).
+
+
+Package loading:
+
+```{r libLoading, results='hold', message=F, warning=F}
+require(tagi)
+```
+
+Data
+------------
+
+1D regression problem from (Hernández-Lobato & Adams, 2015) is
+$y = x^{3} + \epsilon$ where $\epsilon \sim \mathcal{N}(0,9)$ and $x \in [\,-4,4]\,$. In our datasets, $x$ and $y$ are already normalized and we use a training set of 5,000 observations that we randomly generate. The testing remains the same 20 observations.
+```{r, results='hide'}
+set.seed(100) # get the same results each time the code is ran
+ntrain = 5000
+ntest = 20
+sv = 0.01
+xtrain <- matrix(runif(ntrain, min =-1, max = 1), ntrain, 1)
+ytrain <- xtrain^2 + matrix(rnorm(ntrain, mean = 0, sd = sv), ntrain, 1)
+xtest <- matrix(seq(-1,1,length=ntest), ntest, 1)
+ytest <- xtest^2 + matrix(rnorm(ntest, mean = 0, sd = sv), ntest, 1)
+```
+
+Initialization
+------------
+
+Then, define the neural network properties, such as the number of epochs, activation function, etc. Setting "collectDev" to 2 will output both first and second derivatives.
+```{r}
+nx <- ncol(xtrain)
+ny <- ncol(ytrain)
+
+NN <- list(
+  "task" = "regression",
+  "nx" = nx, # Number of input covariates
+  "ny" = ny, # Number of output responses
+  "batchSize" = 5, # Batch size
+  "repBatchSize" = 1,
+  "layer" = c(1, 1, 1, 1, 1), # 1: fully connected
+  "nodes" = c(nx, 35, 35, 35, ny), # Number of nodes for each layer
+  "actFunIdx" = c(0, 1, 1, 1, 0), # Activation function for hidden layer {'tanh','sigm','cdf','relu','softplus'}
+  "actBound" = c(1, 1, 1, 1, 1), # Activation function for output layer {'linear', 'tanh','sigm','cdf','relu'}
+  "sx" = NULL, # Input standard deviation
+  "sv" = 0.05, # Observations standard deviation
+  "noiseType" = "none",
+  "initParamType" = "Xavier", # Parameter initialization
+  "maxEpoch" = 100, # maximal number of learning epoch
+  "numSplits" = 1, # number of splits
+  "collectDev" = 2, # calculate derivative
+  "convariateEstm" = 1,
+  "trainMode" = 1
+)
+```
+
+Experiment
+------------
+
+Now, we are ready to launch the derivative calculations. Note that as you add layers and hidden units, computation time increases. If you are only interested in the first derivative, please set "collectDev" = 1.
+```{r}
+set.seed(100) # get the same results each time the code is ran
+out_runBatchDerivative = runBatchDerivative(NN, xtrain, ytrain, xtest, ytest)
+yp = out_runBatchDerivative[[1]]
+Syp = out_runBatchDerivative[[2]]
+dyp = out_runBatchDerivative[[3]]
+ddyp = out_runBatchDerivative[[4]]
+```
+
+
+Plots
+------------
+
+We now compare the results with the actual derivatives. Starting with the first derivative.
+```{r}
+dytest <- 2*xtest
+plot(x = xtest, y = dytest, xlab = "x", type = "lines", ylim =c(-5,5))
+points(xtest, dyp, col = "magenta", pch = 5)
+```
+
+And now for the second derivative.
+```{r}
+ddytest <- matrix(2, ntest, 1)
+plot(x = xtest, y = ddytest, xlab = "x", type = "lines", ylim =c(-5,5))
+points(xtest, ddyp, col = "blue", pch = 5)
+```
+
+
